@@ -45,7 +45,6 @@ class CommandLineLauncher(object):
         """
         self.argv = argv or sys.argv[:]
         self.prog_name = os.path.basename(self.argv[0])
-        print "self.prog_name: %s" % self.prog_name
     def fetch_command(self, subcommand):
         '''
         This method
@@ -75,7 +74,6 @@ class CommandLineLauncher(object):
         '''
         try:
             subcommand = self.argv[1]
-            print subcommand
         except IndexError:
             subcommand = 'help' 
         

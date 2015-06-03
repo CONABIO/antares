@@ -18,6 +18,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         sum_of_numbers = 0
         for number in options['sum']:
-            sum_of_numbers =  sum_of_numbers + int(number)
-        print "The sum of the numbers is: %s" % sum_of_numbers    
+            sum_of_numbers = sum_of_numbers + int(number)
+        print "The sum of the numbers is: %s" % sum_of_numbers
         print "This is a stub for the Change Detection Command."

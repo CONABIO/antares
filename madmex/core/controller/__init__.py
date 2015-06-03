@@ -20,7 +20,7 @@ def find_commands(management_dir):
     Returns an empty list if no commands are defined.
     '''
     command_dir = os.path.join(management_dir, 'commands')
-    return [name for _, name, is_pkg in pkgutil.iter_modules([command_dir]) 
+    return [name for _, name, is_pkg in pkgutil.iter_modules([command_dir])
             if not is_pkg and not name.startswith('_')]
 
 
@@ -33,12 +33,30 @@ def load_command_class(name):
     module = import_module('%s.%s' % (COMMANDS_PACKAGE, name))
     return module.Command()
 
+def fetch_command(subcommand):
+    '''
+    This method retrieves the command name to be loaded.
+    Parameters
+    ----------
+    subcommand : str
+                 Name of the command to be used.
+    '''
+    commands = find_commands(__path__[0])
+    if subcommand in commands:
+        if isinstance(subcommand, BaseCommand):
+            # If the command is already loaded, use it directly.
+            klass = subcommand
+        else:
+            klass = load_command_class(subcommand)
+    else:
+        raise CommandError("Command not found.")
+    return klass
 
 class CommandLineLauncher(object):
     '''
     This class creates an object to launch processes using the command line
     interface. The command line arguments are passed via the constructor, and
-    the command to be execuded is identified as the second argument in the 
+    the command to be execuded is identified as the second argument in the
     arguments list.
     '''
     def __init__(self, argv=None):
@@ -49,24 +67,6 @@ class CommandLineLauncher(object):
         """
         self.argv = argv or sys.argv[:]
         self.prog_name = os.path.basename(self.argv[0])
-    def fetch_command(self, subcommand):
-        '''
-        This method retrieves the command name to be loaded.
-        Parameters
-        ----------
-        subcommand : str
-                     Name of the command to be used.
-        '''
-        commands = find_commands(__path__[0])
-        if subcommand in commands:
-            if isinstance(subcommand, BaseCommand):
-                # If the command is already loaded, use it directly.
-                klass = subcommand
-            else:
-                klass = load_command_class(subcommand)
-        else:
-            raise CommandError("Command not found.")
-        return klass
     def execute(self):
         '''
         Executes the command given by the user and represented
@@ -76,9 +76,8 @@ class CommandLineLauncher(object):
         try:
             subcommand = self.argv[1]
         except IndexError:
-            subcommand = 'help' 
-        
-        self.fetch_command(subcommand).run_from_argv(self.argv)
+            subcommand = 'help'
+        fetch_command(subcommand).run_from_argv(self.argv)
 
 def madmex_copyright():
     '''
@@ -90,7 +89,6 @@ def execute(argv=None):
     '''
     Main entry point for the MADMex system.
     '''
-    print(madmex_copyright())
-    
+    print madmex_copyright()
     launcher = CommandLineLauncher(argv)
     launcher.execute()

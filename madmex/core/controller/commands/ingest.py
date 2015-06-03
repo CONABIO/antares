@@ -12,3 +12,4 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         print "This is a stub for the Ingest Command."
+        

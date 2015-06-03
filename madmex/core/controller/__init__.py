@@ -1,4 +1,5 @@
 '''
+madmex.core.controller
 Controller package.
 '''
 from datetime import date

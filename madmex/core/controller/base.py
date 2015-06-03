@@ -79,7 +79,7 @@ class BaseCommand(object):
         parser.add_argument(
             '--version',
             action='version',
-            version=madmex.get_version() 
+            version=madmex.get_version()
         )
         parser.add_argument(
             '-v',
@@ -90,7 +90,7 @@ class BaseCommand(object):
             type=int,
             choices=[0, 1, 2, 3],
             help='Verbosity level; 0=minimal output, 1=normal output, 2=verbose '
-                'output, 3=very verbose output'
+                 'output, 3=very verbose output'
         )
         parser.add_argument(
             '--settings',
@@ -103,7 +103,7 @@ class BaseCommand(object):
         parser.add_argument(
             '--pythonpath',
             help='A directory to add to the Python path, e.g. '
-                '"/home/djangoprojects/myproject".'
+                 '"/home/djangoprojects/myproject".'
         )
         parser.add_argument(
             '--traceback',
@@ -118,7 +118,8 @@ class BaseCommand(object):
             help="Don't colorize the command output."
         )
         if self.args:
-            # Keep compatibility and always accept positional arguments, like optparse when args is set
+            # Keep compatibility and always accept positional 
+            # arguments, like optparse when args is set
             parser.add_argument('args', nargs='*')
         self.add_arguments(parser)
         return parser
@@ -150,7 +151,7 @@ class BaseCommand(object):
         # handle_default_options(options)
         try:
             self.execute(*args, **cmd_options)
-        except Exception as exception:
+        except CommandError as exception:
             if options.traceback or not isinstance(exception, CommandError):
                 raise
 

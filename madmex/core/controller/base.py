@@ -43,24 +43,24 @@ class CommandParser(ArgumentParser):
 class BaseCommand(object):
     '''
     This is the class that all commands should inherit. It defines
-    methods to be implemented by descendants. All commands sould be 
+    methods to be implemented by descendants. All commands should be
     defined in the commands package beneath this module.
     '''
 
     help = ''
     args = ''
     _called_from_command_line = False
-    
     def __init__(self):
         '''
         Constructor
         '''
         self.stdout = sys.stdout
         self.stderr = sys.stderr
-        
     def get_version(self):
+        '''
+        Returns the version of the MADMex system.
+        '''
         return madmex.get_version() 
-
     def usage(self, subcommand):
         '''
         Return a brief description of how to use this command, by
@@ -71,11 +71,10 @@ class BaseCommand(object):
             return '%s\n\n%s' % (usage, self.help)
         else:
             return usage
-    
     def create_parser(self, prog_name, subcommand):
         '''
         Create and return the ``ArgumentParser`` which will be used to
-        parse the arguments to this command.        
+        parse the arguments to this command.
         '''
         parser = CommandParser(self, prog="%s %s" % (os.path.basename(prog_name), subcommand),
                 description=self.help or None)
@@ -100,14 +99,12 @@ class BaseCommand(object):
             # Keep compatibility and always accept positional arguments, like optparse when args is set
             parser.add_argument('args', nargs='*')
         self.add_arguments(parser)
-        return parser
-           
+        return parser   
     def add_arguments(self, parser):
         '''
         Entry point for subclassed commands to add custom arguments.
         '''
         pass
-    
     def print_help(self, prog_name, subcommand):
         '''
         Print the help message for this command, derived from
@@ -116,7 +113,6 @@ class BaseCommand(object):
         '''
         parser = self.create_parser(prog_name, subcommand)
         parser.print_help()
-    
     def run_from_argv(self, argv):    
         '''
         Will execute this command with the given arguments from the command line
@@ -124,29 +120,26 @@ class BaseCommand(object):
         '''
         self._called_from_command_line = True
         parser = self.create_parser(argv[0], argv[1])
-        
         options = parser.parse_args(argv[2:])
         cmd_options = vars(options)
         # Move positional args out of options to mimic legacy optparse
         args = cmd_options.pop('args', ())
         cmd_options = vars(options)
-        #handle_default_options(options)
-        
+        # handle_default_options(options)
         try:
             self.execute(*args, **cmd_options)
-        except Exception as e:
-            if options.traceback or not isinstance(e, CommandError):
+        except Exception as exception:
+            if options.traceback or not isinstance(exception, CommandError):
                 raise
 
             # SystemCheckError takes care of its own formatting.
-            if isinstance(e, SystemCheckError):
-                self.stderr.write(str(e), lambda x: x)
+            if isinstance(exception, SystemCheckError):
+                self.stderr.write(str(exception), lambda x: x)
             else:
-                self.stderr.write('%s: %s' % (e.__class__.__name__, e))
+                self.stderr.write('%s: %s' % (exception.__class__.__name__, exception))
             sys.exit(1)
         finally:
             pass
-    
     def execute(self, *args, **options):
         '''
         This method will implement necessary system checks in case they are needed.
@@ -155,7 +148,6 @@ class BaseCommand(object):
             self.handle(*args, **options)
         finally:
             pass
-    
     def handle(self, *args, **options):
         '''
         The actual logic of the command. Subclasses must implement

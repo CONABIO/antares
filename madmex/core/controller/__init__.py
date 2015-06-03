@@ -1,3 +1,6 @@
+'''
+Controller package.
+'''
 from datetime import date
 from importlib import import_module
 import os
@@ -17,7 +20,8 @@ def find_commands(management_dir):
     Returns an empty list if no commands are defined.
     '''
     command_dir = os.path.join(management_dir, 'commands')
-    return [name for _, name, is_pkg in pkgutil.iter_modules([command_dir]) if not is_pkg and not name.startswith('_')]
+    return [name for _, name, is_pkg in pkgutil.iter_modules([command_dir]) 
+            if not is_pkg and not name.startswith('_')]
 
 
 def load_command_class(name):
@@ -47,25 +51,22 @@ class CommandLineLauncher(object):
         self.prog_name = os.path.basename(self.argv[0])
     def fetch_command(self, subcommand):
         '''
-        This method
-        
+        This method retrieves the command name to be loaded.
         Parameters
         ----------
         subcommand : str
                      Name of the command to be used.
         '''
         commands = find_commands(__path__[0])
-        
         if subcommand in commands:
             if isinstance(subcommand, BaseCommand):
                 # If the command is already loaded, use it directly.
                 klass = subcommand
-            else:   
+            else:
                 klass = load_command_class(subcommand)
         else:
             raise CommandError("Command not found.")
         return klass
-    
     def execute(self):
         '''
         Executes the command given by the user and represented
@@ -78,7 +79,6 @@ class CommandLineLauncher(object):
             subcommand = 'help' 
         
         self.fetch_command(subcommand).run_from_argv(self.argv)
-
 
 def madmex_copyright():
     '''

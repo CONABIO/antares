@@ -44,11 +44,7 @@ def fetch_command(subcommand):
     '''
     commands = find_commands(__path__[0])
     if subcommand in commands:
-        if isinstance(subcommand, BaseCommand):
-            # If the command is already loaded, use it directly.
-            klass = subcommand
-        else:
-            klass = load_command_class(subcommand)
+        klass = load_command_class(subcommand)
     else:
         raise CommandError("Command not found.")
     return klass

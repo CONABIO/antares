@@ -1,0 +1,9 @@
+#!/bin/bash
+
+BINPATH=`dirname $0`
+MADMEX_HOME=$BINPATH/..
+PYTHONPATH=${PYTHONPATH}:$MADMEX_HOME
+
+export PYTHONPATH
+
+python "$BINPATH/../madmex/bin/main.py" $@

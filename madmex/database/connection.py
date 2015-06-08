@@ -34,7 +34,7 @@ class Raster(Base):
     __tablename__ = 'raster'
     id = Column(Integer, primary_key = True)
     path = Column(String, unique = True)
-    hash = Column(String, unique = True)
+    uuid = Column(String, unique = True)
     acquisition_date = Column(DateTime())
     ingest_date = Column(DateTime())
     geometry = Column(String)

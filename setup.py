@@ -1,7 +1,5 @@
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup
+from setuptools import find_packages
 
 config = {
     'description': 'Measure Activity Data Mexico',
@@ -11,7 +9,7 @@ config = {
     'author_email': 'agutierrez@conabio.gob.mx',
     'version': '0.1',
     'install_requires': ['nose', 'SQLAlchemy'],
-    'packages': ['madmex'],
+    'packages'=find_packages(),
     'scripts': [],
     'name': 'madmex'
 }

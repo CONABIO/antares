@@ -3,9 +3,6 @@ Created on Jun 4, 2015
 
 @author: agutierrez
 '''
-import os
-import sys
-
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -36,6 +33,7 @@ class Raster(Base):
     path = Column(String, unique = True)
     uuid = Column(String, unique = True)
     acquisition_date = Column(DateTime())
+    satellite = Column(Integer, ForeignKey('satellite.id'))
     ingest_date = Column(DateTime())
     geometry = Column(String)
     grid_id = Column(Integer)
@@ -44,6 +42,7 @@ class Raster(Base):
     elevation_angle = Column(Float)
     rows = Column(Integer)
     columns = Column(Integer)
+    bands = Column(Integer)
     resolution = Column(Float)
     type = Column(String(20))
     __mapper_args__ = {
@@ -76,64 +75,45 @@ class Legend(Base):
     name = Column(String, unique = True)
     description = Column(String)
     path = Column(String)
-
-
-
-'''
-class Company(Base):
-    __tablename__ = 'company'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(50))
-    employees = relationship("Employee",
-                    backref='company',
-                    cascade='all, delete-orphan')
-
-class Employee(Base):
-    __tablename__ = 'employee'
-    id = Column(Integer, primary_key=True)
-    type = Column(String(20))
-    company_id = Column(Integer, ForeignKey('company.id'))
-    __mapper_args__ = {
-        'polymorphic_on':type,
-        'polymorphic_identity':'employee',
-        'with_polymorphic':'*'
-    }
-
-class Engineer(Employee):
-    __tablename__ = 'engineer'
-    id = Column(Integer, ForeignKey('employee.id'), primary_key=True)
-    engineer_info = Column(String(50))
-    __mapper_args__ = {'polymorphic_identity':'engineer'}
-
-class Manager(Employee):
-    __tablename__ = 'manager'
-    id = Column(Integer, ForeignKey('employee.id'), primary_key=True)
-    manager_data = Column(String(50))
-    __mapper_args__ = {'polymorphic_identity':'manager'}
-
-class Raster(Base):
-    __tablename__ = 'raster'
-    id = Column(Integer, primary_key=True)
-    acquisition_date = Column(Date, nullable=True)
-    grid_id = Column(Integer, nullable=True)
-
-class Person(Base):
-    __tablename__ = 'person'
     
-    id = Column(Integer, primary_key=True)
-    name = Column(String(250), nullable=False)
+class Bundle(Base):
+    __tablename__ = 'bundle'
+    id = Column(Integer, primary_key = True)
+    name = Column(String, unique = True)
+    images_regex = Column(String)
+    metadata_regex = Column(String)
+    filels_regex = Column(String)
+    quick_look_regex = Column(String)
+    satellite = Column(Integer, ForeignKey('satellite.id'))
 
-class Address(Base):
-    __tablename__ = 'address'
+class Unit(Base):
+    __tablename__ = 'unit'
+    id = Column(Integer, primary_key = True)
+    name = Column(String, unique = True)
+    unit = Column(String, unique = True)
+
+class Band(Base):
+    __tablename__ = 'band'
+    id = Column(Integer, primary_key = True)
+    satellite = Column(Integer, ForeignKey('satellite.id'), primary_key=True)
+    unit = Column(Integer, ForeignKey('unit.id'))
+    minimum_wavelength = Column(Float)
+    maximum_wavelength = Column(Float)
     
-    id = Column(Integer, primary_key=True)
-    street_name = Column(String(250))
-    street_number = Column(String(250))
-    post_code = Column(String(250), nullable=False)
-    person_id = Column(Integer, ForeignKey('person.id'))
-    person = relationship(Person)
-'''   
+class Product(Base):
+    __tablename__ = 'product'
+    id = Column(Integer, primary_key = True)
+    algorithm = Column(Integer, ForeignKey('algorithm.id'))
+    legend = Column(Integer, ForeignKey('legend.id'))
+    raster = Column(Integer, ForeignKey('raster.id'))
     
+class LandCoverProduct(Product):
+    date = Column(DateTime())
+    
+class ChangeDetectionProduct(Product):
+    date_from = Column(DateTime())
+    date_to = Column(DateTime())
+
 engine = create_engine(ANTARES_DATABASE)
 
 Base.metadata.create_all(engine)

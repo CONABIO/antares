@@ -6,4 +6,4 @@ PYTHONPATH=${PYTHONPATH}:$MADMEX_HOME
 
 export PYTHONPATH
 
-python "$BINPATH/../madmex/bin/main.py" $@
+python "$BINPATH/../madmex/bin/madmex.py" $@

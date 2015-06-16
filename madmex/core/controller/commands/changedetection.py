@@ -31,6 +31,6 @@ class Command(BaseCommand):
         sum_of_numbers = 0
         for number in options['sum']:
             sum_of_numbers = sum_of_numbers + int(number)
-        print _('The sum of the numbers is: %s') % sum_of_numbers
-        print _('This is a stub for the Change Detection Command.')
+        print (_('The sum of the numbers is: %s') % sum_of_numbers).encode('utf-8')
+        print (_('This is a stub for the Change Detection Command.')).encode('utf-8')
 

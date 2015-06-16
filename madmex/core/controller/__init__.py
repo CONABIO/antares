@@ -3,17 +3,22 @@ madmex.core.controller
 Controller package.
 '''
 from datetime import date
-#from importlib import import_module
+from importlib import import_module
+import logging
 import os
 import pkgutil
 import sys
 
+from madmex import _
+import madmex
 from madmex import find_in_dir,load_class
 from madmex.core.controller.base import BaseCommand, CommandError
 
 
 COMMANDS_PACKAGE = 'madmex.core.controller.commands'
 SENSORS_PACKAGE = 'madmex.mapper.sensors'
+
+logger = logging.getLogger(__name__)
 
 def find_commands(management_dir):
     '''
@@ -33,7 +38,6 @@ def load_command_class(name):
     class instance. All errors raised by the import process
     (ImportError, AttributeError) are allowed to propagate.
     '''
-    #module = import_module('%s.%s' % (COMMANDS_PACKAGE, name))
     module=load_class(COMMANDS_PACKAGE,name)
     return module.Command()
 
@@ -83,22 +87,18 @@ def madmex_copyright():
     '''
     Copyright legend for the MADMex system.
     '''
-    return "MADMex 2009-%s" % date.today().year
+    
+    logger.info("Printing out the copyright.")
+    return _(u'MADMex 2009-%s') % date.today().year
 
 def execute(argv=None):
     '''
     Main entry point for the MADMex system.
     '''
-    print madmex_copyright()
+    
+    madmex.setup()
     launcher = CommandLineLauncher(argv)
+    
     launcher.execute()
-    
-    
-if __name__=='__main__':
-    print os.path.dirname(os.path.realpath(__file__))
-    print find_commands(os.path.dirname(os.path.realpath(__file__)))
-    
-    
-        
-    
-    
+
+    print madmex_copyright()

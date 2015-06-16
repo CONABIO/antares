@@ -3,15 +3,17 @@ madmex.core.controller
 Controller package.
 '''
 from datetime import date
-from importlib import import_module
+#from importlib import import_module
 import os
 import pkgutil
 import sys
 
+from madmex import find_in_dir,load_class
 from madmex.core.controller.base import BaseCommand, CommandError
 
 
 COMMANDS_PACKAGE = 'madmex.core.controller.commands'
+SENSORS_PACKAGE = 'madmex.mapper.sensors'
 
 def find_commands(management_dir):
     '''
@@ -20,9 +22,9 @@ def find_commands(management_dir):
 
     Returns an empty list if no commands are defined.
     '''
-    command_dir = os.path.join(management_dir, 'commands')
-    return [name for _, name, is_pkg in pkgutil.iter_modules([command_dir])
-            if not is_pkg and not name.startswith('_')]
+    return find_in_dir(management_dir,'commands')
+    
+
 
 
 def load_command_class(name):
@@ -31,7 +33,8 @@ def load_command_class(name):
     class instance. All errors raised by the import process
     (ImportError, AttributeError) are allowed to propagate.
     '''
-    module = import_module('%s.%s' % (COMMANDS_PACKAGE, name))
+    #module = import_module('%s.%s' % (COMMANDS_PACKAGE, name))
+    module=load_class(COMMANDS_PACKAGE,name)
     return module.Command()
 
 def fetch_command(subcommand):
@@ -53,7 +56,7 @@ class CommandLineLauncher(object):
     '''
     This class creates an object to launch processes using the command line
     interface. The command line arguments are passed via the constructor, and
-    the command to be execuded is identified as the second argument in the
+    the command to be executed is identified as the second argument in the
     arguments list.
     '''
     def __init__(self, argv=None):
@@ -89,3 +92,13 @@ def execute(argv=None):
     print madmex_copyright()
     launcher = CommandLineLauncher(argv)
     launcher.execute()
+    
+    
+if __name__=='__main__':
+    print os.path.dirname(os.path.realpath(__file__))
+    print find_commands(os.path.dirname(os.path.realpath(__file__)))
+    
+    
+        
+    
+    

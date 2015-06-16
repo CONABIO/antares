@@ -3,6 +3,7 @@ Created on 10/06/2015
 
 @author: erickpalacios
 '''
+from __future__ import unicode_literals
 from madmex.processes.base import Processes
 
 class Command(Processes):
@@ -19,7 +20,6 @@ class Command(Processes):
         
     def execute(self):
         '''executer'''
-        #vía sqlalchemy se hace el registro en la tabla de sensores y se jala el key correspondiente
             
     def __str__(self):
         

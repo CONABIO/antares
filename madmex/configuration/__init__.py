@@ -8,7 +8,6 @@ from ConfigParser import MissingSectionHeaderError
 import ConfigParser
 import importlib
 import os
-from test.test_socket import try_address
 
 import default_settings
 from mhlib import PATH

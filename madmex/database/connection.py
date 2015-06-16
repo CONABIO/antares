@@ -3,19 +3,32 @@ Created on Jun 4, 2015
 
 @author: agutierrez
 '''
+from __future__ import unicode_literals
+
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.schema import Table
 from sqlalchemy.sql.sqltypes import DateTime, Float, Boolean
 
+from madmex.configuration import settings
 
-ANTARES_DATABASE = 'sqlite:///sqlalchemy_example.db'
 
 Base = declarative_base()
 
-class Provider(Base):
-    __tablename__ = 'provider'
+can_train_table = Table('can_train', Base.metadata,
+    Column('product', Integer, ForeignKey('product.id')),
+    Column('algorithm', Integer, ForeignKey('algorithm.id'))
+)
+
+product_input_table = Table('product_input_table', Base.metadata,
+    Column('output_product', Integer, ForeignKey('product.id')),
+    Column('input_product', Integer, ForeignKey('product.id'))
+)
+
+class Organization(Base):
+    __tablename__ = 'organization'
     id = Column(Integer, primary_key = True)
     name = Column(String, unique = True)
     description = Column(String)
@@ -25,7 +38,7 @@ class Satellite(Base):
     id = Column(Integer, primary_key = True)
     name = Column(String, unique = True)
     short_name = Column(String, unique = True)
-    provider = Column(Integer, ForeignKey('provider.id'))
+    provider = Column(Integer, ForeignKey('organization.id'))
     
 class Raster(Base):
     __tablename__ = 'raster'
@@ -57,6 +70,30 @@ class ProcessedRaster(Raster):
     processing_date = Column(DateTime())
     
 class RawRaster(Raster):
+    __mapper_args__ = {
+        'polymorphic_identity':'raw'
+    }
+    
+class Shape(Base):
+    __tablename__ = 'shape'
+    id = Column(Integer, primary_key = True)
+    path = Column(String, unique = True)
+    uuid = Column(String, unique = True)
+    ingest_date = Column(DateTime())
+    extent = Column(String)
+    type = Column(String(20))
+    __mapper_args__ = {
+        'polymorphic_on':type,
+        'polymorphic_identity':'shape'
+    }
+    
+class ProcessedShape(Shape):
+    __mapper_args__ = {
+        'polymorphic_identity':'processed'
+    }
+    processing_date = Column(DateTime())
+    
+class RawShape(Shape):
     __mapper_args__ = {
         'polymorphic_identity':'raw'
     }
@@ -99,6 +136,20 @@ class Band(Base):
     unit = Column(Integer, ForeignKey('unit.id'))
     minimum_wavelength = Column(Float)
     maximum_wavelength = Column(Float)
+
+class Description(Base):
+    __tablename__ = ('description')
+    id = Column(Integer, primary_key = True)
+    description = Column(String, unique = True) 
+    creator = Column(Integer, ForeignKey('organization.id'))
+    publisher = Column(Integer, ForeignKey('organization.id'))
+    
+class ProductType(Base):
+    __tablename__ = 'product_type'
+    id = Column(Integer, primary_key = True)
+    name = Column(String, unique = True)
+    short_name = Column(String, unique = True)
+    description = Column(Integer, ForeignKey('description.id'))
     
 class Product(Base):
     __tablename__ = 'product'
@@ -106,6 +157,12 @@ class Product(Base):
     algorithm = Column(Integer, ForeignKey('algorithm.id'))
     legend = Column(Integer, ForeignKey('legend.id'))
     raster = Column(Integer, ForeignKey('raster.id'))
+    shape = Column(Integer, ForeignKey('shape.id'))    
+    product_type = Column(Integer, ForeignKey('product_type.id'))
+    can_train = relationship('Algorithm',
+                    secondary = can_train_table)  
+    product_input_table = relationship('Products',
+                    secondary = product_input_table)  
     
 class LandCoverProduct(Product):
     date = Column(DateTime())
@@ -114,6 +171,8 @@ class ChangeDetectionProduct(Product):
     date_from = Column(DateTime())
     date_to = Column(DateTime())
 
-engine = create_engine(ANTARES_DATABASE)
+engine = create_engine(getattr(settings, 'ANTARES_DATABASE'))
+
+    
 
 Base.metadata.create_all(engine)

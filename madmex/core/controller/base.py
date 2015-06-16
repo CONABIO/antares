@@ -3,12 +3,18 @@ Created on Jun 3, 2015
 
 @author: agutierrez
 '''
+from __future__ import unicode_literals
 from argparse import ArgumentParser
+import logging
 import os
 import sys
 
+from madmex import setup
 import madmex
+from madmex.configuration import settings
 
+
+logger = logging.getLogger(__name__)
 
 class CommandError(Exception):
     '''
@@ -39,6 +45,23 @@ class CommandParser(ArgumentParser):
             super(CommandParser, self).error(message)
         else:
             raise CommandError("Error: %s" % message)
+
+def handle_default_options(options):
+    """
+    Include any default options that all commands should accept here
+    so that ManagementUtility can handle them before searching for
+    user commands.
+
+    """
+    if options.settings:
+        os.environ['MADMEX_SETTINGS_MODULE'] = options.settings
+        settings.reload()
+        setup()
+        logger.info('Settings loaded from %s.' % options.settings)
+    if options.pythonpath:
+        sys.path.insert(0, options.pythonpath)
+        logger.info('%s was added to the PYTHONPATH.' % options.settings)
+    logger.debug('Default options had been handled.')
 
 class BaseCommand(object):
     '''
@@ -145,12 +168,10 @@ class BaseCommand(object):
         parser = self.create_parser(argv[0], argv[1])
         options = parser.parse_args(argv[2:])
         cmd_options = vars(options)
-        # Move positional args out of options to mimic legacy optparse
-        args = cmd_options.pop('args', ())
-        cmd_options = vars(options)
-        # handle_default_options(options)
+        handle_default_options(options)
+        
         try:
-            self.execute(*args, **cmd_options)
+            self.execute(**cmd_options)
         except CommandError as exception:
             if options.traceback or not isinstance(exception, CommandError):
                 raise
@@ -163,17 +184,17 @@ class BaseCommand(object):
             sys.exit(1)
         finally:
             pass
-    def execute(self, *args, **options):
+    def execute(self, **options):
         '''
         This method will implement necessary system checks in case they are needed.
         '''
         try:
-            self.handle(*args, **options)
+            self.handle(**options)
         finally:
             pass
-    def handle(self, *args, **options):
+    def handle(self, **options):
         '''
         The actual logic of the command. Subclasses must implement
         this method.
         '''
-        raise NotImplementedError('subclasses of BaseCommand must provide a handle() method')
+        raise NotImplementedError('Subclasses of BaseCommand must provide a handle() method')

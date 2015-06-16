@@ -2,6 +2,8 @@
 madmex.core.controller
 Controller package.
 '''
+from __future__ import unicode_literals
+
 from datetime import date
 from importlib import import_module
 import logging
@@ -10,13 +12,13 @@ import pkgutil
 import sys
 
 from madmex import _
+from madmex import find_in_dir, load_class
 import madmex
-from madmex import find_in_dir,load_class
 from madmex.core.controller.base import BaseCommand, CommandError
 
 
 COMMANDS_PACKAGE = 'madmex.core.controller.commands'
-SENSORS_PACKAGE = 'madmex.mapper.sensors'
+SENSORS_PACKAGE = 'madmex.mapper.sensor'
 
 logger = logging.getLogger(__name__)
 
@@ -28,9 +30,6 @@ def find_commands(management_dir):
     Returns an empty list if no commands are defined.
     '''
     return find_in_dir(management_dir,'commands')
-    
-
-
 
 def load_command_class(name):
     '''
@@ -87,18 +86,14 @@ def madmex_copyright():
     '''
     Copyright legend for the MADMex system.
     '''
-    
     logger.info("Printing out the copyright.")
-    return _(u'MADMex 2009-%s') % date.today().year
+    return _('MADMex 2009-%s') % date.today().year
 
 def execute(argv=None):
     '''
     Main entry point for the MADMex system.
     '''
-    
     madmex.setup()
     launcher = CommandLineLauncher(argv)
-    
     launcher.execute()
-
     print madmex_copyright()

@@ -16,7 +16,7 @@ class Command(Processes):
         '''
         Constructor
         '''
-        self.name_sensor= name
+        self.name_sensor = name
         
     def execute(self):
         '''executer'''

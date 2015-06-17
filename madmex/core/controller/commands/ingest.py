@@ -15,16 +15,22 @@ class Command(BaseCommand):
     classdocs
     '''
     def add_arguments(self, parser):
-        parser.add_argument('--spot5',nargs='*')
+        '''
+        add
+        '''
+        parser.add_argument('--spot5', nargs='*')
 
         parser.add_argument('--newregister', nargs='*', help='This is a stub for the, \
             ingest command')
 
-    def handle(self,**options):
+    def handle(self, **options):
+        '''
+        handle
+        '''
         # options is a dictionary with the process as a key and arguments as values 
-        arguments=['newregister','spot5']
+        arguments= ['newregister', 'spot5']
         print options
-        process = dict((k,v) for k,v in options.iteritems() if k in arguments and v)
+        process = dict((k,v) for k, v in options.iteritems() if k in arguments and v)
         obj = Manager(process)
         obj.execute()
         

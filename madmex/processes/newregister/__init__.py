@@ -17,9 +17,11 @@ class Command(Processes):
         '''
         self.name_sensor = name
     def execute(self):
-        '''executer'''     
+        '''executer
+        '''     
     def __str__(self):
         '''
         str
         '''
         return "nombre de sensor a registrar: %s" % (self.name_sensor)
+    

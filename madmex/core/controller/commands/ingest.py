@@ -25,9 +25,8 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         '''
-        handle
+        options is a dictionary with the process as a key and arguments as values 
         '''
-        #options is a dictionary with the process as a key and arguments as values 
         arguments = ['newregister', 'spot5']
         print options
         process = dict((k, v) for k, v in options.iteritems() if k in arguments and v)

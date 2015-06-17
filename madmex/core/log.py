@@ -21,12 +21,12 @@ def setup_logging():
     catalog, the program finishes with 0 signal.
     '''
     try:
-        logging.config.dictConfig(get_configuration_dict(getattr(SETTINGS,'LOG_LEVEL')))
+        logging.config.dictConfig(get_configuration_dict(getattr(SETTINGS, 'LOG_LEVEL')))
     except ValueError:
         LOGGER.error('Log level %s does not exist, please fix your'
-                     ' configuration file.' % getattr(SETTINGS,'LOG_LEVEL'))
+                     ' configuration file.' % getattr(SETTINGS, 'LOG_LEVEL'))
         sys.exit(0)
-    LOGGER.info('Log level is now set to %s.' % getattr(SETTINGS,'LOG_LEVEL'))
+    LOGGER.info('Log level is now set to %s.' % getattr(SETTINGS, 'LOG_LEVEL'))
     
 def get_configuration_dict(log_level):
     '''
@@ -34,7 +34,7 @@ def get_configuration_dict(log_level):
     framework. Log level value is set to the given log leve.
     '''
     configuration_dict = {
-        'version': 1,              
+        'version': 1,
         'disable_existing_loggers': False,
         'formatters': {
             'standard': {
@@ -46,10 +46,10 @@ def get_configuration_dict(log_level):
         },
         'handlers': {
             'default': {
-                'level': log_level,   
+                'level': log_level,
                 'class':'logging.StreamHandler',
                 'formatter': 'standard',
-            },  
+            },
         },
         'loggers': {
             '': {

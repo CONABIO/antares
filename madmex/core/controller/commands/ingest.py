@@ -5,7 +5,7 @@ Created on Jun 3, 2015
 '''
 
 from madmex.core.controller.base import BaseCommand
-from madmex.database.insert import i_person, i_address, i_company, i_engineer
+#from madmex.database.insert import i_person, i_address, i_company, i_engineer
 
 from madmex.processes import Manager
 

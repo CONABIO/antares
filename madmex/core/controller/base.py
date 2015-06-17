@@ -11,7 +11,7 @@ import sys
 
 from madmex import setup
 import madmex
-from madmex.configuration import settings
+from madmex.configuration import SETTINGS
 
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ def handle_default_options(options):
     """
     if options.settings:
         os.environ['MADMEX_SETTINGS_MODULE'] = options.settings
-        settings.reload()
+        SETTINGS.reload()
         setup()
         logger.info('Settings loaded from %s.' % options.settings)
     if options.pythonpath:
@@ -116,10 +116,10 @@ class BaseCommand(object):
                  'output, 3=very verbose output'
         )
         parser.add_argument(
-            '--settings',
+            '--SETTINGS',
             help=(
-                'The Python path to a settings module, e.g. '
-                '"myproject.settings.main". If this isn\'t provided, the '
+                'The Python path to a SETTINGS module, e.g. '
+                '"myproject.SETTINGS.main". If this isn\'t provided, the '
                 'DJANGO_SETTINGS_MODULE environment variable will be used.'
             ),
         )

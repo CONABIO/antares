@@ -20,7 +20,6 @@ class Command(Processes):
         '''
         Executer
         '''
-        pass  
     def __str__(self):
         '''
         str

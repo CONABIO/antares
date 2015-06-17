@@ -17,7 +17,8 @@ class Command(Processes):
         '''
         self.name_sensor = name
     def execute(self):
-        '''executer
+        '''
+        executer
         '''     
     def __str__(self):
         '''

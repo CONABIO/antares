@@ -18,14 +18,14 @@ class Command(BaseCommand):
         '''
         parser.add_argument('--spot5', nargs='*')
 
-        parser.add_argument('--newregister', nargs='*', help='This is a stub for the, \
+        parser.add_argument('--register', nargs='*', help='This is a stub for the, \
             ingest command')
 
     def handle(self, **options):
         '''
         options is a dictionary with the process as a key and arguments as values
         '''
-        arguments = ['newregister', 'spot5']
+        arguments = ['register', 'spot5']
         print options
         process = dict((k, v) for k, v in options.iteritems() if k in arguments and v)
         obj = Manager(process)

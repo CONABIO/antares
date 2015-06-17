@@ -50,14 +50,14 @@ class Test(unittest.TestCase):
         test_file.write('%s=%s\n' % (key, value))
         test_file.close()
         
-        from madmex.configuration import settings
+        from madmex.configuration import SETTINGS
         from madmex.configuration import ENVIRONMENT_VARIABLE
-        settings.reload()
+        SETTINGS.reload()
         os.environ[ENVIRONMENT_VARIABLE] = path
-        print dir(settings)
-        settings.reload()
-        print dir(settings)
-        self.assertEqual(value, getattr(settings, key.upper()))
+        print dir(SETTINGS)
+        SETTINGS.reload()
+        print dir(SETTINGS)
+        self.assertEqual(value, getattr(SETTINGS, key.upper()))
         del os.environ[ENVIRONMENT_VARIABLE]
         os.remove(path)
 

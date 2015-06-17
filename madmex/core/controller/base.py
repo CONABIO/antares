@@ -14,7 +14,7 @@ import madmex
 from madmex.configuration import SETTINGS
 
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 class CommandError(Exception):
     '''
@@ -57,11 +57,11 @@ def handle_default_options(options):
         os.environ['MADMEX_SETTINGS_MODULE'] = options.settings
         SETTINGS.reload()
         setup()
-        logger.info('Settings loaded from %s.' % options.settings)
+        LOGGER.info('Settings loaded from %s.' % options.settings)
     if getattr(options, 'pythonpath'):
         sys.path.insert(0, options.pythonpath)
-        logger.info('%s was added to the PYTHONPATH.' % options.settings)
-    logger.debug('Default options had been handled.')
+        LOGGER.info('%s was added to the PYTHONPATH.' % options.settings)
+    LOGGER.debug('Default options had been handled.')
 
 class BaseCommand(object):
     '''

@@ -47,3 +47,28 @@ class BaseBundle(object):
         raise NotImplementedError(
             'subclasses of BaseBundle must provide a '
             'is_consistent() method')
+        
+class BaseData(object):
+    '''
+    Implementers of this class will represent a Data object from the outside 
+    world. In this case Data can be a raster image.
+    '''
+    
+    def __init__(self):
+        '''
+        Constructor
+        '''
+
+class BaseSensor(object):
+    '''
+    Implementers of this class represent a sensor.
+    '''
+    
+    def __init__(self):
+        '''
+        Constructor
+        '''
+class BaseParser(object):
+    '''
+    Helper class to parse meta data from the different providers.
+    '''

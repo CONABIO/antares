@@ -11,10 +11,11 @@ from madmex.processes.base import Processes
 PROCESSES_PACKAGE= 'madmex.processes'
            
 class Manager(object):
-
+    '''
+    Manager
+    '''
     def __init__(self, process):
         self.process= process
-        
     def execute(self):
         '''
         Execute
@@ -23,12 +24,11 @@ class Manager(object):
         #lo que sigue:
         #instance_class=self.load_processes_class(PROCESSES_PACKAGE)
         #instance_class.execute()
-        
     def load_processes_class(self, package):
         '''
         load_processes_class
         '''
-        module=load_class(package, self.process.keys()[0])
+        module= load_class(package, self.process.keys()[0])
         #return module.Command(self.process.values()[0][0])
         return module.Command(self.process.get(self.process.keys()[0])[0:])
  

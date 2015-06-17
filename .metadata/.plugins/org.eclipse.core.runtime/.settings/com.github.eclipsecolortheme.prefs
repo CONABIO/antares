@@ -1,0 +1,4 @@
+APPLY_THEME_TO=1
+SKIP_APPLY_FIX_TO_NON_DARK=true
+colorTheme=E4 Dark
+eclipse.preferences.version=1

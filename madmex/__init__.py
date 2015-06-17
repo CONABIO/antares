@@ -16,11 +16,10 @@ __version__ = '2.1'
 os.environ['LANGUAGE'] = 'es_MX'
 
 LOCALE_PATH = os.path.join(
-              os.path.dirname(os.path.realpath(__file__)),
-              'locale'
-    )
+    os.path.dirname(os.path.realpath(__file__)),
+    'locale')
 
-LANGUAGE = gettext.translation ('madmex', LOCALE_PATH)
+LANGUAGE = gettext.translation('madmex', LOCALE_PATH)
 LANGUAGE.install()
 _ = LANGUAGE.ugettext
 
@@ -49,7 +48,7 @@ def find_in_dir(path, package):
     directory = os.path.join(path, package)
     return [name for _, name, is_pkg in pkgutil.iter_modules([directory])
             if not is_pkg and not name.startswith('_')]
-    
+
 def load_class(package, name):
     '''
     Given a package and a name, it returns an instance of the class that is

@@ -3,13 +3,11 @@ Created on 10/06/2015
 
 @author: erickpalacios
 '''
-
 from importlib import import_module
 from madmex import load_class
 from madmex.processes.base import Processes
 
-PROCESSES_PACKAGE = 'madmex.processes'  
-    
+PROCESSES_PACKAGE = 'madmex.processes'      
 class Manager(object):
     '''
     Manager

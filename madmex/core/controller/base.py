@@ -116,7 +116,7 @@ class BaseCommand(object):
                  'output, 3=very verbose output'
         )
         parser.add_argument(
-            '--SETTINGS',
+            '--settings',
             help=(
                 'The Python path to a SETTINGS module, e.g. '
                 '"myproject.SETTINGS.main". If this isn\'t provided, the '

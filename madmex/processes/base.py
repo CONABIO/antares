@@ -8,7 +8,6 @@ class Processes(object):
     '''
     classdocs
     '''
-    
     def create_output_name(self):
         '''
         create

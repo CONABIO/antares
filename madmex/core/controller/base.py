@@ -53,12 +53,12 @@ def handle_default_options(options):
     user commands.
 
     """
-    if options.settings:
+    if getattr(options, 'settings'):
         os.environ['MADMEX_SETTINGS_MODULE'] = options.settings
         SETTINGS.reload()
         setup()
         logger.info('Settings loaded from %s.' % options.settings)
-    if options.pythonpath:
+    if getattr(options, 'pythonpath'):
         sys.path.insert(0, options.pythonpath)
         logger.info('%s was added to the PYTHONPATH.' % options.settings)
     logger.debug('Default options had been handled.')
@@ -168,8 +168,7 @@ class BaseCommand(object):
         parser = self.create_parser(argv[0], argv[1])
         options = parser.parse_args(argv[2:])
         cmd_options = vars(options)
-        handle_default_options(options)
-        
+        handle_default_options(options)  
         try:
             self.execute(**cmd_options)
         except CommandError as exception:

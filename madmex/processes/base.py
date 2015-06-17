@@ -13,6 +13,7 @@ class Processes(object):
         '''
         Constructor
         '''
+        pass
     def create_output_name(self):
         '''
         create

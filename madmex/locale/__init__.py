@@ -1,3 +1,0 @@
-'''
-madmex.locale
-'''

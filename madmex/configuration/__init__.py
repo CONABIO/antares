@@ -31,7 +31,7 @@ class Settings(object):
         '''
         constructor
         '''
-        self._load()        
+        self.load()        
     def load(self):
         '''
         Protected method to read the file for the first time.

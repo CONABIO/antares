@@ -27,7 +27,7 @@ def setup_logging():
                      ' configuration file.' % getattr(SETTINGS, 'LOG_LEVEL'))
         sys.exit(0)
     LOGGER.info('Log level is now set to %s.' % getattr(SETTINGS, 'LOG_LEVEL'))
-    
+
 def get_configuration_dict(log_level):
     '''
     Returns a dictionary containing the default SETTINGS for the logging
@@ -39,7 +39,7 @@ def get_configuration_dict(log_level):
         'formatters': {
             'standard': {
                 'format': '[%(levelname)s] %(name)s: %(message)s'
-            },          
+            },
             'detailed': {
                 'format': '[%(levelname)s] %(asctime)s  %(name)s: %(message)s'
             },

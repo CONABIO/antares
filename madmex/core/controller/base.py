@@ -141,7 +141,7 @@ class BaseCommand(object):
             help="Don't colorize the command output."
         )
         if self.args:
-            # Keep compatibility and always accept positional 
+            # Keep compatibility and always accept positional
             # arguments, like optparse when args is set
             parser.add_argument('args', nargs='*')
         self.add_arguments(parser)
@@ -168,7 +168,7 @@ class BaseCommand(object):
         parser = self.create_parser(argv[0], argv[1])
         options = parser.parse_args(argv[2:])
         cmd_options = vars(options)
-        handle_default_options(options)  
+        handle_default_options(options)
         try:
             self.execute(**cmd_options)
         except CommandError as exception:

@@ -38,9 +38,8 @@ class Settings(object):
         '''
         settings_file = os.environ.get(ENVIRONMENT_VARIABLE)
         path = os.path.join(
-                            os.path.dirname(os.path.realpath(__file__)),
-                            'configuration.ini'
-        )
+            os.path.dirname(os.path.realpath(__file__)),
+            'configuration.ini')
         if settings_file and os.path.isfile(settings_file):
             settings_files = [path, settings_file]
         else:
@@ -50,7 +49,7 @@ class Settings(object):
         # TODO: fail gracefully when no header is detected at the beginning.
         parser.read(settings_files)
 
-        set_settings_from_configuration(self, parser) 
+        set_settings_from_configuration(self, parser)
     def reload(self):
         '''
         This public method will call the load method when a new file has been

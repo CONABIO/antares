@@ -44,5 +44,6 @@ class BaseBundle(object):
         '''
         Subclasses must implement this method.
         '''
-        raise NotImplementedError('subclasses of BaseBundle must provide a '
+        raise NotImplementedError(
+            'subclasses of BaseBundle must provide a '
             'is_consistent() method')

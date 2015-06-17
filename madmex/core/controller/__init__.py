@@ -37,7 +37,7 @@ def load_command_class(name):
     class instance. All errors raised by the import process
     (ImportError, AttributeError) are allowed to propagate.
     '''
-    module=load_class(COMMANDS_PACKAGE, name)
+    module = load_class(COMMANDS_PACKAGE, name)
     return module.Command()
 
 def fetch_command(subcommand):

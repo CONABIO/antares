@@ -20,7 +20,7 @@ from madmex.core.controller.base import BaseCommand, CommandError
 COMMANDS_PACKAGE = 'madmex.core.controller.commands'
 SENSORS_PACKAGE = 'madmex.mapper.sensor'
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 def find_commands(management_dir):
     '''
@@ -29,7 +29,7 @@ def find_commands(management_dir):
 
     Returns an empty list if no commands are defined.
     '''
-    return find_in_dir(management_dir,'commands')
+    return find_in_dir(management_dir, 'commands')
 
 def load_command_class(name):
     '''
@@ -37,7 +37,7 @@ def load_command_class(name):
     class instance. All errors raised by the import process
     (ImportError, AttributeError) are allowed to propagate.
     '''
-    module=load_class(COMMANDS_PACKAGE,name)
+    module=load_class(COMMANDS_PACKAGE, name)
     return module.Command()
 
 def fetch_command(subcommand):
@@ -86,7 +86,7 @@ def madmex_copyright():
     '''
     Copyright legend for the MADMex system.
     '''
-    logger.info("Printing out the copyright.")
+    LOGGER.info("Printing out the copyright.")
     return _('MADMex 2009-%s') % date.today().year
 
 def execute(argv=None):

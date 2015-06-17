@@ -12,7 +12,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import Table
 from sqlalchemy.sql.sqltypes import DateTime, Float, Boolean
 
-from madmex.configuration import settings
+from madmex.configuration import SETTINGS
 
 
 Base = declarative_base()
@@ -171,7 +171,7 @@ class ChangeDetectionProduct(Product):
     date_from = Column(DateTime())
     date_to = Column(DateTime())
 
-engine = create_engine(getattr(settings, 'ANTARES_DATABASE'))
+engine = create_engine(getattr(SETTINGS, 'ANTARES_DATABASE'))
 
     
 

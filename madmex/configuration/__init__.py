@@ -1,31 +1,38 @@
 '''
 madmex.configuration
 
-Sets a settings object to be used across the system.
+Sets a SETTINGS object to be used across the system.
 '''
+from __future__ import unicode_literals
 
 from ConfigParser import MissingSectionHeaderError
 import ConfigParser
 import importlib
 import os
 
-import default_settings
-from mhlib import PATH
-
-
 ENVIRONMENT_VARIABLE = "MADMEX_SETTINGS_MODULE"
 
-def set_settings_from_configuration(settings, parser):
+def set_settings_from_configuration(SETTINGS, parser):
     for section in parser.sections():
         for option in parser.options(section):
-            setattr(settings, option.upper(), parser.get(section, option))
+            setattr(SETTINGS, option.upper(), parser.get(section, option))
 
 class Settings(object):
+    '''
+    An instance of this class will read a configuration file and will create
+    an attribute with each (key, value) pair found in the file. Values can be
+    later overriden if a newer file is loaded. 
+    '''
     def __init__(self):
+        '''
+        constructor
+        '''
         self._load()
         
-        
     def _load(self):
+        '''
+        Protected method to read the file for the first time.
+        '''
         settings_file = os.environ.get(ENVIRONMENT_VARIABLE)
         
 
@@ -47,6 +54,10 @@ class Settings(object):
         set_settings_from_configuration(self, parser)
         
     def reload(self):
+        '''
+        This public method will call the load method when a new file has been
+        configured. This only exists for semantic reasons.
+        '''
         self._load()
 
-settings = Settings()
+SETTINGS = Settings()

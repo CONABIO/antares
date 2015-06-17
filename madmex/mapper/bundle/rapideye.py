@@ -16,7 +16,7 @@ class Bundle(BaseBundle):
         Constructor
         '''
         super(Bundle, self).__init__(params)
-                
+
     def is_consistent(self):
         '''
         Check if this bundle is consistent.

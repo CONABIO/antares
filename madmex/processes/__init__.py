@@ -15,7 +15,7 @@ class Manager(object):
     Manager
     '''
     def __init__(self, process):
-        self.process= process
+        self.process = process
     def execute(self):
         '''
         Execute
@@ -28,7 +28,7 @@ class Manager(object):
         '''
         load_processes_class
         '''
-        module= load_class(package, self.process.keys()[0])
+        module = load_class(package, self.process.keys()[0])
         #return module.Command(self.process.values()[0][0])
         return module.Command(self.process.get(self.process.keys()[0])[0:])
  

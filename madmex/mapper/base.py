@@ -36,7 +36,7 @@ class BaseBundle(object):
     def scan(self):
         '''
         This method will traverse through the list of files in the given
-        directory using the given regex dictionary, creating a map for the 
+        directory using the given regex dictionary, creating a map for the
         founded files.
         '''
         raise NotImplementedError('subclasses of BaseBundle must provide a scan() method')

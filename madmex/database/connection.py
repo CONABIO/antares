@@ -63,6 +63,11 @@ class Organization(BASE):
     url = Column(String)
     description = Column(String)
     
+    def __init__(self):
+        '''
+        Constructor
+        '''
+        pass
 class Sensor(BASE):
     '''
     A sensor is the technology that takes the images. Every sensor can take
@@ -73,8 +78,7 @@ class Sensor(BASE):
     pk_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     description = Column(String)
-    satellite = relationship("Satellite")
-    
+    satellite = relationship("Satellite") 
 class Satellite(BASE):
     '''
     Satellites are the actual hardware that takes images. A satellite is
@@ -92,7 +96,6 @@ class Satellite(BASE):
     organization_id = Column(Integer, ForeignKey('organization.pk_id'))
     sensor = relationship('Sensor')
     organization = relationship('Organization')
-    
 class Algorithm(BASE):
     '''
     In order to obtain products, raw data must be processed through a series
@@ -106,7 +109,6 @@ class Algorithm(BASE):
     description = Column(String)
     command = Column(String(30))
     is_supervised = Column(Boolean)
-    
 class Legend(BASE):
     '''
     This table holds the information for the Styled Layer Description. This
@@ -118,8 +120,7 @@ class Legend(BASE):
     pk_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     styled_layer_descriptor = Column(String)
-    path = Column(String)
-    
+    path = Column(String) 
 class Bundle(BASE):
     '''
     A bundle is a set of files that constitutes a minimum working set for a
@@ -133,7 +134,6 @@ class Bundle(BASE):
     filels_regex = Column(String)
     quick_look_regex = Column(String)
     sensor = Column(Integer, ForeignKey('sensor.pk_id'))
-
 class Unit(BASE):
     '''
     Units are the different fixed units in which the world is measured. In the
@@ -144,7 +144,6 @@ class Unit(BASE):
     pk_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     unit = Column(String, unique=True)
-
 class Band(BASE):
     '''
     Sensors can measure different intensities of the parts of the light
@@ -161,7 +160,6 @@ class Band(BASE):
     maximum_wavelength = Column(Float)
     sensor = relationship('Sensor')
     unit = relationship('Unit')
-
 class Description(BASE):
     '''
     This table is a link between organizations and products. It provides
@@ -185,7 +183,6 @@ class Information(BASE):
     cloud_percentage = Column(Float)
     elevation_angle = Column(Float)
     resolution = Column(Float)
-    
 class ProductType(BASE):
     '''
     This table has information about the different types of product that the
@@ -199,7 +196,6 @@ class ProductType(BASE):
     bundle = Column(Integer, ForeignKey('bundle.pk_id'))
     description = Column(Integer, ForeignKey('description.pk_id'))
     algorithm = Column(Integer, ForeignKey('algorithm.pk_id'))
-    
 class Product(BASE):
     '''
     A product is either an input or an output of the system. Once an image is
@@ -231,7 +227,6 @@ class Product(BASE):
         'polymorphic_on':type,
         'polymorphic_identity':'product'
     }
-    
 class RawProduct(Product):
     '''
     A product that has not been processed at all, it can be a raw image just
@@ -240,7 +235,6 @@ class RawProduct(Product):
     __mapper_args__ = {
         'polymorphic_identity':'raw'
     }
-    
 class ProcessedProduct(Product):
     '''
     A product that is the result of a madmex process.
@@ -249,20 +243,16 @@ class ProcessedProduct(Product):
         'polymorphic_identity':'processed'
     }
     processing_date = Column(DateTime())
-    
 def create_database():
     '''
     This method creates the database model in the database engine.
     '''
     BASE.metadata.create_all(ENGINE)
-
-
 # a => \u00E1
 # e => \u00E9
 # i => \u00ED
 # o => \u00F3
 # u => \u00FA
-
 def populate_database():
     '''
     This method populates the database with the information that won't change
@@ -275,7 +265,7 @@ def populate_database():
             'name':'nanometer',
             'unit':'nm'
         },
-        {          
+        {
             'name':'micrometer',
             'unit':'\u03BCu'
         },
@@ -283,11 +273,11 @@ def populate_database():
             'name':'percent',
             'unit':'%'
         },
-        {          
+        {  
             'name':'digital number',
             'unit':'dn'
         },
-        {          
+        {  
             'name':'degree celcius',
             'unit':'\u2103'
         },

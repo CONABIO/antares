@@ -5,23 +5,24 @@ Created on 10/06/2015
 '''
 from madmex.processes.base import Processes
 
-class Command(Processes):
+class Process(Processes):
     '''
     classdocs
     '''
 
-    def __init__(self, name):
+    def __init__(self, img):
         '''
         Constructor
         '''
-        self.name_sensor = name
+        self.name_img = img
     def execute(self):
         '''
         Executer
-        '''
+        '''        
+        
     def __str__(self):
         '''
         str
         '''
-        return "nombre de sensor a registrar: %s" % (self.name_sensor)
+        return "nombre de sensor a registrar: %s" % (self.name_img)
     

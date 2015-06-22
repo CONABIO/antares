@@ -8,14 +8,10 @@ class Processes(object):
     '''
     classdocs
     '''
-    def create_output_name(self):
+
+    def result(self):
         '''
-        create
-        '''
-        pass
-    def extract(self):
-        '''
-        extract
+        Type: success or not
         '''
         pass
     def execute(self):
@@ -23,14 +19,15 @@ class Processes(object):
         execute
         '''
         pass
-    def parser(self):
+    
+    def get_folder_from_path(self):
         '''
-        parser
+        
         '''
-        pass
-    def __str__(self):
+        
+    def create_output_file(self):
         '''
-        str
+        create output file
         '''
         pass
      

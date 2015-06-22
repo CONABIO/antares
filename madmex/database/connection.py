@@ -217,13 +217,15 @@ class Product(BASE):
     geometry = Column(String)
     information = Column(Integer, ForeignKey('information.pk_id'))
     product_type = Column(Integer, ForeignKey('product_type.pk_id'))
-    can_train = relationship('Algorithm',
-                    secondary = CAN_TRAIN_TABLE)  
-    input_product = relationship('Product',
-                    secondary = PRODUCT_INPUT_TABLE,
-                    primaryjoin=id==PRODUCT_INPUT_TABLE.c.input_product,
-                    secondaryjoin=id==PRODUCT_INPUT_TABLE.c.output_product,
-                    backref="output_product")
+    can_train = relationship(
+        'Algorithm',
+        secondary=CAN_TRAIN_TABLE)  
+    input_product = relationship(
+        'Product',
+        secondary=PRODUCT_INPUT_TABLE,
+        primaryjoin=id==PRODUCT_INPUT_TABLE.c.input_product,
+        secondaryjoin=id==PRODUCT_INPUT_TABLE.c.output_product,
+        backref="output_product")
     type = Column(String(20))
     __mapper_args__ = {
         'polymorphic_on':type,
@@ -269,21 +271,76 @@ def populate_database():
     Session = sessionmaker(bind = ENGINE)
     session = Session()
     units_array = [
-        {'name':'nanometer','unit':'nm'},
-        {'name':'micrometer','unit':'\u03BCu'},
-        {'name':'percent','unit':'%'},
-        {'name':'digital number','unit':'dn'},
-        {'name':'degree celcius','unit':'\u2103'},
+        {
+            'name':'nanometer',
+            'unit':'nm'
+        },
+        {          
+            'name':'micrometer',
+            'unit':'\u03BCu'
+        },
+        {
+            'name':'percent',
+            'unit':'%'
+        },
+        {          
+            'name':'digital number',
+            'unit':'dn'
+        },
+        {          
+            'name':'degree celcius',
+            'unit':'\u2103'
+        },
     ]
     organizations_array = [
-        {'name':'CONABIO','description':'Comisi\u00F3n Nacional para el Conocimiento y Uso de la Biodiversidad.','country':'M\u00E9xico','url':'http://www.conabio.gob.mx/'},
-        {'name':'CONAFOR','description':'Comisi\u00F3n Nacional Forestal.','country':'M\u00E9xico','url':'http://www.conafor.gob.mx/web/'},
-        {'name':'INEGI','description':'Instituto Nacional de Estad\u00EDstica y Geograf\u00EDa.','country':'M\u00E9xico','url':'http://www.inegi.org.mx/'},
-        {'name':'BlackBridge','description':'Berlin based imagery company.','country':'Germany','url':'http://www.blackbridge.com/'},
-        {'name':'NASA','description':'National Aeronautics and Space Administration','country':'United States','url':''},
-        {'name':'Spot Image','description':'Public limited imagery company.','country':'United States','url':'http://www.geo-airbusds.com/en/143-spot-satellite-imagery'},
-        {'name':'ISRO','description':'Indian Space Research Organization','country':'India','url':'http://www.isro.gov.in/'},
-        {'name':'Digital Globe','description':'American commercial vendor of space imagery and geospatial content.','country':'United States','url':'https://www.digitalglobe.com/'},
+        {
+            'name':'CONABIO',
+            'description':'Comisi\u00F3n Nacional para el Conocimiento y Uso de la Biodiversidad.',
+            'country':'M\u00E9xico',
+            'url':'http://www.conabio.gob.mx/'
+        },
+        {
+            'name':'CONAFOR',
+            'description':'Comisi\u00F3n Nacional Forestal.',
+            'country':'M\u00E9xico',
+            'url':'http://www.conafor.gob.mx/web/'
+        },
+        {
+            'name':'INEGI',
+            'description':'Instituto Nacional de Estad\u00EDstica y Geograf\u00EDa.',
+            'country':'M\u00E9xico',
+            'url':'http://www.inegi.org.mx/'
+        },
+        {
+            'name':'BlackBridge',
+            'description':'Berlin based imagery company.',
+            'country':'Germany',
+            'url':'http://www.blackbridge.com/'
+        },
+        {
+            'name':'NASA',
+            'description':'National Aeronautics and Space Administration',
+            'country':'United States',
+            'url':''
+        },
+        {
+            'name':'Spot Image',
+            'description':'Public limited imagery company.',
+            'country':'United States',
+            'url':'http://www.geo-airbusds.com/en/143-spot-satellite-imagery'
+        },
+        {
+            'name':'ISRO',
+            'description':'Indian Space Research Organization',
+            'country':'India',
+            'url':'http://www.isro.gov.in/'
+        },
+        {
+            'name':'Digital Globe',
+            'description':'American commercial vendor of space imagery and geospatial content.',
+            'country':'United States',
+            'url':'https://www.digitalglobe.com/'
+        },
     ]
     sensors_array = [
         {'name':'RE','description':'RapidEye'},

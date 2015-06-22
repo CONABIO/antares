@@ -20,14 +20,34 @@ BASE = declarative_base()
 
 ENGINE = create_engine(getattr(SETTINGS, 'ANTARES_DATABASE'))
 
-CAN_TRAIN_TABLE = Table('can_train', BASE.metadata,
-    Column('product', Integer, ForeignKey('product.id'), primary_key=True),
-    Column('algorithm', Integer, ForeignKey('algorithm.id'), primary_key=True)
+CAN_TRAIN_TABLE = Table(
+    'can_train', 
+    BASE.metadata,
+    Column(
+        'product', 
+        Integer, 
+        ForeignKey('product.id'), 
+        primary_key=True),
+    Column(
+        'algorithm', 
+        Integer, 
+        ForeignKey('algorithm.id'), 
+        primary_key=True)
 )
 
-PRODUCT_INPUT_TABLE = Table('product_input_table', BASE.metadata,
-    Column('input_product', Integer, ForeignKey('product.id'), primary_key=True),
-    Column('output_product', Integer, ForeignKey('product.id'), primary_key=True)
+PRODUCT_INPUT_TABLE = Table(
+    'product_input_table', 
+    BASE.metadata,
+    Column(
+        'input_product', 
+        Integer, 
+        ForeignKey('product.id'), 
+        primary_key=True),
+    Column(
+        'output_product', 
+        Integer, 
+        ForeignKey('product.id'), 
+        primary_key=True)
 )
 
 class Organization(BASE):
@@ -37,25 +57,23 @@ class Organization(BASE):
     organizations all fit in this category.
     '''
     __tablename__ = 'organization'
-    id = Column(Integer, primary_key = True)
-    name = Column(String, unique = True)
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
     country = Column(String)
     url = Column(String)
     description = Column(String)
-    
     
 class Sensor(BASE):
     '''
     A sensor is the technology that takes the images. Every sensor can take
     measurements from different wavelengths so they can be used for multiple
-    purposes. 
+    purposes.
     '''
     __tablename__ = 'sensor'
-    id = Column(Integer, primary_key = True)
-    name = Column(String, unique = True)
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
     description = Column(String)
     satellite = relationship("Satellite")
-    
     
 class Satellite(BASE):
     '''
@@ -64,12 +82,12 @@ class Satellite(BASE):
     table. The reason that we have two tables instead of one, is that several
     satellites can have the same sensor installed. The canonical example for
     this is the RapidEye mission that has five satellites equipped with the
-    same sensor. 
+    same sensor.
     '''
     __tablename__ = 'satellite'
-    id = Column(Integer, primary_key = True)
-    name = Column(String, unique = True)
-    short_name = Column(String, unique = True)
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+    short_name = Column(String, unique=True)
     sensor_id = Column(Integer, ForeignKey('sensor.id'))
     organization_id = Column(Integer, ForeignKey('organization.id'))
     sensor = relationship('Sensor')
@@ -83,8 +101,8 @@ class Algorithm(BASE):
     an input had been through to produce some output.
     '''
     __tablename__ = 'algorithm'
-    id = Column(Integer, primary_key = True)
-    name = Column(String, unique = True)
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
     description = Column(String)
     command = Column(String(30))
     is_supervised = Column(Boolean)
@@ -97,8 +115,8 @@ class Legend(BASE):
     by the system.
     '''
     __tablename__ = 'legend'
-    id = Column(Integer, primary_key = True)
-    name = Column(String, unique = True)
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
     styled_layer_descriptor = Column(String)
     path = Column(String)
     
@@ -108,8 +126,8 @@ class Bundle(BASE):
     certain product. For example shape files have not only one, but three files.
     '''
     __tablename__ = 'bundle'
-    id = Column(Integer, primary_key = True)
-    name = Column(String, unique = True)
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
     images_regex = Column(String)
     metadata_regex = Column(String)
     filels_regex = Column(String)
@@ -123,18 +141,18 @@ class Unit(BASE):
     measured.
     '''
     __tablename__ = 'unit'
-    id = Column(Integer, primary_key = True)
-    name = Column(String, unique = True)
-    unit = Column(String, unique = True)
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+    unit = Column(String, unique=True)
 
 class Band(BASE):
     '''
     Sensors can measure different intensities of the parts of the light
     spectrum. Each part is then coded into a band in the given image, and each
-    band can have a certain resolution. 
+    band can have a certain resolution.
     '''
     __tablename__ = 'band'
-    id = Column(Integer, primary_key = True)
+    id = Column(Integer, primary_key=True)
     sensor_id = Column(Integer, ForeignKey('sensor.id'))
     unit_id = Column(Integer, ForeignKey('unit.id'))
     bit_depth = Column(Integer)
@@ -150,8 +168,8 @@ class Description(BASE):
     information on who was involved in the development of a product.
     '''
     __tablename__ = ('description')
-    id = Column(Integer, primary_key = True)
-    description = Column(String, unique = True) 
+    id = Column(Integer, primary_key=True)
+    description = Column(String, unique=True) 
     creator = Column(Integer, ForeignKey('organization.id'))
     publisher = Column(Integer, ForeignKey('organization.id'))
 class Information(BASE):

@@ -12,21 +12,25 @@ class Manager(object):
     '''
     Manager
     '''
-    def __init__(self, process):
-        self.process = process
+    def __init__(self, process, input_data):
+        self.name_process = process
+        self.input_data = input_data
     def execute(self):
         '''
         Execute
         '''
-        print self.load_processes_class(PROCESSES_PACKAGE)
-        #lo que sigue:
-        #instance_class=self.load_processes_class(PROCESSES_PACKAGE)
-        #instance_class.execute()
+        instance_class = self.load_processes_class(PROCESSES_PACKAGE)
+        instance_class.execute()
+        self.output_data = instance_class.output
+    def execute_parallel(self):
+        '''
+        execute in parallel some process
+        receives a directory with folders within. Instance Process() for each folder separately
+        '''
     def load_processes_class(self, package):
         '''
         load_processes_class
         '''
-        module = load_class(package, self.process.keys()[0])
-        #return module.Command(self.process.values()[0][0])
-        return module.Command(self.process.get(self.process.keys()[0])[0:])
+        module = load_class(package, self.name_process)
+        return module.Process(self.input_data)
  

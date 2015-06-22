@@ -21,32 +21,32 @@ BASE = declarative_base()
 ENGINE = create_engine(getattr(SETTINGS, 'ANTARES_DATABASE'))
 
 CAN_TRAIN_TABLE = Table(
-    'can_train', 
+    'can_train',
     BASE.metadata,
     Column(
-        'product', 
-        Integer, 
-        ForeignKey('product.id'), 
+        'product',
+        Integer,
+        ForeignKey('product.pk_id'),
         primary_key=True),
     Column(
-        'algorithm', 
-        Integer, 
-        ForeignKey('algorithm.id'), 
+        'algorithm',
+        Integer,
+        ForeignKey('algorithm.pk_id'),
         primary_key=True)
 )
 
 PRODUCT_INPUT_TABLE = Table(
-    'product_input_table', 
+    'product_input_table',
     BASE.metadata,
     Column(
-        'input_product', 
-        Integer, 
-        ForeignKey('product.id'), 
+        'input_product',
+        Integer,
+        ForeignKey('product.pk_id'),
         primary_key=True),
     Column(
-        'output_product', 
-        Integer, 
-        ForeignKey('product.id'), 
+        'output_product',
+        Integer,
+        ForeignKey('product.pk_id'),
         primary_key=True)
 )
 
@@ -57,7 +57,7 @@ class Organization(BASE):
     organizations all fit in this category.
     '''
     __tablename__ = 'organization'
-    id = Column(Integer, primary_key=True)
+    pk_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     country = Column(String)
     url = Column(String)
@@ -70,7 +70,7 @@ class Sensor(BASE):
     purposes.
     '''
     __tablename__ = 'sensor'
-    id = Column(Integer, primary_key=True)
+    pk_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     description = Column(String)
     satellite = relationship("Satellite")
@@ -85,11 +85,11 @@ class Satellite(BASE):
     same sensor.
     '''
     __tablename__ = 'satellite'
-    id = Column(Integer, primary_key=True)
+    pk_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     short_name = Column(String, unique=True)
-    sensor_id = Column(Integer, ForeignKey('sensor.id'))
-    organization_id = Column(Integer, ForeignKey('organization.id'))
+    sensor_id = Column(Integer, ForeignKey('sensor.pk_id'))
+    organization_id = Column(Integer, ForeignKey('organization.pk_id'))
     sensor = relationship('Sensor')
     organization = relationship('Organization')
     
@@ -101,7 +101,7 @@ class Algorithm(BASE):
     an input had been through to produce some output.
     '''
     __tablename__ = 'algorithm'
-    id = Column(Integer, primary_key=True)
+    pk_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     description = Column(String)
     command = Column(String(30))
@@ -115,7 +115,7 @@ class Legend(BASE):
     by the system.
     '''
     __tablename__ = 'legend'
-    id = Column(Integer, primary_key=True)
+    pk_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     styled_layer_descriptor = Column(String)
     path = Column(String)
@@ -126,13 +126,13 @@ class Bundle(BASE):
     certain product. For example shape files have not only one, but three files.
     '''
     __tablename__ = 'bundle'
-    id = Column(Integer, primary_key=True)
+    pk_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     images_regex = Column(String)
     metadata_regex = Column(String)
     filels_regex = Column(String)
     quick_look_regex = Column(String)
-    sensor = Column(Integer, ForeignKey('sensor.id'))
+    sensor = Column(Integer, ForeignKey('sensor.pk_id'))
 
 class Unit(BASE):
     '''
@@ -141,7 +141,7 @@ class Unit(BASE):
     measured.
     '''
     __tablename__ = 'unit'
-    id = Column(Integer, primary_key=True)
+    pk_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     unit = Column(String, unique=True)
 
@@ -152,9 +152,9 @@ class Band(BASE):
     band can have a certain resolution.
     '''
     __tablename__ = 'band'
-    id = Column(Integer, primary_key=True)
-    sensor_id = Column(Integer, ForeignKey('sensor.id'))
-    unit_id = Column(Integer, ForeignKey('unit.id'))
+    pk_id = Column(Integer, primary_key=True)
+    sensor_id = Column(Integer, ForeignKey('sensor.pk_id'))
+    unit_id = Column(Integer, ForeignKey('unit.pk_id'))
     bit_depth = Column(Integer)
     band = Column(Integer)
     minimum_wavelength = Column(Float)
@@ -168,10 +168,10 @@ class Description(BASE):
     information on who was involved in the development of a product.
     '''
     __tablename__ = ('description')
-    id = Column(Integer, primary_key=True)
+    pk_id = Column(Integer, primary_key=True)
     description = Column(String, unique=True) 
-    creator = Column(Integer, ForeignKey('organization.id'))
-    publisher = Column(Integer, ForeignKey('organization.id'))
+    creator = Column(Integer, ForeignKey('organization.pk_id'))
+    publisher = Column(Integer, ForeignKey('organization.pk_id'))
 class Information(BASE):
     '''
     Information stands for metadata, as metadata is a protected word in
@@ -179,7 +179,7 @@ class Information(BASE):
     complex queries of the data without having to access the metadata directly.
     '''
     __tablename__ = 'information'
-    id = Column(Integer, primary_key = True)
+    pk_id = Column(Integer, primary_key=True)
     grid_id = Column(Integer)
     projection = Column(String)
     cloud_percentage = Column(Float)
@@ -193,12 +193,12 @@ class ProductType(BASE):
     the process that was need to produce it.
     '''
     __tablename__ = 'product_type'
-    id = Column(Integer, primary_key = True)
-    name = Column(String, unique = True)
-    short_name = Column(String, unique = True)
-    bundle = Column(Integer, ForeignKey('bundle.id'))
-    description = Column(Integer, ForeignKey('description.id'))
-    algorithm = Column(Integer, ForeignKey('algorithm.id'))
+    pk_id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+    short_name = Column(String, unique=True)
+    bundle = Column(Integer, ForeignKey('bundle.pk_id'))
+    description = Column(Integer, ForeignKey('description.pk_id'))
+    algorithm = Column(Integer, ForeignKey('algorithm.pk_id'))
     
 class Product(BASE):
     '''
@@ -208,15 +208,15 @@ class Product(BASE):
     inputs for new processes.
     '''
     __tablename__ = 'product'
-    id = Column(Integer, primary_key = True)
-    uuid = Column(String, unique = True)
+    pk_id = Column(Integer, primary_key=True)
+    uuid = Column(String, unique=True)
     acquisition_date = Column(DateTime())
     ingest_date = Column(DateTime())
     path = Column(String, unique = True)   
-    legend = Column(Integer, ForeignKey('legend.id'))
+    legend = Column(Integer, ForeignKey('legend.pk_id'))
     geometry = Column(String)
-    information = Column(Integer, ForeignKey('information.id'))
-    product_type = Column(Integer, ForeignKey('product_type.id'))
+    information = Column(Integer, ForeignKey('information.pk_id'))
+    product_type = Column(Integer, ForeignKey('product_type.pk_id'))
     can_train = relationship('Algorithm',
                     secondary = CAN_TRAIN_TABLE)  
     input_product = relationship('Product',
@@ -437,28 +437,28 @@ def populate_database():
     
     
     units = map(lambda x: Unit(
-        name = x['name'], 
-        unit = x['unit']), units_array)
+        name=x['name'], 
+        unit=x['unit']), units_array)
     session.add_all(units)
     organizations = map(lambda x: Organization(
-        name = x['name'], 
+        name=x['name'], 
         description = x['description'], 
-        country = x['country'], 
-        url = x['url']), organizations_array)
+        country=x['country'], 
+        url=x['url']), organizations_array)
     session.add_all(organizations)
     sensors = map(lambda x: Sensor(
-        name = x['name'], 
-        description = x['description']), sensors_array)
+        name=x['name'], 
+        description=x['description']), sensors_array)
     session.add_all(sensors)
     legends = map(lambda x: Legend(
-        name = x['name'], 
-        styled_layer_descriptor = x['styled_layer_descriptor']), legends_array)
+        name=x['name'], 
+        styled_layer_descriptor=x['styled_layer_descriptor']), legends_array)
     session.add_all(legends)
     algorithms = map(lambda x: Algorithm(
-        name = x['name'],
-        description = x['description'],
-        command = x['command'],
-        is_supervised = x['is_supervised']), algorithms_array)
+        name=x['name'],
+        description=x['description'],
+        command=x['command'],
+        is_supervised=x['is_supervised']), algorithms_array)
     session.add_all(algorithms)
     satellites = map(lambda x: Satellite(
         name = x['name'],

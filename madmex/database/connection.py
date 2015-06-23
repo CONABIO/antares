@@ -653,94 +653,597 @@ def populate_database():
         },
         {
             'name':'madmex_legend_malla_lcc_level2',
-            'styled_layer_descriptor':'<?xml version="1.0" ?><sld:StyledLayerDescriptor version="1.0.0" xmlns="http://www.opengis.net/sld" xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc" xmlns:sld="http://www.opengis.net/sld"><sld:UserLayer><sld:LayerFeatureConstraints><sld:FeatureTypeConstraint/></sld:LayerFeatureConstraints><sld:UserStyle><sld:Name>DF+Morelos</sld:Name><sld:Title/><sld:FeatureTypeStyle><sld:Name/><sld:Rule><sld:RasterSymbolizer><sld:Geometry><ogc:PropertyName>grid</ogc:PropertyName></sld:Geometry><sld:Opacity>1</sld:Opacity><sld:ColorMap><sld:ColorMapEntry color="#203c00" label="Bosque de Coniferas" opacity="1.0" quantity="1"/><sld:ColorMapEntry color="#46d836" label="Bosque de Encino" opacity="1.0" quantity="2"/><sld:ColorMapEntry color="#55aa7f" label="Bosque Mezclado" opacity="1.0" quantity="3"/><sld:ColorMapEntry color="#aa007f" label="Selvas Humedas y Subhumedas y Bosque Mesofilo" opacity="1.0" quantity="4"/><sld:ColorMapEntry color="#7d26cf" label="Selvas Secas" opacity="1.0" quantity="5"/><sld:ColorMapEntry color="#d2691e" label="Matorral Xerofilo Arbustivo" opacity="1.0" quantity="7"/><sld:ColorMapEntry color="#a5a581" label="Pastizales" opacity="1.0" quantity="8"/><sld:ColorMapEntry color="#f6e87e" label="Agricultura" opacity="1.0" quantity="10"/><sld:ColorMapEntry color="#0000ff" label="Agua" opacity="1.0" quantity="11"/><sld:ColorMapEntry color="#5c0000" label="Urbano y Construido" opacity="1.0" quantity="12"/><sld:ColorMapEntry color="#e0e0e0" label="Suelo Desnudo" opacity="1.0" quantity="13"/></sld:ColorMap></sld:RasterSymbolizer></sld:Rule></sld:FeatureTypeStyle></sld:UserStyle></sld:UserLayer></sld:StyledLayerDescriptor>'},
+            'styled_layer_descriptor':'<?xml version="1.0" ?><sld:StyledLayerDe'
+            'scriptor version="1.0.0" xmlns="http://www.opengis.net/sld" xmlns:'
+            'gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net'
+            '/ogc" xmlns:sld="http://www.opengis.net/sld"><sld:UserLayer><sld:L'
+            'ayerFeatureConstraints><sld:FeatureTypeConstraint/></sld:LayerFeat'
+            'ureConstraints><sld:UserStyle><sld:Name>DF+Morelos</sld:Name><sld:'
+            'Title/><sld:FeatureTypeStyle><sld:Name/><sld:Rule><sld:RasterSymbo'
+            'lizer><sld:Geometry><ogc:PropertyName>grid</ogc:PropertyName></sld'
+            ':Geometry><sld:Opacity>1</sld:Opacity><sld:ColorMap><sld:ColorMapE'
+            'ntry color="#203c00" label="Bosque de Coniferas" opacity="1.0" qua'
+            'ntity="1"/><sld:ColorMapEntry color="#46d836" label="Bosque de Enc'
+            'ino" opacity="1.0" quantity="2"/><sld:ColorMapEntry color="#55aa7f'
+            '" label="Bosque Mezclado" opacity="1.0" quantity="3"/><sld:ColorMa'
+            'pEntry color="#aa007f" label="Selvas Humedas y Subhumedas y Bosque'
+            ' Mesofilo" opacity="1.0" quantity="4"/><sld:ColorMapEntry color="#'
+            '7d26cf" label="Selvas Secas" opacity="1.0" quantity="5"/><sld:Colo'
+            'rMapEntry color="#d2691e" label="Matorral Xerofilo Arbustivo" opac'
+            'ity="1.0" quantity="7"/><sld:ColorMapEntry color="#a5a581" label="'
+            'Pastizales" opacity="1.0" quantity="8"/><sld:ColorMapEntry color="'
+            '#f6e87e" label="Agricultura" opacity="1.0" quantity="10"/><sld:Col'
+            'orMapEntry color="#0000ff" label="Agua" opacity="1.0" quantity="11'
+            '"/><sld:ColorMapEntry color="#5c0000" label="Urbano y Construido" '
+            'opacity="1.0" quantity="12"/><sld:ColorMapEntry color="#e0e0e0" la'
+            'bel="Suelo Desnudo" opacity="1.0" quantity="13"/></sld:ColorMap></'
+            'sld:RasterSymbolizer></sld:Rule></sld:FeatureTypeStyle></sld:UserS'
+            'tyle></sld:UserLayer></sld:StyledLayerDescriptor>'
+        },
         {
             'name':'madmex_legend_malla_lcc_level1',
-            'styled_layer_descriptor':'<?xml version="1.0" ?><sld:StyledLayerDescriptor version="1.0.0" xmlns="http://www.opengis.net/sld" xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc" xmlns:sld="http://www.opengis.net/sld"><sld:UserLayer><sld:LayerFeatureConstraints><sld:FeatureTypeConstraint/></sld:LayerFeatureConstraints><sld:UserStyle><sld:Name>DF+Morelos</sld:Name><sld:Title/><sld:FeatureTypeStyle><sld:Name/><sld:Rule><sld:RasterSymbolizer><sld:Geometry><ogc:PropertyName>grid</ogc:PropertyName></sld:Geometry><sld:Opacity>1</sld:Opacity><sld:ColorMap><sld:ColorMapEntry color="#203c00" label="Tierras forestales" opacity="1.0" quantity="1"/><sld:ColorMapEntry color="#91916d" label="Praderas" opacity="1.0" quantity="2"/><sld:ColorMapEntry color="#f6e87e" label="Tierras de uso agricola" opacity="1.0" quantity="4"/><sld:ColorMapEntry color="#0000ff" label="Agua" opacity="1.0" quantity="5"/><sld:ColorMapEntry color="#5c0000" label="Asentamientos" opacity="1.0" quantity="6"/><sld:ColorMapEntry color="#e0e0e0" label="Otros" opacity="1.0" quantity="7"/></sld:ColorMap></sld:RasterSymbolizer></sld:Rule></sld:FeatureTypeStyle></sld:UserStyle></sld:UserLayer></sld:StyledLayerDescriptor>'},
+            'styled_layer_descriptor':'<?xml version="1.0" ?><sld:StyledLayerDe'
+            'scriptor version="1.0.0" xmlns="http://www.opengis.net/sld" xmlns:'
+            'gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net'
+            '/ogc" xmlns:sld="http://www.opengis.net/sld"><sld:UserLayer><sld:L'
+            'ayerFeatureConstraints><sld:FeatureTypeConstraint/></sld:LayerFeat'
+            'ureConstraints><sld:UserStyle><sld:Name>DF+Morelos</sld:Name><sld:'
+            'Title/><sld:FeatureTypeStyle><sld:Name/><sld:Rule><sld:RasterSymbo'
+            'lizer><sld:Geometry><ogc:PropertyName>grid</ogc:PropertyName></sld'
+            ':Geometry><sld:Opacity>1</sld:Opacity><sld:ColorMap><sld:ColorMapE'
+            'ntry color="#203c00" label="Tierras forestales" opacity="1.0" quan'
+            'tity="1"/><sld:ColorMapEntry color="#91916d" label="Praderas" opac'
+            'ity="1.0" quantity="2"/><sld:ColorMapEntry color="#f6e87e" label="'
+            'Tierras de uso agricola" opacity="1.0" quantity="4"/><sld:ColorMap'
+            'Entry color="#0000ff" label="Agua" opacity="1.0" quantity="5"/><sl'
+            'd:ColorMapEntry color="#5c0000" label="Asentamientos" opacity="1.0'
+            '" quantity="6"/><sld:ColorMapEntry color="#e0e0e0" label="Otros" o'
+            'pacity="1.0" quantity="7"/></sld:ColorMap></sld:RasterSymbolizer><'
+            '/sld:Rule></sld:FeatureTypeStyle></sld:UserStyle></sld:UserLayer><'
+            '/sld:StyledLayerDescriptor>'            
+        },
         {
             'name':'madmex_legend_landsat_lcc_4.2',
-            'styled_layer_descriptor':'<?xml version="1.0" ?><sld:StyledLayerDescriptor version="1.0.0" xmlns="http://www.opengis.net/sld" xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc" xmlns:sld="http://www.opengis.net/sld"><sld:UserLayer><sld:LayerFeatureConstraints><sld:FeatureTypeConstraint/></sld:LayerFeatureConstraints><sld:UserStyle><sld:Name>madmex_lcc_landsat_2000_v4.2</sld:Name><sld:Title/><sld:FeatureTypeStyle><sld:Name/><sld:Rule><sld:RasterSymbolizer><sld:Geometry><ogc:PropertyName>grid</ogc:PropertyName></sld:Geometry><sld:Opacity>1</sld:Opacity><sld:ColorMap type="intervals"><sld:ColorMapEntry color="#75a8d4" label=" " opacity="1.0" quantity="0"/><sld:ColorMapEntry color="#005100" label="Bosque de Ayarin; Cedro" opacity="1.0" quantity="1"/><sld:ColorMapEntry color="#007e00" label="Bosque Encino(-Pino); Matorral Subtropical" opacity="1.0" quantity="2"/><sld:ColorMapEntry color="#003c00" label="Bosque de Pino (-Encino); Abies; Oyamel; Tascate; Matorral de Coniferas" opacity="1.0" quantity="3"/><sld:ColorMapEntry color="#aaaa00" label="Matorral Submontano; Mequital Tropical; Bosque Mezquital" opacity="1.0" quantity="4"/><sld:ColorMapEntry color="#aa8000" label="Bosque de Mezquite; Matorral Desertico Microfilo; Mezquital Desertico; Vegetacion de Galeria" opacity="1.0" quantity="5"/><sld:ColorMapEntry color="#8baa00" label="Chaparral" opacity="1.0" quantity="6"/><sld:ColorMapEntry color="#ffb265" label="Matorral Crasicaule" opacity="1.0" quantity="7"/><sld:ColorMapEntry color="#00d900" label="Bosque Mesofilo de Montana; Selva Baja Perennifolio" opacity="1.0" quantity="8"/><sld:ColorMapEntry color="#aa007f" label="Selva Baja (Sub)Caducifolia; Espinosa (Caducifolia); Palmar Inducido" opacity="1.0" quantity="9"/><sld:ColorMapEntry color="#ff55ff" label="Selva Baja y Mediana (Espinosa) Subperennifolia; Selva de Galeria; Palmar Natural" opacity="1.0" quantity="10"/><sld:ColorMapEntry color="#ff557f" label="Selva Alta Subperennifolia" opacity="1.0" quantity="11"/><sld:ColorMapEntry color="#ff007f" label="Selva Alta y Mediana Perennifolia" opacity="1.0" quantity="12"/><sld:ColorMapEntry color="#ff55ff" label="Selva Mediana (Sub) Caducifolia" opacity="1.0" quantity="13"/><sld:ColorMapEntry color="#aaffff" label="Tular" opacity="1.0" quantity="14"/><sld:ColorMapEntry color="#00ffff" label="Popal" opacity="1.0" quantity="15"/><sld:ColorMapEntry color="#55aaff" label="Manglar; Vegetacion de Peten" opacity="1.0" quantity="16"/><sld:ColorMapEntry color="#e29700" label="Matorral Sarco-Crasicaule" opacity="1.0" quantity="17"/><sld:ColorMapEntry color="#bd7e00" label="Matorral Sarco-Crasicaule de Neblina" opacity="1.0" quantity="18"/><sld:ColorMapEntry color="#966400" label="Matorral Sarcocaule" opacity="1.0" quantity="19"/><sld:ColorMapEntry color="#a2ecb1" label="Vegetacion de Dunas Costeras" opacity="1.0" quantity="20"/><sld:ColorMapEntry color="#c46200" label="Matorral Desertico Rosetofilo" opacity="1.0" quantity="21"/><sld:ColorMapEntry color="#aa5500" label="Matorral Espinosa Tamaulipeco" opacity="1.0" quantity="22"/><sld:ColorMapEntry color="#6d3600" label="Matorral Rosetofilo Costero" opacity="1.0" quantity="23"/><sld:ColorMapEntry color="#00aa7f" label="Vegetacion de Desiertos Arenos" opacity="1.0" quantity="24"/><sld:ColorMapEntry color="#008a65" label="Vegetacion Halofila Hidrofila" opacity="1.0" quantity="25"/><sld:ColorMapEntry color="#005941" label="Vegetacion Gipsofila Halofila Xerofila" opacity="1.0" quantity="26"/><sld:ColorMapEntry color="#e9e9af" label="Pastizal y Sabana" opacity="1.0" quantity="27"/><sld:ColorMapEntry color="#faff98" label="Agricultura" opacity="1.0" quantity="28"/><sld:ColorMapEntry color="#00007f" label="Agua" opacity="1.0" quantity="29"/><sld:ColorMapEntry color="#c7c8bc" label="Sin y Desprovisto de Vegetacion" opacity="1.0" quantity="30"/><sld:ColorMapEntry color="#4d1009" label="Urbana" opacity="1.0" quantity="31"/><sld:ColorMapEntry color="#6daa50" label="Bosque secondario" opacity="1.0" quantity="100"/><sld:ColorMapEntry color="#3a7500" label="Bosque Inducido; Cultivado; de Galeria" opacity="1.0" quantity="123"/><sld:ColorMapEntry color="#0b5923" label="Bosque de Pino-Encino; Matorral de Coniferas" opacity="1.0" quantity="124"/><sld:ColorMapEntry color="#ffaaff" label="Selva secundaria" opacity="1.0" quantity="200"/></sld:ColorMap></sld:RasterSymbolizer></sld:Rule></sld:FeatureTypeStyle></sld:UserStyle></sld:UserLayer></sld:StyledLayerDescriptor>'},
+            'styled_layer_descriptor':'<?xml version="1.0" ?><sld:StyledLayerDe'
+            'scriptor version="1.0.0" xmlns="http://www.opengis.net/sld" xmlns:'
+            'gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net'
+            '/ogc" xmlns:sld="http://www.opengis.net/sld"><sld:UserLayer><sld:L'
+            'ayerFeatureConstraints><sld:FeatureTypeConstraint/></sld:LayerFeat'
+            'ureConstraints><sld:UserStyle><sld:Name>madmex_lcc_landsat_2000_v4'
+            '.2</sld:Name><sld:Title/><sld:FeatureTypeStyle><sld:Name/><sld:Rul'
+            'e><sld:RasterSymbolizer><sld:Geometry><ogc:PropertyName>grid</ogc:'
+            'PropertyName></sld:Geometry><sld:Opacity>1</sld:Opacity><sld:Color'
+            'Map type="intervals"><sld:ColorMapEntry color="#75a8d4" label=" " '
+            'opacity="1.0" quantity="0"/><sld:ColorMapEntry color="#005100" lab'
+            'el="Bosque de Ayarin; Cedro" opacity="1.0" quantity="1"/><sld:Colo'
+            'rMapEntry color="#007e00" label="Bosque Encino(-Pino); Matorral Su'
+            'btropical" opacity="1.0" quantity="2"/><sld:ColorMapEntry color="#'
+            '003c00" label="Bosque de Pino (-Encino); Abies; Oyamel; Tascate; M'
+            'atorral de Coniferas" opacity="1.0" quantity="3"/><sld:ColorMapEnt'
+            'ry color="#aaaa00" label="Matorral Submontano; Mequital Tropical; '
+            'Bosque Mezquital" opacity="1.0" quantity="4"/><sld:ColorMapEntry c'
+            'olor="#aa8000" label="Bosque de Mezquite; Matorral Desertico Micro'
+            'filo; Mezquital Desertico; Vegetacion de Galeria" opacity="1.0" qu'
+            'antity="5"/><sld:ColorMapEntry color="#8baa00" label="Chaparral" o'
+            'pacity="1.0" quantity="6"/><sld:ColorMapEntry color="#ffb265" labe'
+            'l="Matorral Crasicaule" opacity="1.0" quantity="7"/><sld:ColorMapE'
+            'ntry color="#00d900" label="Bosque Mesofilo de Montana; Selva Baja'
+            ' Perennifolio" opacity="1.0" quantity="8"/><sld:ColorMapEntry colo'
+            'r="#aa007f" label="Selva Baja (Sub)Caducifolia; Espinosa (Caducifo'
+            'lia); Palmar Inducido" opacity="1.0" quantity="9"/><sld:ColorMapEn'
+            'try color="#ff55ff" label="Selva Baja y Mediana (Espinosa) Subpere'
+            'nnifolia; Selva de Galeria; Palmar Natural" opacity="1.0" quantity'
+            '="10"/><sld:ColorMapEntry color="#ff557f" label="Selva Alta Subper'
+            'ennifolia" opacity="1.0" quantity="11"/><sld:ColorMapEntry color="'
+            '#ff007f" label="Selva Alta y Mediana Perennifolia" opacity="1.0" q'
+            'uantity="12"/><sld:ColorMapEntry color="#ff55ff" label="Selva Medi'
+            'ana (Sub) Caducifolia" opacity="1.0" quantity="13"/><sld:ColorMapE'
+            'ntry color="#aaffff" label="Tular" opacity="1.0" quantity="14"/><s'
+            'ld:ColorMapEntry color="#00ffff" label="Popal" opacity="1.0" quant'
+            'ity="15"/><sld:ColorMapEntry color="#55aaff" label="Manglar; Veget'
+            'acion de Peten" opacity="1.0" quantity="16"/><sld:ColorMapEntry co'
+            'lor="#e29700" label="Matorral Sarco-Crasicaule" opacity="1.0" quan'
+            'tity="17"/><sld:ColorMapEntry color="#bd7e00" label="Matorral Sarc'
+            'o-Crasicaule de Neblina" opacity="1.0" quantity="18"/><sld:ColorMa'
+            'pEntry color="#966400" label="Matorral Sarcocaule" opacity="1.0" q'
+            'uantity="19"/><sld:ColorMapEntry color="#a2ecb1" label="Vegetacion'
+            ' de Dunas Costeras" opacity="1.0" quantity="20"/><sld:ColorMapEntr'
+            'y color="#c46200" label="Matorral Desertico Rosetofilo" opacity="1'
+            '.0" quantity="21"/><sld:ColorMapEntry color="#aa5500" label="Mator'
+            'ral Espinosa Tamaulipeco" opacity="1.0" quantity="22"/><sld:ColorM'
+            'apEntry color="#6d3600" label="Matorral Rosetofilo Costero" opacit'
+            'y="1.0" quantity="23"/><sld:ColorMapEntry color="#00aa7f" label="V'
+            'egetacion de Desiertos Arenos" opacity="1.0" quantity="24"/><sld:C'
+            'olorMapEntry color="#008a65" label="Vegetacion Halofila Hidrofila"'
+            ' opacity="1.0" quantity="25"/><sld:ColorMapEntry color="#005941" l'
+            'abel="Vegetacion Gipsofila Halofila Xerofila" opacity="1.0" quanti'
+            'ty="26"/><sld:ColorMapEntry color="#e9e9af" label="Pastizal y Saba'
+            'na" opacity="1.0" quantity="27"/><sld:ColorMapEntry color="#faff98'
+            '" label="Agricultura" opacity="1.0" quantity="28"/><sld:ColorMapEn'
+            'try color="#00007f" label="Agua" opacity="1.0" quantity="29"/><sld'
+            ':ColorMapEntry color="#c7c8bc" label="Sin y Desprovisto de Vegetac'
+            'ion" opacity="1.0" quantity="30"/><sld:ColorMapEntry color="#4d100'
+            '9" label="Urbana" opacity="1.0" quantity="31"/><sld:ColorMapEntry '
+            'color="#6daa50" label="Bosque secondario" opacity="1.0" quantity="'
+            '100"/><sld:ColorMapEntry color="#3a7500" label="Bosque Inducido; C'
+            'ultivado; de Galeria" opacity="1.0" quantity="123"/><sld:ColorMapE'
+            'ntry color="#0b5923" label="Bosque de Pino-Encino; Matorral de Con'
+            'iferas" opacity="1.0" quantity="124"/><sld:ColorMapEntry color="#f'
+            'faaff" label="Selva secundaria" opacity="1.0" quantity="200"/></sl'
+            'd:ColorMap></sld:RasterSymbolizer></sld:Rule></sld:FeatureTypeStyl'
+            'e></sld:UserStyle></sld:UserLayer></sld:StyledLayerDescriptor>'            
+        },
     ]
     
     algorithms_array = [
-        {'name':'ImageSegmentationProcessing_Shape','description':'Image segmentation processing package.','command':None,'is_supervised':True},
-        {'name':'ImadMafCommandRE','description':'MADMex RapidEye Potential Change Classification.','command':None,'is_supervised':False},
-        {'name':'INEGIUSVPERSII-IV','description':'Persistent polygons from INEGI USV Series II-IV.','command':None,'is_supervised':False},
-        {'name':'C5PreparationPerDate','description':'C5 input files per date .names, .cases, .data.','command':None,'is_supervised':True},
-        {'name':'manualtraining','description':'Manual training data generation.','command':None,'is_supervised':False},
-        {'name':'C5Preparation','description':'C5 input files per footprint .names, .cases, .data.','command':None,'is_supervised':True},
-        {'name':'RapidEyeLCResultsStack','description':'Layer stack of several classificaction results of same footprint.','command':None,'is_supervised':True},
-        {'name':'RapidEyeLCConfidencesStack','description':'Layer stack of several classificaction confindences of same footprint.','command':None,'is_supervised':True},
-        {'name':'REClassificationCommand','description':'MADMex RapidEye Landcover Classification Workflow.','command':None,'is_supervised':True},
-        {'name':'LSClassificationCommand','description':'MADMex Landsat Landcover Classification Workflow.','command':None,'is_supervised':True},
-        {'name':'C5ResultExportProcessing','description':'C5 classification result to files processing package.','command':None,'is_supervised':True},
-        {'name':'QAInvarMask','description':'Mask calculation.','command':None,'is_supervised':True},
-        {'name':'SpectralIndicesLandsat','description':'Spectral indices calculation based on Landsat data using masks.','command':None,'is_supervised':True},
-        {'name':'C5Classify','description':'C5 classification process.','command':None,'is_supervised':True},
-        {'name':'RapidEyeQAWorkflow','description':'RapidEye QA workflow.','command':None,'is_supervised':True},
-        {'name':'ChangeDetectionRE','description':'Change detection using iMAD, MAF transformation based on Landsat data.','command':None,'is_supervised':True},
-        {'name':'LandsatPreprocessing','description':'Landsat preprocessing package.','command':None,'is_supervised':True},
-        {'name':'ChangeMaskPost','description':'Classification post processing package.','command':None,'is_supervised':True},
-        {'name':'SpectralIndicesLandsatLocal','description':'Spectral indices calculation based on Landsat data using masks.','command':None,'is_supervised':True},
-        {'name':'QADatabaseDecision','description':'Write decision.','command':None,'is_supervised':True},
-        {'name':'RapidEyeReference','description':'Rapideye reference image creation.','command':None,'is_supervised':True},
-        {'name':'LandsatDisturbanceWorkflow','description':'Landsat disturbance workflow.','command':None,'is_supervised':True},
-        {'name':'RapidEyeLccWorkflowV2','description':'RapidEye LCC workflow Version 2.','command':None,'is_supervised':True},
-        {'name':'WarpImageToReference','description':'Warp image to reference.','command':None,'is_supervised':True},
-        {'name':'ClassificationPostProcessing','description':'Classification post processing package.','command':None,'is_supervised':True},
-        {'name':'QARasterOverlap','description':'Image acquisition retrieval.','command':None,'is_supervised':True},
-        {'name':'QACrossCorrelation','description':'Cross correlation.','command':None,'is_supervised':True},
-        {'name':'RapidEyeStacking','description':'Image acquisition retrieval.','command':None,'is_supervised':True},
-        {'name':'LegendIngestion','description':'Legend ingestion.','command':None,'is_supervised':True},
-        {'name':'ProductIngestion','description':'Data ingestion.','command':None,'is_supervised':True},
-        {'name':'LandsatSegmentsModelling','description':'Landsat feature modelling package.','command':None,'is_supervised':True},
-        {'name':'RapidEyePreprocessing','description':'RapidEye preprocessing packages.','command':None,'is_supervised':True},
-        {'name':'LandsatChip4Humedas','description':'Landsat chipping.','command':None,'is_supervised':True},
-        {'name':'ChangeDetectionLS','description':'Change detection using imad maf transformation based on Landsat data.','command':None,'is_supervised':True},
-        {'name':'QAXY2PhiR','description':'Convert cartesian coordinates to polar coordinates.','command':None,'is_supervised':True},
-        {'name':'MallaCreation','description':'RapidEye QA workflow.','command':None,'is_supervised':True},
-        {'name':'LandsatLccWorkflowV2','description':'Landsat LCC workflow version 2.','command':None,'is_supervised':True},
-        {'name':'WorldViewImageSegmentationWorkflow','description':'Image segmentation workflow.','command':None,'is_supervised':True},
-        {'name':'QADatabaseUpload','description':'Write statistics.','command':None,'is_supervised':True},
-        {'name':'RapidEyeSpectralIndices','description':'Spectral indices.','command':None,'is_supervised':True},
-        {'name':'ImageAcquisitionsProcess','description':'Image acquisition retrieval.','command':None,'is_supervised':True},
-        {'name':'ImadMafTransformationLandsat','description':'Change Detection.','command':None,'is_supervised':True},
-        {'name':'QAImageStatistics','description':'Image statistics.','command':None,'is_supervised':True},
-        {'name':'LandsatPreProcessingWorkflow','description':'Landsat LCC workflow.','command':None,'is_supervised':True},
-        {'name':'LandsatFmaskComposite','description':'Landsat FMask Composite.','command':None,'is_supervised':True},
-        {'name':'LandsatSegmentsFeatureProcessingV2','description':'Landsat feature processing package.','command':None,'is_supervised':True},
-        {'name':'SegmentationStatistics','description':'Segmentation statistics.','command':None,'is_supervised':True},
-        {'name':'burntArea','description':'Burnt area.','command':None,'is_supervised':True},
-        {'name':'LandsatSegmentsFeatureProcessing','description':'Landsat segmentation objects to database and feature processing package.','command':None,'is_supervised':True},
-        {'name':'Ingestion','description':'Data ingestion.','command':None,'is_supervised':True},
-        {'name':'LandsatLccPostprocessWorkflow','description':'Landsat LCC Post-processing workflow.','command':None,'is_supervised':True},
-        {'name':'NDVI','description':'NDVI calculation.','command':None,'is_supervised':True},
-        {'name':'C5ResultDatabaseProcessing','description':'C5 classification result to database processing package.','command':None,'is_supervised':True},
-        {'name':'RapidEyeClouds','description':'Rapideye Cloud detection.','command':None,'is_supervised':True},
-        {'name':'ImadMafTransformation','description':'Change Detection.','command':None,'is_supervised':True},
-        {'name':'MafClassification','description':'Classification of MAF components.','command':None,'is_supervised':True},
-        {'name':'RapidEyeLccWorkflow_EqualDates','description':'RapidEye LCC workflow Version 2.','command':None,'is_supervised':True},
-        {'name':'ImageSegmentationProcessing','description':'Image segmentation processing package.','command':None,'is_supervised':True},
-        {'name':'ChangeLandcoverHistograms','description':'classification post processing package.','command':None,'is_supervised':True},
-        {'name':'RapidEyeSegmentsFeatureProcessing','description':'Rapidye feature processing package.','command':None,'is_supervised':True},
-        {'name':'QADatabaseExtraction','description':'Image acquisition retrieval.','command':None,'is_supervised':True},
-        {'name':'MafTransformation','description':'Change Detection.','command':None,'is_supervised':True},
-        {'name':'ImageAcquisitionsSortByDateProcess','description':'Image acquisition retrieval.','command':None,'is_supervised':True},
-        {'name':'MadTransformation','description':'Change Detection.','command':None,'is_supervised':True},
-        {'name':'ImageMasking','description':'Mask image based on separate mask image defined with masking values.','command':None,'is_supervised':True},
-        {'name':'PostProcessing','description':'classification post processing package.','command':None,'is_supervised':True},
-        {'name':'QADecision','description':'Image statistics.','command':None,'is_supervised':True},
-        {'name':'TemporalMetrics','description':'Temporal features.','command':None,'is_supervised':True},
-        {'name':'LandsatChange','description':'Landsat change.','command':None,'is_supervised':True},
-        {'name':'EVI','description':'EVI calculation.','command':None,'is_supervised':True},
-        {'name':'ARVI','description':'ARVI calculation.','command':None,'is_supervised':True},
-        {'name':'LAI','description':'LAI calculation.','command':None,'is_supervised':True},
-        {'name':'GNVI','description':'GNVI calculation.','command':None,'is_supervised':True},
-        {'name':'GI','description':'GI calculation.','command':None,'is_supervised':True},
-        {'name':'SinusAngle2D','description':'Calculates sinus of 2D angle.','command':None,'is_supervised':True},
-        {'name':'CosinusAngle2D','description':'Calculates cosinus of 2D angle.','command':None,'is_supervised':True},
-        {'name':'Spot5Georef_ChangeDetection','description':'Change detection using MAD, MAF and vectorization based on SPOT data.','command':None,'is_supervised':True},
-        {'name':'LandsatLccWorkflowOli','description':'Landsat8 LCC workflow version 2.','command':None,'is_supervised':True},                
+        {
+            'name':'ImageSegmentationProcessing_Shape',
+            'description':'Image segmentation processing package.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'ImadMafCommandRE',
+            'description':'MADMex RapidEye Potential Change Classification.',
+            'command':None,
+            'is_supervised':False
+        },
+        {
+            'name':'INEGIUSVPERSII-IV',
+            'description':'Persistent polygons from INEGI USV Series II-IV.',
+            'command':None,
+            'is_supervised':False
+        },
+        {
+            'name':'C5PreparationPerDate',
+            'description':'C5 input files per date .names, .cases, .data.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'manualtraining',
+            'description':'Manual training data generation.',
+            'command':None,
+            'is_supervised':False
+        },
+        {
+            'name':'C5Preparation',
+            'description':'C5 input files per footprint .names, .cases, .data.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'RapidEyeLCResultsStack',
+            'description':'Layer stack of several classificaction results of same footprint.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'RapidEyeLCConfidencesStack',
+            'description':'Layer stack of several classificaction confindences of same footprint.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'REClassificationCommand',
+            'description':'MADMex RapidEye Landcover Classification Workflow.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'LSClassificationCommand',
+            'description':'MADMex Landsat Landcover Classification Workflow.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'C5ResultExportProcessing',
+            'description':'C5 classification result to files processing package.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'QAInvarMask',
+            'description':'Mask calculation.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'SpectralIndicesLandsat',
+            'description':'Spectral indices calculation based on Landsat data using masks.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'C5Classify',
+            'description':'C5 classification process.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'RapidEyeQAWorkflow',
+            'description':'RapidEye QA workflow.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'ChangeDetectionRE',
+            'description':'Change detection using iMAD, MAF transformation based on Landsat data.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'LandsatPreprocessing',
+            'description':'Landsat preprocessing package.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'ChangeMaskPost',
+            'description':'Classification post processing package.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'SpectralIndicesLandsatLocal',
+            'description':'Spectral indices calculation based on Landsat data using masks.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'QADatabaseDecision',
+            'description':'Write decision.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'RapidEyeReference',
+            'description':'Rapideye reference image creation.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'LandsatDisturbanceWorkflow',
+            'description':'Landsat disturbance workflow.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'RapidEyeLccWorkflowV2',
+            'description':'RapidEye LCC workflow Version 2.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'WarpImageToReference',
+            'description':'Warp image to reference.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'ClassificationPostProcessing',
+            'description':'Classification post processing package.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'QARasterOverlap',
+            'description':'Image acquisition retrieval.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'QACrossCorrelation',
+            'description':'Cross correlation.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'RapidEyeStacking',
+            'description':'Image acquisition retrieval.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'LegendIngestion',
+            'description':'Legend ingestion.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'ProductIngestion',
+            'description':'Data ingestion.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'LandsatSegmentsModelling',
+            'description':'Landsat feature modelling package.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'RapidEyePreprocessing',
+            'description':'RapidEye preprocessing packages.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'LandsatChip4Humedas',
+            'description':'Landsat chipping.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'ChangeDetectionLS',
+            'description':'Change detection using imad maf transformation based on Landsat data.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'QAXY2PhiR',
+            'description':'Convert cartesian coordinates to polar coordinates.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'MallaCreation',
+            'description':'RapidEye QA workflow.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'LandsatLccWorkflowV2',
+            'description':'Landsat LCC workflow version 2.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'WorldViewImageSegmentationWorkflow',
+            'description':'Image segmentation workflow.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'QADatabaseUpload',
+            'description':'Write statistics.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'RapidEyeSpectralIndices',
+            'description':'Spectral indices.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'ImageAcquisitionsProcess',
+            'description':'Image acquisition retrieval.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'ImadMafTransformationLandsat',
+            'description':'Change Detection.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'QAImageStatistics',
+            'description':'Image statistics.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'LandsatPreProcessingWorkflow',
+            'description':'Landsat LCC workflow.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'LandsatFmaskComposite',
+            'description':'Landsat FMask Composite.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'LandsatSegmentsFeatureProcessingV2',
+            'description':'Landsat feature processing package.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'SegmentationStatistics',
+            'description':'Segmentation statistics.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'burntArea',
+            'description':'Burnt area.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'LandsatSegmentsFeatureProcessing',
+            'description':'Landsat segmentation objects to database and feature processing package.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'Ingestion',
+            'description':'Data ingestion.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'LandsatLccPostprocessWorkflow',
+            'description':'Landsat LCC Post-processing workflow.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'NDVI',
+            'description':'NDVI calculation.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'C5ResultDatabaseProcessing',
+            'description':'C5 classification result to database processing package.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'RapidEyeClouds',
+            'description':'Rapideye Cloud detection.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'ImadMafTransformation',
+            'description':'Change Detection.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'MafClassification',
+            'description':'Classification of MAF components.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'RapidEyeLccWorkflow_EqualDates',
+            'description':'RapidEye LCC workflow Version 2.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'ImageSegmentationProcessing',
+            'description':'Image segmentation processing package.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'ChangeLandcoverHistograms',
+            'description':'classification post processing package.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'RapidEyeSegmentsFeatureProcessing',
+            'description':'Rapidye feature processing package.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'QADatabaseExtraction',
+            'description':'Image acquisition retrieval.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'MafTransformation',
+            'description':'Change Detection.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'ImageAcquisitionsSortByDateProcess',
+            'description':'Image acquisition retrieval.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'MadTransformation',
+            'description':'Change Detection.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'ImageMasking',
+            'description':'Mask image based on separate mask image defined with masking values.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'PostProcessing',
+            'description':'classification post processing package.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'QADecision',
+            'description':'Image statistics.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'TemporalMetrics',
+            'description':'Temporal features.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'LandsatChange',
+            'description':'Landsat change.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'EVI',
+            'description':'EVI calculation.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'ARVI',
+            'description':'ARVI calculation.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'LAI',
+            'description':'LAI calculation.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'GNVI',
+            'description':'GNVI calculation.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'GI',
+            'description':'GI calculation.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'SinusAngle2D',
+            'description':'Calculates sinus of 2D angle.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'CosinusAngle2D',
+            'description':'Calculates cosinus of 2D angle.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'Spot5Georef_ChangeDetection',
+            'description':'Change detection using MAD, MAF and vectorization based on SPOT data.',
+            'command':None,
+            'is_supervised':True
+        },
+        {
+            'name':'LandsatLccWorkflowOli',
+            'description':'Landsat8 LCC workflow version 2.',
+            'command':None,
+            'is_supervised':True
+        },                
     ]
     
     satellites_array = [

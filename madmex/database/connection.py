@@ -62,11 +62,6 @@ class Organization(BASE):
     country = Column(String)
     url = Column(String)
     description = Column(String)
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        pass
 class Sensor(BASE):
     '''
     A sensor is the technology that takes the images. Every sensor can take
@@ -78,11 +73,6 @@ class Sensor(BASE):
     name = Column(String, unique=True)
     description = Column(String)
     satellite = relationship("Satellite")
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        pass
 class Satellite(BASE):
     '''
     Satellites are the actual hardware that takes images. A satellite is
@@ -100,11 +90,6 @@ class Satellite(BASE):
     organization_id = Column(Integer, ForeignKey('organization.pk_id'))
     sensor = relationship('Sensor')
     organization = relationship('Organization')
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        pass
 class Algorithm(BASE):
     '''
     In order to obtain products, raw data must be processed through a series
@@ -118,11 +103,6 @@ class Algorithm(BASE):
     description = Column(String)
     command = Column(String(30))
     is_supervised = Column(Boolean)
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        pass
 class Legend(BASE):
     '''
     This table holds the information for the Styled Layer Description. This
@@ -134,12 +114,7 @@ class Legend(BASE):
     pk_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     styled_layer_descriptor = Column(String)
-    path = Column(String)
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        pass    
+    path = Column(String)   
 class Bundle(BASE):
     '''
     A bundle is a set of files that constitutes a minimum working set for a
@@ -153,11 +128,6 @@ class Bundle(BASE):
     filels_regex = Column(String)
     quick_look_regex = Column(String)
     sensor = Column(Integer, ForeignKey('sensor.pk_id'))
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        pass
 class Unit(BASE):
     '''
     Units are the different fixed units in which the world is measured. In the
@@ -168,11 +138,6 @@ class Unit(BASE):
     pk_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     unit = Column(String, unique=True)
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        pass
 class Band(BASE):
     '''
     Sensors can measure different intensities of the parts of the light
@@ -189,11 +154,6 @@ class Band(BASE):
     maximum_wavelength = Column(Float)
     sensor = relationship('Sensor')
     unit = relationship('Unit')
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        pass
 class Description(BASE):
     '''
     This table is a link between organizations and products. It provides
@@ -204,11 +164,6 @@ class Description(BASE):
     description = Column(String, unique=True)
     creator = Column(Integer, ForeignKey('organization.pk_id'))
     publisher = Column(Integer, ForeignKey('organization.pk_id'))
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        pass
 class Information(BASE):
     '''
     Information stands for metadata, as metadata is a protected word in
@@ -222,11 +177,6 @@ class Information(BASE):
     cloud_percentage = Column(Float)
     elevation_angle = Column(Float)
     resolution = Column(Float)
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        pass
 class ProductType(BASE):
     '''
     This table has information about the different types of product that the
@@ -240,11 +190,6 @@ class ProductType(BASE):
     bundle = Column(Integer, ForeignKey('bundle.pk_id'))
     description = Column(Integer, ForeignKey('description.pk_id'))
     algorithm = Column(Integer, ForeignKey('algorithm.pk_id'))
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        pass
 class Product(BASE):
     '''
     A product is either an input or an output of the system. Once an image is
@@ -276,11 +221,6 @@ class Product(BASE):
         'polymorphic_on':type,
         'polymorphic_identity':'product'
     }
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        pass
 class RawProduct(Product):
     '''
     A product that has not been processed at all, it can be a raw image just
@@ -289,11 +229,6 @@ class RawProduct(Product):
     __mapper_args__ = {
         'polymorphic_identity':'raw'
     }
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        pass
 class ProcessedProduct(Product):
     '''
     A product that is the result of a madmex process.
@@ -302,11 +237,6 @@ class ProcessedProduct(Product):
         'polymorphic_identity':'processed'
     }
     processing_date = Column(DateTime())
-    def __init__(self):
-        '''
-        Constructor
-        '''
-        pass
 def create_database():
     '''
     This method creates the database model in the database engine.
@@ -1247,49 +1177,303 @@ def populate_database():
     ]
     
     satellites_array = [
-        {'short_name':'RE1','name':'RapidEye 1 (Tachys)','sensor':'RE','organization':'BlackBridge'},
-        {'short_name':'RE2','name':'RapidEye 2 (Mati)','sensor':'RE','organization':'BlackBridge'},
-        {'short_name':'RE3','name':'RapidEye 3 (Choma)','sensor':'RE','organization':'BlackBridge'},
-        {'short_name':'RE4','name':'RapidEye 4 (Choros)','sensor':'RE','organization':'BlackBridge'},
-        {'short_name':'RE5','name':'RapidEye 5 (Trochia)','sensor':'RE','organization':'BlackBridge'},
-        {'short_name':'SPOT-5','name':'SPOT 5','sensor':'SPOT-5','organization':'Spot Image'},
-        {'short_name':'SPOT-6','name':'SPOT-6','sensor':'SPOT-6','organization':'Spot Image'},
-        {'short_name':'LS-4','name':'Landsat 4','sensor':'TM','organization':'NASA'},
-        {'short_name':'LS-5','name':'Landsat 5','sensor':'TM','organization':'NASA'},
-        {'short_name':'LS-6','name':'Landsat 6','sensor':'ETM+','organization':'NASA'},
-        {'short_name':'LS-7','name':'Landsat 7','sensor':'ETM+','organization':'NASA'},
-        {'short_name':'LS-8','name':'Landsat 8','sensor':'ETM+','organization':'NASA'},
-        {'short_name':'Terra','name':'Terra (EOS AM)','sensor':'MODIS','organization':'NASA'},
-        {'short_name':'Aqua','name':'Aqua (EOS PM)','sensor':'MODIS','organization':'NASA'},
-        {'short_name':'P6','name':'ResourceSat-1','sensor':'IRS-P6','organization':'ISRO'},
-        {'short_name':'WV02','name':'WV02','sensor':'WV02','organization':'Digital Globe'},   
+        {
+            'short_name':'RE1',
+            'name':'RapidEye 1 (Tachys)',
+            'sensor':'RE',
+            'organization':'BlackBridge'
+        },
+        {
+            'short_name':'RE2',
+            'name':'RapidEye 2 (Mati)',
+            'sensor':'RE',
+            'organization':'BlackBridge'
+        },
+        {
+            'short_name':'RE3',
+            'name':'RapidEye 3 (Choma)',
+            'sensor':'RE',
+            'organization':'BlackBridge'
+        },
+        {
+            'short_name':'RE4',
+            'name':'RapidEye 4 (Choros)',
+            'sensor':'RE',
+            'organization':'BlackBridge'},
+        {
+            'short_name':'RE5',
+            'name':'RapidEye 5 (Trochia)',
+            'sensor':'RE',
+            'organization':'BlackBridge'
+        },
+        {
+            'short_name':'SPOT-5',
+            'name':'SPOT 5',
+            'sensor':'SPOT-5',
+            'organization':'Spot Image'
+        },
+        {
+            'short_name':'SPOT-6',
+            'name':'SPOT-6',
+            'sensor':'SPOT-6',
+            'organization':'Spot Image'
+        },
+        {
+            'short_name':'LS-4',
+            'name':'Landsat 4',
+            'sensor':'TM',
+            'organization':'NASA'
+        },
+        {
+            'short_name':'LS-5',
+            'name':'Landsat 5',
+            'sensor':'TM',
+            'organization':'NASA'
+        },
+        {
+            'short_name':'LS-6',
+            'name':'Landsat 6',
+            'sensor':'ETM+',
+            'organization':'NASA'
+        },
+        {
+            'short_name':'LS-7',
+            'name':'Landsat 7',
+            'sensor':'ETM+',
+            'organization':'NASA'
+        },
+        {
+            'short_name':'LS-8',
+            'name':'Landsat 8',
+            'sensor':'ETM+',
+            'organization':'NASA'
+        },
+        {
+            'short_name':'Terra',
+            'name':'Terra (EOS AM)',
+            'sensor':'MODIS',
+            'organization':'NASA'
+        },
+        {
+            'short_name':'Aqua',
+            'name':'Aqua (EOS PM)',
+            'sensor':'MODIS',
+            'organization':'NASA'
+        },
+        {
+            'short_name':'P6',
+            'name':'ResourceSat-1',
+            'sensor':'IRS-P6',
+            'organization':'ISRO'
+        },
+        {
+            'short_name':'WV02',
+            'name':'WV02',
+            'sensor':'WV02',
+            'organization':'Digital Globe'
+        },   
     ]
     bands_array = [
-        {'sensor':'RE','unit':'micrometer','bit_depth':0,'band':1,'minimum_wavelength':0.44,'maximum_wavelength':0.51},
-        {'sensor':'RE','unit':'micrometer','bit_depth':0,'band':2,'minimum_wavelength':0.52,'maximum_wavelength':0.59},
-        {'sensor':'RE','unit':'micrometer','bit_depth':0,'band':3,'minimum_wavelength':0.63,'maximum_wavelength':0.685},
-        {'sensor':'RE','unit':'micrometer','bit_depth':0,'band':4,'minimum_wavelength':0.69,'maximum_wavelength':0.73},
-        {'sensor':'RE','unit':'micrometer','bit_depth':0,'band':5,'minimum_wavelength':0.76,'maximum_wavelength':0.85},
-        {'sensor':'SPOT-5','unit':'micrometer','bit_depth':0,'band':1,'minimum_wavelength':0.5,'maximum_wavelength':0.59},
-        {'sensor':'SPOT-5','unit':'micrometer','bit_depth':0,'band':2,'minimum_wavelength':0.61,'maximum_wavelength':0.68},
-        {'sensor':'SPOT-5','unit':'micrometer','bit_depth':0,'band':3,'minimum_wavelength':0.78,'maximum_wavelength':0.89},
-        {'sensor':'SPOT-5','unit':'micrometer','bit_depth':0,'band':4,'minimum_wavelength':1.58,'maximum_wavelength':1.75},
-        {'sensor':'SPOT-5-P','unit':'micrometer','bit_depth':0,'band':1,'minimum_wavelength':0.48,'maximum_wavelength':0.71},
-        {'sensor':'TM','unit':'micrometer','bit_depth':0,'band':1,'minimum_wavelength':0.45,'maximum_wavelength':0.52},
-        {'sensor':'TM','unit':'micrometer','bit_depth':0,'band':2,'minimum_wavelength':0.52,'maximum_wavelength':0.6},
-        {'sensor':'TM','unit':'micrometer','bit_depth':0,'band':3,'minimum_wavelength':0.63,'maximum_wavelength':0.69},
-        {'sensor':'TM','unit':'micrometer','bit_depth':0,'band':4,'minimum_wavelength':0.76,'maximum_wavelength':0.9},
-        {'sensor':'TM','unit':'micrometer','bit_depth':0,'band':5,'minimum_wavelength':1.55,'maximum_wavelength':1.75},
-        {'sensor':'TM','unit':'micrometer','bit_depth':0,'band':6,'minimum_wavelength':10.4,'maximum_wavelength':12.5},
-        {'sensor':'TM','unit':'micrometer','bit_depth':0,'band':7,'minimum_wavelength':2.08,'maximum_wavelength':2.35},
-        {'sensor':'ETM+','unit':'micrometer','bit_depth':0,'band':1,'minimum_wavelength':0.45,'maximum_wavelength':0.515},
-        {'sensor':'ETM+','unit':'micrometer','bit_depth':0,'band':2,'minimum_wavelength':0.525,'maximum_wavelength':0.605},
-        {'sensor':'ETM+','unit':'micrometer','bit_depth':0,'band':3,'minimum_wavelength':0.63,'maximum_wavelength':0.69},
-        {'sensor':'ETM+','unit':'micrometer','bit_depth':0,'band':4,'minimum_wavelength':0.75,'maximum_wavelength':0.9},
-        {'sensor':'ETM+','unit':'micrometer','bit_depth':0,'band':5,'minimum_wavelength':1.55,'maximum_wavelength':1.75},
-        {'sensor':'ETM+','unit':'micrometer','bit_depth':0,'band':6,'minimum_wavelength':10.4,'maximum_wavelength':12.5},
-        {'sensor':'ETM+','unit':'micrometer','bit_depth':0,'band':7,'minimum_wavelength':2.09,'maximum_wavelength':2.35},
-        {'sensor':'ETM+','unit':'micrometer','bit_depth':0,'band':8,'minimum_wavelength':0.52,'maximum_wavelength':0.9},
+        {
+            'sensor':'RE',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':1,
+            'minimum_wavelength':0.44,
+            'maximum_wavelength':0.51
+        },
+        {
+            'sensor':'RE',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':2,
+            'minimum_wavelength':0.52,
+            'maximum_wavelength':0.59
+        },
+        {
+            'sensor':'RE',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':3,
+            'minimum_wavelength':0.63,
+            'maximum_wavelength':0.685
+        },
+        {
+            'sensor':'RE',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':4,
+            'minimum_wavelength':0.69,
+            'maximum_wavelength':0.73
+        },
+        {
+            'sensor':'RE',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':5,
+            'minimum_wavelength':0.76,
+            'maximum_wavelength':0.85
+        },
+        {
+            'sensor':'SPOT-5',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':1,
+            'minimum_wavelength':0.5,
+            'maximum_wavelength':0.59
+        },
+        {
+            'sensor':'SPOT-5',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':2,
+            'minimum_wavelength':0.61,
+            'maximum_wavelength':0.68
+        },
+        {
+            'sensor':'SPOT-5',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':3,
+            'minimum_wavelength':0.78,
+            'maximum_wavelength':0.8
+        },
+        {
+            'sensor':'SPOT-5',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':4,
+            'minimum_wavelength':1.58,
+            'maximum_wavelength':1.75
+        },
+        {
+            'sensor':'SPOT-5-P',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':1,
+            'minimum_wavelength':0.48,
+            'maximum_wavelength':0.71
+        },
+        {
+            'sensor':'TM',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':1,
+            'minimum_wavelength':0.45,
+            'maximum_wavelength':0.52
+        },
+        {
+            'sensor':'TM',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':2,
+            'minimum_wavelength':0.52,
+            'maximum_wavelength':0.6
+        },
+        {
+            'sensor':'TM',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':3,
+            'minimum_wavelength':0.63,
+            'maximum_wavelength':0.69
+        },
+        {
+            'sensor':'TM',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':4,
+            'minimum_wavelength':0.76,
+            'maximum_wavelength':0.9
+        },
+        {
+            'sensor':'TM',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':5,
+            'minimum_wavelength':1.55,
+            'maximum_wavelength':1.75
+        },
+        {
+            'sensor':'TM',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':6,
+            'minimum_wavelength':10.4,
+            'maximum_wavelength':12.5
+        },
+        {
+            'sensor':'TM',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':7,
+            'minimum_wavelength':2.08,
+            'maximum_wavelength':2.35
+        },
+        {
+            'sensor':'ETM+',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':1,
+            'minimum_wavelength':0.45,
+            'maximum_wavelength':0.515
+        },
+        {
+            'sensor':'ETM+',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':2,
+            'minimum_wavelength':0.525,
+            'maximum_wavelength':0.605
+        },
+        {
+            'sensor':'ETM+',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':3,
+            'minimum_wavelength':0.63,
+            'maximum_wavelength':0.69
+        },
+        {
+            'sensor':'ETM+',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':4,
+            'minimum_wavelength':0.75,
+            'maximum_wavelength':0.9
+        },
+        {
+            'sensor':'ETM+',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':5,
+            'minimum_wavelength':1.55,
+            'maximum_wavelength':1.75
+        },
+        {
+            'sensor':'ETM+',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':6,
+            'minimum_wavelength':10.4,
+            'maximum_wavelength':12.5
+        },
+        {
+            'sensor':'ETM+',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':7,
+            'minimum_wavelength':2.09,
+            'maximum_wavelength':2.35
+        },
+        {
+            'sensor':'ETM+',
+            'unit':'micrometer',
+            'bit_depth':0,
+            'band':8,
+            'minimum_wavelength':0.52,
+            'maximum_wavelength':0.9
+        },
     ]
     
     

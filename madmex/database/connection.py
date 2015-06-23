@@ -114,7 +114,7 @@ class Legend(BASE):
     pk_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     styled_layer_descriptor = Column(String)
-    path = Column(String)   
+    path = Column(String)
 class Bundle(BASE):
     '''
     A bundle is a set of files that constitutes a minimum working set for a
@@ -202,19 +202,19 @@ class Product(BASE):
     uuid = Column(String, unique=True)
     acquisition_date = Column(DateTime())
     ingest_date = Column(DateTime())
-    path = Column(String, unique = True)   
+    path = Column(String, unique=True)   
     legend = Column(Integer, ForeignKey('legend.pk_id'))
     geometry = Column(String)
     information = Column(Integer, ForeignKey('information.pk_id'))
     product_type = Column(Integer, ForeignKey('product_type.pk_id'))
     can_train = relationship(
         'Algorithm',
-        secondary=CAN_TRAIN_TABLE)  
+        secondary=CAN_TRAIN_TABLE)
     input_product = relationship(
         'Product',
         secondary=PRODUCT_INPUT_TABLE,
-        primaryjoin=id==PRODUCT_INPUT_TABLE.c.input_product,
-        secondaryjoin=id==PRODUCT_INPUT_TABLE.c.output_product,
+        primaryjoin=id == PRODUCT_INPUT_TABLE.c.input_product,
+        secondaryjoin=id == PRODUCT_INPUT_TABLE.c.output_product,
         backref="output_product")
     type = Column(String(20))
     __mapper_args__ = {
@@ -252,8 +252,8 @@ def populate_database():
     This method populates the database with the information that won't change
     over time. It is possible to create a fresh copy of the database.
     '''
-    Session = sessionmaker(bind=ENGINE)
-    session = Session()
+    klass = sessionmaker(bind=ENGINE)
+    session = klass()
     units_array = [
         {
             'name':'nanometer',
@@ -431,8 +431,8 @@ def populate_database():
             'ty="26"/></sld:ColorMap></sld:RasterSymbolizer></sld:Rule></sld:Fe'
             'atureTypeStyle></sld:UserStyle></sld:UserLayer></sld:StyledLayerDe'
             'scriptor>'
-            },
-            {
+        },
+        {
             'name':'madmex_legend_landsat_lcc_4.1',
             'styled_layer_descriptor':'<?xml version="1.0" ?><sld:StyledLayerDe'
             'scriptor version="1.0.0" xmlns="http://www.opengis.net/sld" xmlns:'
@@ -630,7 +630,7 @@ def populate_database():
             '" quantity="6"/><sld:ColorMapEntry color="#e0e0e0" label="Otros" o'
             'pacity="1.0" quantity="7"/></sld:ColorMap></sld:RasterSymbolizer><'
             '/sld:Rule></sld:FeatureTypeStyle></sld:UserStyle></sld:UserLayer><'
-            '/sld:StyledLayerDescriptor>'            
+            '/sld:StyledLayerDescriptor>'
         },
         {
             'name':'madmex_legend_landsat_lcc_4.2',
@@ -701,10 +701,9 @@ def populate_database():
             'iferas" opacity="1.0" quantity="124"/><sld:ColorMapEntry color="#f'
             'faaff" label="Selva secundaria" opacity="1.0" quantity="200"/></sl'
             'd:ColorMap></sld:RasterSymbolizer></sld:Rule></sld:FeatureTypeStyl'
-            'e></sld:UserStyle></sld:UserLayer></sld:StyledLayerDescriptor>'            
+            'e></sld:UserStyle></sld:UserLayer></sld:StyledLayerDescriptor>'     
         },
     ]
-    
     algorithms_array = [
         {
             'name':'ImageSegmentationProcessing_Shape',
@@ -996,7 +995,8 @@ def populate_database():
         },
         {
             'name':'LandsatSegmentsFeatureProcessing',
-            'description':'Landsat segmentation objects to database and feature processing package.',
+            'description':'Landsat segmentation objects to database and feature'
+            ' processing package.',
             'command':None,
             'is_supervised':True
         },
@@ -1173,9 +1173,8 @@ def populate_database():
             'description':'Landsat8 LCC workflow version 2.',
             'command':None,
             'is_supervised':True
-        },                
+        },
     ]
-    
     satellites_array = [
         {
             'short_name':'RE1',
@@ -1271,7 +1270,7 @@ def populate_database():
             'name':'WV02',
             'sensor':'WV02',
             'organization':'Digital Globe'
-        },   
+        },
     ]
     bands_array = [
         {
@@ -1475,24 +1474,22 @@ def populate_database():
             'maximum_wavelength':0.9
         },
     ]
-    
-    
     units = map(lambda x: Unit(
-        name=x['name'], 
+        name=x['name'],
         unit=x['unit']), units_array)
     session.add_all(units)
     organizations = map(lambda x: Organization(
-        name=x['name'], 
-        description = x['description'], 
-        country=x['country'], 
+        name=x['name'],
+        description=x['description'], 
+        country=x['country'],
         url=x['url']), organizations_array)
     session.add_all(organizations)
     sensors = map(lambda x: Sensor(
-        name=x['name'], 
+        name=x['name'],
         description=x['description']), sensors_array)
     session.add_all(sensors)
     legends = map(lambda x: Legend(
-        name=x['name'], 
+        name=x['name'],
         styled_layer_descriptor=x['styled_layer_descriptor']), legends_array)
     session.add_all(legends)
     algorithms = map(lambda x: Algorithm(
@@ -1502,20 +1499,19 @@ def populate_database():
         is_supervised=x['is_supervised']), algorithms_array)
     session.add_all(algorithms)
     satellites = map(lambda x: Satellite(
-        name = x['name'],
-        short_name = x['short_name'],
-        sensor = session.query(Sensor).filter(Sensor.name == x['sensor']).first(),
-        organization = session.query(Organization).filter(Organization.name == x['organization']).first()), satellites_array)
+        name=x['name'],
+        short_name=x['short_name'],
+        sensor=session.query(Sensor).filter(Sensor.name == x['sensor']).first(),
+        organization=session.query(Organization).filter(Organization.name == x['organization']).first()), satellites_array)
     session.add_all(satellites)
     bands = map(lambda x: Band(
-        band = x['band'],
-        minimum_wavelength = x['minimum_wavelength'],
-        maximum_wavelength = x['maximum_wavelength'],
-        bit_depth = x['bit_depth'],
-        sensor = session.query(Sensor).filter(Sensor.name == x['sensor']).first(),
-        unit = session.query(Unit).filter(Unit.name == x['unit']).first()), bands_array)
+        band=x['band'],
+        minimum_wavelength=x['minimum_wavelength'],
+        maximum_wavelength=x['maximum_wavelength'],
+        bit_depth=x['bit_depth'],
+        sensor=session.query(Sensor).filter(Sensor.name == x['sensor']).first(),
+        unit=session.query(Unit).filter(Unit.name == x['unit']).first()), bands_array)
     session.add_all(bands)
-    
     session.commit()
 
 

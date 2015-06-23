@@ -381,7 +381,7 @@ def populate_database():
     legends_array = [
         {
             'name':'madmex_legend_landsat_lcc_4.0',
-            'styled_layer_descriptor':'<?xml version="1.0" ?><sld:StyledLayerDe'
+            'styled_layer_descriptor':('<?xml version="1.0" ?><sld:StyledLayerDe'
                 'scriptor version="1.0.0" xmlns="http://www.opengis.net/sld" xm'
                 'lns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.ope'
                 'ngis.net/ogc" xmlns:sld="http://www.opengis.net/sld"><sld:User'
@@ -435,11 +435,11 @@ def populate_database():
                 'Entry color="#AAAA7F" label="Pastizales Herbacea" opacity="1.0'
                 '" quantity="26"/></sld:ColorMap></sld:RasterSymbolizer></sld:R'
                 'ule></sld:FeatureTypeStyle></sld:UserStyle></sld:UserLayer></s'
-                'ld:StyledLayerDescriptor>'
+                'ld:StyledLayerDescriptor>')
         },
         {
             'name':'madmex_legend_landsat_lcc_4.1',
-            'styled_layer_descriptor':'<?xml version="1.0" ?><sld:StyledLayerDe'
+            'styled_layer_descriptor':('<?xml version="1.0" ?><sld:StyledLayerDe'
             'scriptor version="1.0.0" xmlns="http://www.opengis.net/sld" xmlns:'
             'gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net'
             '/ogc" xmlns:sld="http://www.opengis.net/sld"><sld:UserLayer><sld:L'
@@ -502,7 +502,7 @@ def populate_database():
             'lor="#55AB00" label="Bosque Inducido; Cultivado; de Galeria" opaci'
             'ty="1.0" quantity="123"/></sld:ColorMap></sld:RasterSymbolizer></s'
             'ld:Rule></sld:FeatureTypeStyle></sld:UserStyle></sld:UserLayer></s'
-            'ld:StyledLayerDescriptor>'
+            'ld:StyledLayerDescriptor>')
         },
         {
             'name':'madmex_legend_malla_lcc_level3',

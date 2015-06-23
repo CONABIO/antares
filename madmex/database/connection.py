@@ -34,7 +34,7 @@ CAN_TRAIN_TABLE = Table(
         ForeignKey('algorithm.pk_id'),
         primary_key=True)
 )
-
+'''
 PRODUCT_INPUT_TABLE = Table(
     'product_input_table',
     BASE.metadata,
@@ -49,7 +49,7 @@ PRODUCT_INPUT_TABLE = Table(
         ForeignKey('product.pk_id'),
         primary_key=True)
 )
-
+'''
 class Organization(BASE):
     '''
     This table stands for companies or organizations that are somewhat related
@@ -210,12 +210,14 @@ class Product(BASE):
     can_train = relationship(
         'Algorithm',
         secondary=CAN_TRAIN_TABLE)
+    '''
     input_product = relationship(
         'Product',
         secondary=PRODUCT_INPUT_TABLE,
-        primaryjoin=id == PRODUCT_INPUT_TABLE.c.input_product,
-        secondaryjoin=id == PRODUCT_INPUT_TABLE.c.output_product,
+        primaryjoin=id==PRODUCT_INPUT_TABLE.c.input_product,
+        secondaryjoin=id==PRODUCT_INPUT_TABLE.c.output_product,
         backref="output_product")
+    '''
     type = Column(String(20))
     __mapper_args__ = {
         'polymorphic_on':type,
@@ -380,57 +382,60 @@ def populate_database():
         {
             'name':'madmex_legend_landsat_lcc_4.0',
             'styled_layer_descriptor':'<?xml version="1.0" ?><sld:StyledLayerDe'
-            'scriptor version="1.0.0" xmlns="http://www.opengis.net/sld" xmlns:'
-            'gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net'
-            '/ogc" xmlns:sld="http://www.opengis.net/sld"><sld:UserLayer><sld:L'
-            'ayerFeatureConstraints><sld:FeatureTypeConstraint/></sld:LayerFeat'
-            'ureConstraints><sld:UserStyle><sld:Name>madmex_lcc_landsat_1993_v4'
-            '</sld:Name><sld:Title/><sld:FeatureTypeStyle><sld:Name/><sld:Rule>'
-            '<sld:RasterSymbolizer><sld:Geometry><ogc:PropertyName>grid</ogc:Pr'
-            'opertyName></sld:Geometry><sld:Opacity>1</sld:Opacity><sld:ColorMa'
-            'p type="intervals"><sld:ColorMapEntry color="#FFFFFF" label=" " op'
-            'acity="1.0" quantity="0"/><sld:ColorMapEntry color="#005500" label'
-            '="Bosque De Coniferas" opacity="1.0" quantity="1"/><sld:ColorMapEn'
-            'try color="#006C00" label="Bosque De Coniferas Herbacea" opacity="'
-            '1.0" quantity="2"/><sld:ColorMapEntry color="#00CF98" label="Bosqu'
-            'e De Encino-Pino Y Pino-Encino Herbacea" opacity="1.0" quantity="3'
-            '"/><sld:ColorMapEntry color="#FFFF7F" label="Agricultura" opacity='
-            '"1.0" quantity="4"/><sld:ColorMapEntry color="#E59900" label="Mato'
-            'rral Xerofilo Herbacea" opacity="1.0" quantity="5"/><sld:ColorMapE'
-            'ntry color="#AA55FF" label="Selvas Secas Arborea" opacity="1.0" qu'
-            'antity="6"/><sld:ColorMapEntry color="#008B00" label="Bosque De Co'
-            'niferas Arborea" opacity="1.0" quantity="7"/><sld:ColorMapEntry co'
-            'lor="#C7C8BC" label="Suelo Desnudo" opacity="1.0" quantity="8"/><s'
-            'ld:ColorMapEntry color="#AAFFFF" label="Vegetacion Hidrofila" opac'
-            'ity="1.0" quantity="9"/><sld:ColorMapEntry color="#AA007F" label="'
-            'Selvas Secas" opacity="1.0" quantity="10"/><sld:ColorMapEntry colo'
-            'r="#00AA00" label="Bosque de Encino " opacity="1.0" quantity="11"/'
-            '><sld:ColorMapEntry color="#AA00FF" label="Selva Seca Herbacea" op'
-            'acity="1.0" quantity="12"/><sld:ColorMapEntry color="#00C100" labe'
-            'l="Bosque de Encino Arborea" opacity="1.0" quantity="13"/><sld:Col'
-            'orMapEntry color="#AAAA7F" label="Pastizales" opacity="1.0" quanti'
-            'ty="14"/><sld:ColorMapEntry color="#FF00FF" label="Selvas Humedas '
-            'Y Subhumedas Y Bosque Mesofilo Arborea" opacity="1.0" quantity="15'
-            '"/><sld:ColorMapEntry color="#9F6A00" label="Matorral Xerofilo" op'
-            'acity="1.0" quantity="16"/><sld:ColorMapEntry color="#00D800" labe'
-            'l="Bosque De Encino Herbacea" opacity="1.0" quantity="17"/><sld:Co'
-            'lorMapEntry color="#000000" label="Urbano Y Construido" opacity="1'
-            '.0" quantity="18"/><sld:ColorMapEntry color="#0000FF" label="Cuerp'
-            'o De Agua" opacity="1.0" quantity="19"/><sld:ColorMapEntry color="'
-            '#BD7E00" label="Matorral Xerofilo Arborea" opacity="1.0" quantity='
-            '"20"/><sld:ColorMapEntry color="#00FFFF" label="Vegetacion Hidrofi'
-            'la Herbacea" opacity="1.0" quantity="21"/><sld:ColorMapEntry color'
-            '="#00AA7F" label="Bosque De Encino-Pino Y Pino-Encino" opacity="1.'
-            '0" quantity="22"/><sld:ColorMapEntry color="#FF007F" label="Selvas'
-            ' Humedas Y Subhumedas Y Bosque Mesofilo" opacity="1.0" quantity="2'
-            '3"/><sld:ColorMapEntry color="#00C893" label="Bosque De Encino-Pin'
-            'o Y Pino-Encino Arborea" opacity="1.0" quantity="24"/><sld:ColorMa'
-            'pEntry color="#B000B0" label="Selvas Humedas Y Subhumedas Y Bosque'
-            ' Mesofilo Herbacea" opacity="1.0" quantity="25"/><sld:ColorMapEntr'
-            'y color="#AAAA7F" label="Pastizales Herbacea" opacity="1.0" quanti'
-            'ty="26"/></sld:ColorMap></sld:RasterSymbolizer></sld:Rule></sld:Fe'
-            'atureTypeStyle></sld:UserStyle></sld:UserLayer></sld:StyledLayerDe'
-            'scriptor>'
+                'scriptor version="1.0.0" xmlns="http://www.opengis.net/sld" xm'
+                'lns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.ope'
+                'ngis.net/ogc" xmlns:sld="http://www.opengis.net/sld"><sld:User'
+                'Layer><sld:LayerFeatureConstraints><sld:FeatureTypeConstraint/'
+                '></sld:LayerFeatureConstraints><sld:UserStyle><sld:Name>madmex'
+                '_lcc_landsat_1993_v4</sld:Name><sld:Title/><sld:FeatureTypeSty'
+                'le><sld:Name/><sld:Rule><sld:RasterSymbolizer><sld:Geometry><o'
+                'gc:PropertyName>grid</ogc:PropertyName></sld:Geometry><sld:Opa'
+                'city>1</sld:Opacity><sld:ColorMap type="intervals"><sld:ColorM'
+                'apEntry color="#FFFFFF" label=" " opacity="1.0" quantity="0"/>'
+                '<sld:ColorMapEntry color="#005500" label="Bosque De Coniferas"'
+                ' opacity="1.0" quantity="1"/><sld:ColorMapEntry color="#006C00'
+                '" label="Bosque De Coniferas Herbacea" opacity="1.0" quantity='
+                '"2"/><sld:ColorMapEntry color="#00CF98" label="Bosque De Encin'
+                'o-Pino Y Pino-Encino Herbacea" opacity="1.0" quantity="3"/><sl'
+                'd:ColorMapEntry color="#FFFF7F" label="Agricultura" opacity="1'
+                '.0" quantity="4"/><sld:ColorMapEntry color="#E59900" label="Ma'
+                'torral Xerofilo Herbacea" opacity="1.0" quantity="5"/><sld:Col'
+                'orMapEntry color="#AA55FF" label="Selvas Secas Arborea" opacit'
+                'y="1.0" quantity="6"/><sld:ColorMapEntry color="#008B00" label'
+                '="Bosque De Coniferas Arborea" opacity="1.0" quantity="7"/><sl'
+                'd:ColorMapEntry color="#C7C8BC" label="Suelo Desnudo" opacity='
+                '"1.0" quantity="8"/><sld:ColorMapEntry color="#AAFFFF" label="'
+                'Vegetacion Hidrofila" opacity="1.0" quantity="9"/><sld:ColorMa'
+                'pEntry color="#AA007F" label="Selvas Secas" opacity="1.0" quan'
+                'tity="10"/><sld:ColorMapEntry color="#00AA00" label="Bosque De'
+                ' Encino " opacity="1.0" quantity="11"/><sld:ColorMapEntry colo'
+                'r="#AA00FF" label="Selvas Secas Herbacea" opacity="1.0" quanti'
+                'ty="12"/><sld:ColorMapEntry color="#00C100" label="Bosque De E'
+                'ncino Arborea" opacity="1.0" quantity="13"/><sld:ColorMapEntry'
+                ' color="#AAAA7F" label="Pastizales" opacity="1.0" quantity="14'
+                '"/><sld:ColorMapEntry color="#FF00FF" label="Selvas Humedas Y '
+                'Subhumedas Y Bosque Mesofilo Arborea" opacity="1.0" quantity="'
+                '15"/><sld:ColorMapEntry color="#9F6A00" label="Matorral Xerofi'
+                'lo" opacity="1.0" quantity="16"/><sld:ColorMapEntry color="#00'
+                'D800" label="Bosque De Encino Herbacea" opacity="1.0" quantity'
+                '="17"/><sld:ColorMapEntry color="#000000" label="Urbano Y Cons'
+                'truido" opacity="1.0" quantity="18"/><sld:ColorMapEntry color='
+                '"#0000FF" label="Cuerpo De Agua" opacity="1.0" quantity="19"/>'
+                '<sld:ColorMapEntry color="#BD7E00" label="Matorral Xerofilo Ar'
+                'borea" opacity="1.0" quantity="20"/><sld:ColorMapEntry color="'
+                '#00FFFF" label="Vegetacion Hidrofila Herbacea" opacity="1.0" q'
+                'uantity="21"/><sld:ColorMapEntry color="#00AA7F" label="Bosque'
+                ' De Encino-Pino Y Pino-Encino" opacity="1.0" quantity="22"/><s'
+                'ld:ColorMapEntry color="#FF007F" label="Selvas Humedas Y Subhu'
+                'medas Y Bosque Mesofilo" opacity="1.0" quantity="23"/><sld:Col'
+                'orMapEntry color="#00C893" label="Bosque De Encino-Pino Y Pino'
+                '-Encino Arborea" opacity="1.0" quantity="24"/><sld:ColorMapEnt'
+                'ry color="#B000B0" label="Selvas Humedas Y Subhumedas Y Bosque'
+                ' Mesofilo Herbacea" opacity="1.0" quantity="25"/><sld:ColorMap'
+                'Entry color="#AAAA7F" label="Pastizales Herbacea" opacity="1.0'
+                '" quantity="26"/></sld:ColorMap></sld:RasterSymbolizer></sld:R'
+                'ule></sld:FeatureTypeStyle></sld:UserStyle></sld:UserLayer></s'
+                'ld:StyledLayerDescriptor>'
         },
         {
             'name':'madmex_legend_landsat_lcc_4.1',
@@ -701,7 +706,7 @@ def populate_database():
             'iferas" opacity="1.0" quantity="124"/><sld:ColorMapEntry color="#f'
             'faaff" label="Selva secundaria" opacity="1.0" quantity="200"/></sl'
             'd:ColorMap></sld:RasterSymbolizer></sld:Rule></sld:FeatureTypeStyl'
-            'e></sld:UserStyle></sld:UserLayer></sld:StyledLayerDescriptor>'     
+            'e></sld:UserStyle></sld:UserLayer></sld:StyledLayerDescriptor>'
         },
     ]
     algorithms_array = [
@@ -1480,7 +1485,7 @@ def populate_database():
     session.add_all(units)
     organizations = map(lambda x: Organization(
         name=x['name'],
-        description=x['description'], 
+        description=x['description'],
         country=x['country'],
         url=x['url']), organizations_array)
     session.add_all(organizations)
@@ -1502,7 +1507,8 @@ def populate_database():
         name=x['name'],
         short_name=x['short_name'],
         sensor=session.query(Sensor).filter(Sensor.name == x['sensor']).first(),
-        organization=session.query(Organization).filter(Organization.name == x['organization']).first()), satellites_array)
+        organization=session.query(Organization).filter(
+            Organization.name == x['organization']).first()), satellites_array)
     session.add_all(satellites)
     bands = map(lambda x: Band(
         band=x['band'],
@@ -1513,7 +1519,6 @@ def populate_database():
         unit=session.query(Unit).filter(Unit.name == x['unit']).first()), bands_array)
     session.add_all(bands)
     session.commit()
-
 
 if __name__ == '__main__':
     create_database()

@@ -202,7 +202,7 @@ class Product(BASE):
     uuid = Column(String, unique=True)
     acquisition_date = Column(DateTime())
     ingest_date = Column(DateTime())
-    path = Column(String, unique=True)   
+    path = Column(String, unique=True)  
     legend = Column(Integer, ForeignKey('legend.pk_id'))
     geometry = Column(String)
     information = Column(Integer, ForeignKey('information.pk_id'))
@@ -1479,44 +1479,44 @@ def populate_database():
             'maximum_wavelength':0.9
         },
     ]
-    units = map(lambda x: Unit(
+    units = [Unit(
         name=x['name'],
-        unit=x['unit']), units_array)
+        unit=x['unit']) for x in units_array]
     session.add_all(units)
-    organizations = map(lambda x: Organization(
+    organizations = [Organization(
         name=x['name'],
         description=x['description'],
         country=x['country'],
-        url=x['url']), organizations_array)
+        url=x['url']) for x in organizations_array]
     session.add_all(organizations)
-    sensors = map(lambda x: Sensor(
+    sensors = [Sensor(
         name=x['name'],
-        description=x['description']), sensors_array)
+        description=x['description']) for x in sensors_array]
     session.add_all(sensors)
-    legends = map(lambda x: Legend(
+    legends = [Legend(
         name=x['name'],
-        styled_layer_descriptor=x['styled_layer_descriptor']), legends_array)
+        styled_layer_descriptor=x['styled_layer_descriptor']) for x in legends_array]
     session.add_all(legends)
-    algorithms = map(lambda x: Algorithm(
+    algorithms = [Algorithm(
         name=x['name'],
         description=x['description'],
         command=x['command'],
-        is_supervised=x['is_supervised']), algorithms_array)
+        is_supervised=x['is_supervised']) for x in algorithms_array]
     session.add_all(algorithms)
-    satellites = map(lambda x: Satellite(
+    satellites = [Satellite(
         name=x['name'],
         short_name=x['short_name'],
         sensor=session.query(Sensor).filter(Sensor.name == x['sensor']).first(),
         organization=session.query(Organization).filter(
-            Organization.name == x['organization']).first()), satellites_array)
+            Organization.name == x['organization']).first()) for x in satellites_array]
     session.add_all(satellites)
-    bands = map(lambda x: Band(
+    bands = [Band(
         band=x['band'],
         minimum_wavelength=x['minimum_wavelength'],
         maximum_wavelength=x['maximum_wavelength'],
         bit_depth=x['bit_depth'],
         sensor=session.query(Sensor).filter(Sensor.name == x['sensor']).first(),
-        unit=session.query(Unit).filter(Unit.name == x['unit']).first()), bands_array)
+        unit=session.query(Unit).filter(Unit.name == x['unit']).first()) for x in bands_array]
     session.add_all(bands)
     session.commit()
 

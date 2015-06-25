@@ -20,16 +20,19 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         '''
-        options  
+        options
         '''
         path = options['path'][0]
-        #workflow = ['bundle', 'extractmetadata', 'apply_sql', 'register'] #a workflow have different kind of processes
+        #a workflow have different kind of processes
+        #workflow = ['bundle', 'extractmetadata', 'apply_sql', 'register'] 
         workflow = ['bundle', 'extractmetadata']
-        input_data_workflow=list()
-        input_data_workflow.append(path)#for different processes we need different input_data. So input_data is in general a list
-        for k in range(0,len(workflow)):
+        input_data_workflow = list()
+        #for different processes we need different input_data. So input_data is in general a list
+        input_data_workflow.append(path)
+        for k in range(0, len(workflow)):
             print workflow[k], input_data_workflow[k]
-            obj = Manager(workflow[k], input_data_workflow[k]) 
+            obj = Manager(workflow[k], input_data_workflow[k])
             obj.execute() #after each process we obtain output_data
             input_data_workflow.append(obj.output_data)
             print input_data_workflow
+            

@@ -3,6 +3,8 @@ Created on 15/06/2015
 
 @author: erickpalacios
 '''
+import os, os.path
+
 
 class Processes(object):
     '''
@@ -19,13 +21,16 @@ class Processes(object):
         execute
         '''
         pass
+    def getentries(self, path):
+        "return list of entries within a directory"
+        return os.listdir(path)
     
-    def get_folder_from_path(self):
+    def getpath(self, path, folder):
         '''
-        
+        return path of folder
         '''
-        
-    def create_output_file(self):
+        return os.path.join(path, folder)
+    def createoutputfile(self):
         '''
         create output file
         '''

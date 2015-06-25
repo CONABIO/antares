@@ -10,7 +10,7 @@ class Process(Processes):
     '''
     classdocs
     '''
-    def __init__(self, path):
-        self.path = path
+    def __init__(self, dictionary):
+        self.dictionary = dictionary
     def execute(self):
-        print self.path
+        print self.dictionary

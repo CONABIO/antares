@@ -3,7 +3,7 @@ Created on 18/06/2015
 
 @author: erickpalacios
 '''
-class BaseBundle(object):
+class Basebundle(object):
     '''
     This class serves as a base shell for a bundle. A bundle is a set of files
     that represent a working piece of information. The implementation of this

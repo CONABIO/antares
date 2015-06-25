@@ -46,7 +46,7 @@ class Process(Processes, BaseBundle):
     def scan(self, list_exp):
         val = False
         k = 0
-        while k <len(self.file_list) and (not val):
+        while k < len(self.file_list) and (not val):
             obj_regex = re.search(list_exp, self.file_list[k])
             if obj_regex:
                 val = True
@@ -58,7 +58,7 @@ class Process(Processes, BaseBundle):
             result = 'not founded'
         return result
     def is_consistent(self, result_scan_image, result_scan_metadata):
-        if isinstance(result_scan_image, int) and isinstance(result_scan_metadata, int) and len(self.file_list) >0:
+        if isinstance(result_scan_image, int) and isinstance(result_scan_metadata, int) and len(self.file_list) > 0:
             return True
         else:
             return False

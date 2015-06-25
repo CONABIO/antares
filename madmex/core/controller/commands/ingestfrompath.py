@@ -24,7 +24,7 @@ class Command(BaseCommand):
         '''
         path = options['path'][0]
         #a workflow have different kind of processes
-        #workflow = ['bundle', 'extractmetadata', 'apply_sql', 'register'] 
+        #workflow = ['bundle', 'extractmetadata', 'apply_sql', 'register']
         workflow = ['bundle', 'extractmetadata']
         input_data_workflow = list()
         #for different processes we need different input_data. So input_data is in general a list

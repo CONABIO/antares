@@ -18,8 +18,7 @@ class Process(Processes):
     def execute(self):
         '''
         Executer
-        '''        
-        
+        '''
     def __str__(self):
         '''
         str

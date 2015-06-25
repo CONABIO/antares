@@ -14,3 +14,4 @@ class Process(Processes):
         self.dictionary = dictionary
     def execute(self):
         print self.dictionary
+        

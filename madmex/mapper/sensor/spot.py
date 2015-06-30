@@ -3,7 +3,7 @@ Created on 29/06/2015
 
 @author: erickpalacios
 '''
-from madmex.processes.extractsensormetadata.base import BaseSensor
+from madmex.mapper.base import BaseSensor
 from datetime import datetime
 
 

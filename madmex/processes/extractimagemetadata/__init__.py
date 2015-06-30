@@ -25,10 +25,8 @@ class Process(Processes):
         '''
         execute
         '''
-        print __path__[0]
-        
-        format_list = find_formats('/Users/erickpalacios/Documents/EclipseWkspace/workspace/madmex/madmex/mapper/format')
-        print format_list
+        format_path = __path__[0] + '/../../mapper/format'
+        format_list = find_formats(format_path)
         extension_file = self.get_extension(self.image_path).strip('.')
         if extension_file in format_list:
             format_class = load_class(FORMAT_PACKAGE, extension_file).Format()

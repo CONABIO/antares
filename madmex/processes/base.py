@@ -21,22 +21,22 @@ class Processes(object):
         execute
         '''
         pass
-    def getentries(self, path):
+    def get_entries(self, path):
         "return list of entries within a directory"
         return os.listdir(path)
-    def getpath(self, path, folder):
+    def get_path(self, path, folder):
         '''
         return path of folder
         '''
         return os.path.join(path, folder)
-    def getextension(self, filename):
+    def get_extension(self, filename):
         '''
         return extension of file given it's name
         '''
         path_name, file_extension = os.path.splitext(filename)
         return file_extension
         
-    def createoutputfile(self):
+    def create_output_file(self):
         '''
         create output file
         '''

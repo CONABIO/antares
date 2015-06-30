@@ -17,7 +17,7 @@ class Process(Processes):
         self.metadata_path = self.diction['metadata']         
     def execute(self):
         xml_parser = '\.xml$|\.dim$'
-        extension_metadata = self.getextension(self.metadata_path)
+        extension_metadata = self.get_extension(self.metadata_path)
         obj_regex = re.search(xml_parser, extension_metadata)
         if obj_regex:
             print 'Xml parser'

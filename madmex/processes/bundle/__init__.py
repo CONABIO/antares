@@ -24,20 +24,20 @@ class Process(Processes, BaseBundle):
         path: path to a directory with a list of files
         '''
         self.path = path
-        self.file_list = self.getentries(path)
+        self.file_list = self.get_entries(path)
         self.output = {METADATA:list(), IMAGE:list()}
     def execute(self):
         '''
         execute
         '''
         image_extensions= ['.tif', '.img']
-        extensions_file = map(self.getextension, self.file_list)
+        extensions_file = map(self.get_extension, self.file_list)
         result_scan_image = self.scan(image_extensions, extensions_file)
         metadata_extensions = ['.txt', '.xml', '.dim']
         result_scan_metadata = self.scan(metadata_extensions, extensions_file)
         if self.is_consistent(result_scan_image, result_scan_metadata):
-            self.image_path = self.getpath(self.path, self.file_list[result_scan_image])
-            self.metadata_path = self.getpath(self.path, self.file_list[result_scan_metadata])
+            self.image_path = self.get_path(self.path, self.file_list[result_scan_image])
+            self.metadata_path = self.get_path(self.path, self.file_list[result_scan_metadata])
             print 'is consistent'
             LOGGER.info('the directory is consistent')
             self.output[METADATA] = self.metadata_path

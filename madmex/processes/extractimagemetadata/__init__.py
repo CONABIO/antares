@@ -25,11 +25,11 @@ class Process(Processes):
         execute
         '''
         format_list = find_formats(__path__[0])
-        extension_file = self.getextension(self.image_path).strip('.')
+        extension_file = self.get_extension(self.image_path).strip('.')
         if extension_file in format_list:
             format_class = load_class(FORMAT_PACKAGE, extension_file).Format()
         else:
-            raise 'Format  not supported'
+            print 'Format  not supported'
         
         self.output = format_class
     

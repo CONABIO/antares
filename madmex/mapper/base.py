@@ -73,15 +73,12 @@ class BaseSensor(object):
         '''
         Constructor
         '''
-        self.base_directory = None
         self.sensorType = None
         self.dateCreation = None
         self.dataAcquisition = None      
         self.uuid = uuid.uuid4()
         self.gridid = None
         self.format = "not set"
-        self.sensor = None
-        self.sensorname = None
         self.platform = None
         self.product = "not set"
         self.productname = None

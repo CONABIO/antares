@@ -12,7 +12,7 @@ FORMAT_PACKAGE = 'madmex.mapper.format'
 
 def find_formats(management_dir):
     
-    return find_in_dir(management_dir,'format')
+    return find_in_dir(management_dir,'')
 
 class Process(Processes):
     '''
@@ -25,7 +25,10 @@ class Process(Processes):
         '''
         execute
         '''
-        format_list = find_formats(__path__[0])
+        print __path__[0]
+        
+        format_list = find_formats('/Users/erickpalacios/Documents/EclipseWkspace/workspace/madmex/madmex/mapper/format')
+        print format_list
         extension_file = self.get_extension(self.image_path).strip('.')
         if extension_file in format_list:
             format_class = load_class(FORMAT_PACKAGE, extension_file).Format()

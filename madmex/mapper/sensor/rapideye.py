@@ -29,21 +29,17 @@ class Sensor(BaseSensor):
                     "tileid" : ["gml:metaDataProperty", "re:EarthObservationMetaData","re:tileId"]
                     }
         self.metadata = dict()
-    def change_format(self, metadataStruct):
-
+    def change_format(self):
         try:
-            self.metadataStruct = metadataStruct
-
-
-            acquisitionDate = self.metadataStruct["dataAcquisition"]
-            creationDate = self.metadataStruct["dateCreation"]
-            angle = self.metadataStruct["angle"]
-            clouds = self.metadataStruct["clouds"]
-            self.metadataStruct["dataAcquisition"] = datetime.strptime(acquisitionDate, "%Y-%m-%dT%H:%M:%S.%fZ")
-            self.metadataStruct["dateCreation"] = datetime.strptime(creationDate, "%Y-%m-%dT%H:%M:%SZ")
-            self.metadataStruct["angle"] = float(angle)
-            self.metadataStruct["clouds"] = float(clouds)
-            print self.metadataStruct["clouds"]
+            acquisitionDate = self.metadata["dataAcquisition"]
+            creationDate = self.metadata["dateCreation"]
+            angle = self.metadata["angle"]
+            clouds = self.metadata["clouds"]
+            self.metadata["dataAcquisition"] = datetime.strptime(acquisitionDate, "%Y-%m-%dT%H:%M:%S.%fZ")
+            self.metadata["dateCreation"] = datetime.strptime(creationDate, "%Y-%m-%dT%H:%M:%SZ")
+            self.metadata["angle"] = float(angle)
+            self.metadata["clouds"] = float(clouds)
+            print self.metadata["clouds"]
         except IOError:
             raise "Meta data extraction not successful"
             

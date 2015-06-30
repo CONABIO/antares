@@ -10,7 +10,7 @@ import xml.sax, csv
 from madmex import load_class
 import unicodedata
 
-SENSORS_PACKAGE = 'madmex.processes.extractsensormetadata.sensor'
+SENSORS_PACKAGE = 'madmex.mapper.sensor'
 
 class XmlParser(object):
     '''
@@ -59,5 +59,5 @@ class XmlParser(object):
                 long_tagList = len(sensor_class.tagList[str(i)])
                 elem = datafile.getElementsByTagName(sensor_class.tagList[str(i)][long_tagList-1])
                 sensor_class.metadata[str(i)] = unicodedata.normalize('NFKD', elem[0].firstChild.nodeValue).encode('ascii','ignore')
-            sensor_class.change_format(sensor_class.metadata)
+            sensor_class.change_format()
             return sensor_class

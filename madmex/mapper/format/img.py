@@ -3,7 +3,7 @@ Created on 30/06/2015
 
 @author: erickpalacios
 '''
-from madmex.processes.extractimagemetadata.base import BaseFormat
+from madmex.mapper.base import BaseFormat
 
 class Format(BaseFormat):
     '''

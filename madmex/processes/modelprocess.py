@@ -22,14 +22,14 @@ class MadmexProcess(object):
         else:
             self.bundle_output = input_data
 
-    def extractsensormetadata(self, input_data, flag):
+    def extract_sensor_metadata(self, input_data, flag):
         if flag:
             instance_class = self.load_processes_class(PROCESSES_PACKAGE, 'extractsensormetadata', self.bundle_output)
             instance_class.execute()
             self.extractsensormetadata_output = instance_class.output
         else:
             self.extractsensormetadata_output = input_data
-    def extractimagemetadata(self, input_data, flag):
+    def extract_image_metadata(self, input_data, flag):
         if flag:
             instance_class = self.load_processes_class(PROCESSES_PACKAGE, 'extractimagemetadata', self.bundle_output)
             instance_class.execute()

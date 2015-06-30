@@ -23,7 +23,7 @@ class Command(BaseCommand):
         '''
         path = options['path'][0]
         #a workflow have different kind of processes
-        workflow = ['bundle', 'extractsensormetadata', 'extractimagemetadata']
+        workflow = ['bundle', 'extract_sensor_metadata', 'extract_image_metadata']
         #instance an object of class MadmexProcess
         obj_madmex_process = MadmexProcess()
         

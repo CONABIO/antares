@@ -5,7 +5,10 @@ Created on Jun 10, 2015
 '''
 from __future__ import unicode_literals
 
+import abc
 import os
+import uuid
+
 
 METADATA = "metadata"
 IMAGE = "image"
@@ -25,6 +28,8 @@ class BaseBundle(object):
     class is in charge of looking for the needed files and throw an error in
     case any of the given files is missing or is incorrect.
     '''
+    
+    __metaclass__ = abc.ABCMeta
 
     def __init__(self, path):
         '''
@@ -68,6 +73,27 @@ class BaseSensor(object):
         '''
         Constructor
         '''
+        self.base_directory = None
+        self.sensorType = None
+        self.dateCreation = None
+        self.dataAcquisition = None      
+        self.uuid = uuid.uuid4()
+        self.gridid = None
+        self.format = "not set"
+        self.sensor = None
+        self.sensorname = None
+        self.platform = None
+        self.product = "not set"
+        self.productname = None
+        self.clouds = None
+        self.nodata = -1
+        self.angle = None
+        self.solarazimuth = 0
+        self.solarzenith = 0
+class BaseFormat(object):
+    '''
+    Implementers of this class will represent a data format.
+    '''
 class BaseParser(object):
     '''
     Helper class to parse meta data from the different providers.

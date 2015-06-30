@@ -7,7 +7,8 @@ Created on 10/06/2015
 from madmex.processes.base import Processes
 from madmex import find_in_dir
 from madmex import load_class
-FORMAT_PACKAGE = 'madmex.processes.extractimagemetadata.format'
+
+FORMAT_PACKAGE = 'madmex.mapper.format'
 
 def find_formats(management_dir):
     
@@ -30,10 +31,4 @@ class Process(Processes):
             format_class = load_class(FORMAT_PACKAGE, extension_file).Format()
         else:
             print 'Format  not supported'
-        
         self.output = format_class
-    
-        
-        
-        
-        

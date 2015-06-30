@@ -18,7 +18,6 @@ from madmex.core.controller.base import BaseCommand, CommandError
 
 
 COMMANDS_PACKAGE = 'madmex.core.controller.commands'
-SENSORS_PACKAGE = 'madmex.mapper.sensor'
 
 LOGGER = logging.getLogger(__name__)
 

@@ -5,8 +5,7 @@ Created on Jun 3, 2015
 '''
 
 from madmex.core.controller.base import BaseCommand
-from madmex.processes import Manager
-
+from madmex.processes.modelprocess import MadmexProcess
 
 class Command(BaseCommand):
     '''
@@ -24,15 +23,24 @@ class Command(BaseCommand):
         '''
         path = options['path'][0]
         #a workflow have different kind of processes
-        #workflow = ['bundle', 'extractmetadata', 'apply_sql', 'register']
-        workflow = ['bundle', 'extractmetadata']
-        input_data_workflow = list()
-        #for different processes we need different input_data. So input_data is in general a list
-        input_data_workflow.append(path)
-        for k in range(0, len(workflow)):
-            print workflow[k], input_data_workflow[k]
-            obj = Manager(workflow[k], input_data_workflow[k])
-            obj.execute() #after each process we obtain output_data
-            input_data_workflow.append(obj.output_data)
-            print input_data_workflow
-            
+        workflow = ['bundle', 'extractsensormetadata', 'extractimagemetadata']
+        #instance an object of class MadmexProcess
+        obj_madmex_process = MadmexProcess()
+        
+        print workflow[0]
+        process = getattr(obj_madmex_process, workflow[0])
+        process(path, True) #True to instance a class
+        print 'using object obj_madmex_process to obtain info'
+
+        print obj_madmex_process.bundle_output
+        
+        for k in range(1,len(workflow)):
+            print workflow[k]
+            process = getattr(obj_madmex_process, workflow[k])
+            process([], True)
+        
+        print 'using object obj_madmex_process to obtain info'
+        print obj_madmex_process.extractsensormetadata_output.sensor_name
+        print obj_madmex_process.extractimagemetadata_output.format_name
+        
+        

@@ -32,14 +32,22 @@ class Sensor(BaseSensor):
     def change_format(self):
         try:
             acquisitionDate = self.metadata["dataAcquisition"]
-            creationDate = self.metadata["dateCreation"]
-            angle = self.metadata["angle"]
-            clouds = self.metadata["clouds"]
+            creationDate = self.metadata["dateCreation"]            
             self.metadata["dataAcquisition"] = datetime.strptime(acquisitionDate, "%Y-%m-%dT%H:%M:%S.%fZ")
             self.metadata["dateCreation"] = datetime.strptime(creationDate, "%Y-%m-%dT%H:%M:%SZ")
-            self.metadata["angle"] = float(angle)
-            self.metadata["clouds"] = float(clouds)
-            print self.metadata["clouds"]
+            self.metadata["angle"] = float(self.metadata["angle"])
+            self.metadata["clouds"] = float(clouds = self.metadata["clouds"])
+            self.quicklookUrl = self.metadata["quicklook"]
+            self.productname = self.metadata["product"]
+            self.dateCreation = self.metadata["dateCreation"]
+            self.dataAcquisition = self.metadata["dataAcquisition"]
+            self.clouds = self.metadata["clouds"]
+            self.angle = self.metadata["angle"]
+            self.gridid = int(self.metadata["tileid"])
+
+            self.azimuthAngle = self.metadata["azimuthAngle"]
+            self.solarazimuth = self.metadata["solarazimuth"]
+            self.solarzenith = self.metadata["solarzenith"]
         except IOError:
             raise "Meta data extraction not successful"
             

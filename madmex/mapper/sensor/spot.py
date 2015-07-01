@@ -33,18 +33,16 @@ class Sensor(BaseSensor):
             acquisitionTime = self.metadata["dataAcquisitionTime"]
             creationDate = self.metadata["dateCreation"]
             self.metadata["dataAcquisition"] = datetime.strptime(acquisitionDate+"T"+acquisitionTime, "%Y-%m-%dT%H:%M:%S")
-            
             self.metadata["dateCreation"] = datetime.strptime(creationDate, "%Y-%m-%dT%H:%M:%S.%f")
             self.metadata["angle"] = float(self.metadata["angle"])
-            
             self.metadata["clouds"] = 999
             self.metadata["quicklook"] = "PREVIEW.JPG"
+            self.quicklookUrl = self.metadata["quicklook"]
             self.productname = self.metadata["product"]
             self.dateCreation = self.metadata["dateCreation"]
             self.dataAcquisition = self.metadata["dataAcquisition"]
             self.clouds = self.metadata["clouds"]
             self.angle = self.metadata["angle"]
-            self.quicklookUrl = self.metadata["quicklook"]
             self.gridid = int(self.metadata["tileid"])                   
         except IOError:
             raise "Meta data extraction not successful"

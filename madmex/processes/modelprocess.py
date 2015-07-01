@@ -42,6 +42,7 @@ class MadmexProcess(object):
         '''
         apply sql
         '''
+        pass
     def load_processes_class(self, package, name_process, input_data):
         '''
         load_processes_class

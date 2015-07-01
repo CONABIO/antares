@@ -23,5 +23,5 @@ class Process(Processes):
         '''
         str
         '''
-        return "nombre de sensor a registrar: %s" % (self.name_img)
+        return "%s" % (self.name_img)
     

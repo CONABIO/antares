@@ -104,6 +104,7 @@ def main():
     '''
     metadata = "/LUSTRE/MADMEX/eodata/etm+/25046/2013/2013-04-03/l1t/LE70250462013093ASN00_MTL.txt"
     parser = LandsatParser(metadata)
-    print json.dumps(parser.parse(), indent=4)
+    parser.parse()
+    print json.dumps(parser.metadata, indent=4)
 if __name__ == "__main__":
     main()

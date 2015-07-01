@@ -55,15 +55,6 @@ class Parser(BaseParser):
                     group_dictionary[key.strip()] = parse_value(value.strip())
         metadata.close()
         self.metadata = groups
-    def get_attribute(self):
-        '''
-        This method gets an attribute from the parser object that represents
-        a field in the real world object that is being parsed.
-        '''
-        if not self.metadata:
-            raise ParseError(
-                'The file has not being parsed yet, please call parse() method'
-                )
 def main():
     '''
     TODO: remove this, this is just for testing purposes
@@ -71,6 +62,7 @@ def main():
     metadata = "/LUSTRE/MADMEX/eodata/etm+/25046/2013/2013-04-03/l1t/LE70250462013093ASN00_MTL.txt"
     parser = Parser(metadata)
     parser.parse()
-    print json.dumps(parser.metadata, indent=4)
+    print parser.get_attribute(['L1_METADATA_FILE','IMAGE_ATTRIBUTES','SUN_AZIMUTH'])
+    #print json.dumps(parser.metadata, indent=4)
 if __name__ == "__main__":
     main()

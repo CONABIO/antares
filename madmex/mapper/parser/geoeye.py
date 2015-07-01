@@ -33,6 +33,7 @@ class Parser(BaseParser):
 def main():
     parser = Parser('/LUSTRE/MADMEX/eodata/wv02/11/2012/2012-09-19/lv2a-multi-ortho/12SEP19190058-M2AS-053114634020_01_P001.XML')
     parser.parse()
-    print json.dumps(parser.metadata, indent=4)
+    print parser.get_attribute(['isd','IMD','PANSHARPENALGORITHM'])
+    #print json.dumps(parser.metadata, indent=4)
 if __name__ == "__main__":
     main()

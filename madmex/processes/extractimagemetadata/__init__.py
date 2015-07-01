@@ -5,14 +5,10 @@ Created on 10/06/2015
 '''
 
 from madmex.processes.base import Processes
-from madmex import find_in_dir
 from madmex import load_class
+from madmex.mapper.format import find_formats
 
 FORMAT_PACKAGE = 'madmex.mapper.format'
-
-def find_formats(management_dir):
-    
-    return find_in_dir(management_dir,'format')
 
 class Process(Processes):
     '''
@@ -25,8 +21,7 @@ class Process(Processes):
         '''
         execute
         '''
-        format_path = __path__[0] + '/../../mapper/' 
-        format_list = find_formats(format_path)
+        format_list = find_formats()
         extension_file = self.get_extension(self.image_path).strip('.')
         if extension_file in format_list:
             format_class = load_class(FORMAT_PACKAGE, extension_file).Format()

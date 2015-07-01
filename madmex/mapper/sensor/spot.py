@@ -5,6 +5,7 @@ Created on 29/06/2015
 '''
 from madmex.mapper.base import BaseSensor
 from datetime import datetime
+import madmex.mapper.parser.xmlparser as xmlparser
 
 
 class Sensor(BaseSensor):
@@ -12,7 +13,8 @@ class Sensor(BaseSensor):
     classdocs
     '''
     def __init__(self):
-        self.sensor_name = 'spot5'
+        self.sensor_name = 'spot'
+        self.metadata_ext ='dim'
         self.tagList = {
                     "product" : ["Dimap_Document","Data_Processing","PROCESSING_LEVEL"],
                     "sensor" : ["Dimap_Document","Dataset_Sources","Scene_Source","MISSION"],
@@ -49,5 +51,8 @@ class Sensor(BaseSensor):
             self.gridid = int(self.metadata["tileid"])                   
         except IOError:
             raise "Meta data extraction not successful"
+    def parser(self, metadata_path):
+        return xmlparser.Parser(metadata_path, self.tagList)
+        
         
     

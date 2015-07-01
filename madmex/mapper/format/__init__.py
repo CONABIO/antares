@@ -1,5 +1,5 @@
-'''
-madmex.mapper.format
+from madmex import find_in_dir
 
-This package is the home for objects representing data formats.
-'''
+def find_formats():
+
+    return find_in_dir(__path__[0],'')

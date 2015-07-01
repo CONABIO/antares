@@ -91,7 +91,27 @@ class BaseFormat(object):
     '''
     Implementers of this class will represent a data format.
     '''
+    
+class ParseError(Exception):
+    '''
+    Handy exception for any error that happens during the parsing process.
+    '''
+
 class BaseParser(object):
     '''
     Helper class to parse meta data from the different providers.
     '''
+    def parse(self):
+        '''
+        The method that starts the parsing process. Depending on the file
+        that will be parsed, the implementors should be aware of what things
+        are necessary in order to parse the given format.
+        '''
+        pass
+    def get_attribute(self):
+        '''
+        This method gets an attribute from the parser object that represents
+        a field in the real world object that is being parsed.
+        '''
+        pass
+    

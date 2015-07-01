@@ -1,4 +1,5 @@
-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 '''
 Created on 25/06/2015
 
@@ -21,6 +22,7 @@ class XmlParser(object):
         self.tagList = tagList
 
     def run(self, metadata):
+        #metadata is an empty dictionary of a sensor
         print "open", self.metadata_path
         try:
             datafile = minidom.parse(self.metadata_path)          

@@ -7,7 +7,25 @@ Created on Jul 1, 2015
 from __future__ import unicode_literals
 
 from madmex.mapper.base import BaseParser
+import xml.dom.minidom as dom
 
+def xml_to_txt(node, stack):
+    print stack
+    stack.append(node.nodeName)
+    for child in node.childNodes:
+        if child.nodeType == child.TEXT_NODE:
+            if child.data:
+                print node.nodeName,child.data
+            
+            
+        if child.nodeType == dom.Node.ELEMENT_NODE:
+            xml_to_txt(child, stack)
+            stack.pop()
+
+def process_child(node):
+    print node.tagName
+    for child in node.childNodes:
+        process_child(child)
 
 class Parser(BaseParser):
     '''
@@ -17,9 +35,11 @@ class Parser(BaseParser):
     '''
         
     def parse(self):
+        document = dom.parse(self.filepath)
+        stack = []
+        xml_to_txt(document.documentElement, stack)
         
-        print 'here we parse the file.'
-        print self.filepath
+        #process_child(document.childNodes[0])
         
 
 def main():

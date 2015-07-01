@@ -25,7 +25,7 @@ class Process(Processes):
         '''
         execute
         '''
-        format_path = __path__[0] + '/../../mapper/format'
+        format_path = __path__[0] + '/../../mapper/format' 
         format_list = find_formats(format_path)
         extension_file = self.get_extension(self.image_path).strip('.')
         if extension_file in format_list:

@@ -35,9 +35,12 @@ class Sensor(BaseSensor):
             self.metadata["dataAcquisition"] = datetime.strptime(acquisitionDate+"T"+acquisitionTime, "%Y-%m-%dT%H:%M:%S")
             self.metadata["dateCreation"] = datetime.strptime(creationDate, "%Y-%m-%dT%H:%M:%S.%f")
             self.metadata["angle"] = float(self.metadata["angle"])
+            
             self.metadata["clouds"] = 999
             self.metadata["quicklook"] = "PREVIEW.JPG"
             self.quicklookUrl = self.metadata["quicklook"]
+            
+            
             self.productname = self.metadata["product"]
             self.dateCreation = self.metadata["dateCreation"]
             self.dataAcquisition = self.metadata["dataAcquisition"]

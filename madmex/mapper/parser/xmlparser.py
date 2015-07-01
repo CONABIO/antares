@@ -32,7 +32,7 @@ class Parser(BaseParser):
         super(Parser, self).__init__(metadata_path)
         self.metadata_path=metadata_path
         self.tagList = tagList
-
+        self.metadata = dict()
     def parse(self):
         #metadata is an empty dictionary of a sensor
         print "open", self.metadata_path

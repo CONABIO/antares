@@ -8,7 +8,6 @@ from __future__ import unicode_literals
 
 import json
 import logging
-
 from madmex.mapper.base import BaseParser, ParseError, put_in_dictionary, \
     parse_value
 

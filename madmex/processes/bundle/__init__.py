@@ -5,8 +5,8 @@ Created on 10/06/2015
 '''
 from madmex.processes.base import Processes
 from madmex.processes.bundle.base import BaseBundle
-import re
 import logging
+from madmex.mapper.format import find_formats
 
 LOGGER = logging.getLogger(__name__)
 
@@ -30,10 +30,10 @@ class Process(Processes, BaseBundle):
         '''
         execute
         '''
-        image_extensions= ['.tif', '.img']
-        extensions_file = map(self.get_extension, self.file_list)
+        image_extensions = find_formats()
+        extensions_file = [x.strip('.') for x in map(self.get_extension, self.file_list)]
         result_scan_image = self.scan(image_extensions, extensions_file)
-        metadata_extensions = ['.txt', '.xml', '.dim']
+        metadata_extensions = ['txt', 'xml', 'dim']
         result_scan_metadata = self.scan(metadata_extensions, extensions_file)
         if self.is_consistent(result_scan_image, result_scan_metadata):
             self.image_path = self.get_path(self.path, self.file_list[result_scan_image])

@@ -1,6 +1,27 @@
 from __future__ import unicode_literals
 from xml.dom.minidom import Document
 
+from madmex import find_in_dir
+from madmex import load_class
+
+SENSORS_PACKAGE = 'madmex.mapper.sensor'
+
+def find_sensors():
+
+    return find_in_dir(__path__[0],'')
+
+def get_sensor_and_metadata_extensions():
+    
+    list_sensors = find_sensors()
+    dict_metadata_extension = dict()
+    for k in range(0,len(list_sensors)):
+        instance_class = load_class(SENSORS_PACKAGE, list_sensors[k]).Sensor()
+        dict_metadata_extension[instance_class.metadata_ext] = instance_class.sensor_name
+    return dict_metadata_extension
+        
+    
+    
+
 
 class DublinCoreMetadata:
     '''

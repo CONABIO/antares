@@ -7,7 +7,6 @@ Created on Jul 1, 2015
 from __future__ import unicode_literals
 
 import json
-
 from madmex.mapper.base import BaseParser, xml_to_json
 import xml.dom.minidom as dom
 

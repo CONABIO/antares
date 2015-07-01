@@ -6,6 +6,8 @@ Created on 29/06/2015
 from datetime import datetime
 
 from madmex.mapper.base import BaseSensor
+import madmex.mapper.parser.xmlparser as xmlparser
+
 
 
 class Sensor(BaseSensor):
@@ -14,6 +16,7 @@ class Sensor(BaseSensor):
     '''
     def __init__(self):
         self.sensor_name = 'rapideye'
+        self.metadata_ext = 'xml'
         self.tagList = {
                     "product" : ["gml:metaDataProperty","re:EarthObservationMetaData","eop:productType"],
                     "sensor" : ["gml:using","eop:EarthObservationEquipment","eop:sensor","re:Sensor","eop:sensorType"],
@@ -52,4 +55,6 @@ class Sensor(BaseSensor):
             self.solarzenith = self.metadata["solarzenith"]
         except IOError:
             raise "Meta data extraction not successful"
+    def parser(self, metadata_path):
+        return xmlparser.Parser(metadata_path, self.tagList)
             

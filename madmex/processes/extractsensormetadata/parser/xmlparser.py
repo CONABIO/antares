@@ -30,7 +30,6 @@ class XmlParser(object):
                 len_tagList = len(self.tagList[str(i)])
                 elem = datafile.getElementsByTagName(self.tagList[str(i)][len_tagList-1])
                 metadata[str(i)] = unicodedata.normalize('NFKD', elem[0].firstChild.nodeValue).encode('ascii','ignore')
-            return metadata
         except ExpatError:
             print 'error in xml metadata file:%s' % self.metadata_path
             raise

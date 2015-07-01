@@ -6,8 +6,8 @@ Created on 10/06/2015
 '''
 
 from madmex.processes.base import Processes
-from madmex.processes.extractsensormetadata.parser.xmlparser import XmlParser
-from madmex.mapper.parser.landsat import LandsatParser
+import madmex.mapper.parser.xmlparser as xmlparser
+import madmex.mapper.parser.landsat as landsat
 from madmex import load_class
 
 SENSORS_PACKAGE = 'madmex.mapper.sensor'
@@ -24,14 +24,16 @@ class Process(Processes):
         
         if extension_metadata == '.xml':
             sensor_class = load_class(SENSORS_PACKAGE, 'rapideye').Sensor()
-            metadata = XmlParser(self.metadata_path, sensor_class.tagList)
-            metadata.run(sensor_class.metadata)
+            metadata = xmlparser.Parser(self.metadata_path, sensor_class.tagList)
+            metadata.parse()
+            sensor_class.metadata = metadata.metadata
             self.output = sensor_class
         else:
             if extension_metadata == '.dim':
                 sensor_class = load_class(SENSORS_PACKAGE, 'spot').Sensor()
-                metadata = XmlParser(self.metadata_path, sensor_class.tagList)
-                metadata.run(sensor_class.metadata)
+                metadata = xmlparser.Parser(self.metadata_path, sensor_class.tagList)
+                metadata.run()
+                sensor_class.metadata = metadata.metadata
                 self.output = sensor_class
             else:
                 if extension_metadata == '.txt':

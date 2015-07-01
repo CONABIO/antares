@@ -25,18 +25,16 @@ class Process(Processes):
         if extension_metadata == '.xml':
             sensor_class = load_class(SENSORS_PACKAGE, 'rapideye').Sensor()
             metadata = xmlparser.Parser(self.metadata_path, sensor_class.tagList)
-            metadata.parse()
-            sensor_class.metadata = metadata.metadata
-            self.output = sensor_class
         else:
             if extension_metadata == '.dim':
                 sensor_class = load_class(SENSORS_PACKAGE, 'spot').Sensor()
                 metadata = xmlparser.Parser(self.metadata_path, sensor_class.tagList)
-                metadata.run()
-                sensor_class.metadata = metadata.metadata
-                self.output = sensor_class
             else:
                 if extension_metadata == '.txt':
                     self.output = 'vacio'
                 else:
                     print 'no parser'
+        metadata.parse()
+        sensor_class.metadata = metadata.metadata
+        sensor_class.change_format()            
+        self.output = sensor_class

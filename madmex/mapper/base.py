@@ -101,6 +101,13 @@ class BaseParser(object):
     '''
     Helper class to parse meta data from the different providers.
     '''
+    def __init__(self, filepath):
+        '''
+        Constructor
+        '''
+        self.version = None
+        self.filepath = filepath
+        self.metadata = None
     def parse(self):
         '''
         The method that starts the parsing process. Depending on the file

@@ -53,20 +53,11 @@ def parse_value(value):
                 pass
     return _landsat_harmonizer(value)
 
-class LandsatParser(BaseParser):
+class Parser(BaseParser):
     '''
     Parses landsat metadata files creating a memory representation of the
     properties found in there.
-    '''
-    def __init__(self, filepath):
-        '''
-        Constructor
-        '''
-        self.version = None
-        self.filepath = filepath
-        self.metadata = None
-        
-        
+    '''         
     def parse(self):
         metadata = open(self.filepath, "r")
         group_dictionary = {}
@@ -103,7 +94,7 @@ def main():
     TODO: remove this, this is just for testing purposes
     '''
     metadata = "/LUSTRE/MADMEX/eodata/etm+/25046/2013/2013-04-03/l1t/LE70250462013093ASN00_MTL.txt"
-    parser = LandsatParser(metadata)
+    parser = Parser(metadata)
     parser.parse()
     print json.dumps(parser.metadata, indent=4)
 if __name__ == "__main__":

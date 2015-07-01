@@ -6,21 +6,11 @@ Created on Jul 1, 2015
 
 from __future__ import unicode_literals
 
-from madmex.mapper.base import BaseParser
+import json
+
+from madmex.mapper.base import BaseParser, xml_to_json
 import xml.dom.minidom as dom
 
-def xml_to_txt(node, stack):
-    print stack
-    stack.append(node.nodeName)
-    for child in node.childNodes:
-        if child.nodeType == child.TEXT_NODE:
-            if child.data:
-                print node.nodeName,child.data
-            
-            
-        if child.nodeType == dom.Node.ELEMENT_NODE:
-            xml_to_txt(child, stack)
-            stack.pop()
 
 def process_child(node):
     print node.tagName
@@ -37,14 +27,12 @@ class Parser(BaseParser):
     def parse(self):
         document = dom.parse(self.filepath)
         stack = []
-        xml_to_txt(document.documentElement, stack)
-        
-        #process_child(document.childNodes[0])
-        
+        self.metadata = {}
+        xml_to_json(document.documentElement, stack, self.metadata)    
 
 def main():
     parser = Parser('/LUSTRE/MADMEX/eodata/wv02/11/2012/2012-09-19/lv2a-multi-ortho/12SEP19190058-M2AS-053114634020_01_P001.XML')
     parser.parse()
-    
+    print json.dumps(parser.metadata, indent=4)
 if __name__ == "__main__":
     main()

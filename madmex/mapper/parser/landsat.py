@@ -8,9 +8,9 @@ from __future__ import unicode_literals
 
 import json
 import logging
-import re
 
-from madmex.mapper.base import BaseParser, ParseError
+from madmex.mapper.base import BaseParser, ParseError, put_in_dictionary, \
+    parse_value
 
 
 LOGGER = logging.getLogger(__name__)
@@ -22,36 +22,11 @@ def _landsat_harmonizer(value):
     value = value.replace("LANDSAT_7", "Landsat7")
     value = value.replace('ETM"', 'ETM+"')
     return value
-def put_in_dictionary(dictionary, stack, value):
+def _landsat_parse_value(value):
     '''
-    This method puts the given value into a tree represented by the dictionary
-    the path to the leaf will be retrieved from the stack.
+    This method overrides functionality of parse value to add harmonizer process.
     '''
-    local = dictionary
-    length = len(stack) - 1
-    for i in range(length):
-        local = local[stack[i]]
-    local[stack[length]] = value
-def parse_value(value):
-    '''
-    This method tries to identify the value of a given string, if it is in fact
-    a string it removes the unnecessary quotes. If value represents a numeric
-    object such as an int or a float it parses it into one. If the previous
-    tests fail, the value is returned.
-    '''
-    pattern = r'\"(.*)\"'
-    string_matcher = re.compile(pattern)
-    if string_matcher.match(value):
-        return re.sub(pattern, r'\1', _landsat_harmonizer(value))
-    else:
-        try:
-            return int(value) 
-        except ValueError:
-            try:
-                return float(value)
-            except ValueError:
-                pass
-    return _landsat_harmonizer(value)
+    return parse_value(_landsat_harmonizer(value))
 
 class Parser(BaseParser):
     '''
@@ -77,7 +52,7 @@ class Parser(BaseParser):
                     stack.pop()
                     group_dictionary = {}
                 else:
-                    group_dictionary[key.strip()] = parse_value(value.strip())   
+                    group_dictionary[key.strip()] = parse_value(value.strip())
         metadata.close()
         self.metadata = groups
     def get_attribute(self):

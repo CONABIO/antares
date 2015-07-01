@@ -7,13 +7,56 @@ from __future__ import unicode_literals
 
 import abc
 import os
+import re
 import uuid
+import xml.dom.minidom as dom
 
 
 METADATA = "metadata"
 IMAGE = "image"
 FILE = "file"
 QUICKLOOK = "quicklook"
+
+def xml_to_json(element, stack, dictionary):
+    stack.append(element.nodeName)
+    if len(element.firstChild.nodeValue.strip()):
+        put_in_dictionary(dictionary, stack, parse_value(element.firstChild.nodeValue.strip()))
+    else:
+        put_in_dictionary(dictionary, stack, {})
+    for child in element.childNodes:
+        if child.nodeType == dom.Node.ELEMENT_NODE:
+            xml_to_json(child, stack, dictionary)
+            stack.pop()
+def put_in_dictionary(dictionary, stack, value):
+    '''
+    This method puts the given value into a tree represented by the dictionary
+    the path to the leaf will be retrieved from the stack.
+    '''
+    local = dictionary
+    length = len(stack) - 1
+    for i in range(length):
+        local = local[stack[i]]
+    local[stack[length]] = value
+def parse_value(value):
+    '''
+    This method tries to identify the value of a given string, if it is in fact
+    a string it removes the unnecessary quotes. If value represents a numeric
+    object such as an int or a float it parses it into one. If the previous
+    tests fail, the value is returned.
+    '''
+    pattern = r'\"(.*)\"'
+    string_matcher = re.compile(pattern)
+    if string_matcher.match(value):
+        return re.sub(pattern, r'\1', value)
+    else:
+        try:
+            return int(value) 
+        except ValueError:
+            try:
+                return float(value)
+            except ValueError:
+                pass
+    return value
 
 class BundleError(Exception):
     '''
@@ -115,10 +158,14 @@ class BaseParser(object):
         are necessary in order to parse the given format.
         '''
         pass
-    def get_attribute(self):
+    def get_attribute(self, path_to_metadata):
         '''
         This method gets an attribute from the parser object that represents
         a field in the real world object that is being parsed.
         '''
-        pass
+        local = self.metadata
+        length = len(path_to_metadata) 
+        for i in range(length):
+            local = local[path_to_metadata[i]]
+        return local
     

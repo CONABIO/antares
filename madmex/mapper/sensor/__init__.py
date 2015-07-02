@@ -10,7 +10,7 @@ def find_sensors():
 
     return find_in_dir(__path__[0],'')
 
-def get_sensor_and_metadata_extensions():
+def get_sensors_and_metadata_extensions():
     
     list_sensors = find_sensors()
     dict_metadata_extension = dict()

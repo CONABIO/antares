@@ -116,7 +116,6 @@ class BaseSensor(object):
         '''
         Constructor
         '''
-        self.sensorType = None
         self.dateCreation = None
         self.dataAcquisition = None      
         self.uuid = uuid.uuid4()
@@ -130,6 +129,7 @@ class BaseSensor(object):
         self.angle = None
         self.solarazimuth = 0
         self.solarzenith = 0
+    
 class BaseFormat(object):
     '''
     Implementers of this class will represent a data format.

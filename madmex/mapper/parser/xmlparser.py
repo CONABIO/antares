@@ -23,24 +23,23 @@ class Parser(BaseParser):
     classdocs
     '''
 
-    def __init__(self, metadata_path, tagList):
+    def __init__(self, metadatapath, tagList):
         '''
         Constructor
         '''
-        super(Parser, self).__init__(metadata_path)
-        self.metadata_path=metadata_path
+        super(Parser, self).__init__(metadatapath)
         self.tagList = tagList
         self.metadata = dict()
     def parse(self):
-        print "open", self.metadata_path
+        print "open", self.filepath
         try:
-            datafile = minidom.parse(self.metadata_path)          
+            datafile = minidom.parse(self.filepath)          
             for i in self.tagList.keys():
-                len_tagList = len(self.tagList[str(i)])
-                elem = datafile.getElementsByTagName(self.tagList[str(i)][len_tagList-1])
+                lentagList = len(self.tagList[str(i)])
+                elem = datafile.getElementsByTagName(self.tagList[str(i)][lentagList-1])
                 self.metadata[str(i)] = unicodedata.normalize('NFKD', elem[0].firstChild.nodeValue).encode('ascii','ignore')
         except ExpatError:
-            print 'error in xml metadata file:%s' % self.metadata_path
+            print 'error in xml metadata file:%s' % self.filepath
             raise
 
 

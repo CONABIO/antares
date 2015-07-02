@@ -24,7 +24,7 @@ class Processes(object):
     def get_entries(self, path):
         "return list of entries within a directory"
         return os.listdir(path)
-    def get_path(self, path, folder):
+    def join_path_folder(self, path, folder):
         '''
         return path of folder
         '''

@@ -32,29 +32,26 @@ class Sensor(BaseSensor):
                     "tileid" : ["gml:metaDataProperty", "re:EarthObservationMetaData","re:tileId"]
                     }
         self.metadata = dict()
-    def change_format(self):
-        try:
-            acquisitionDate = self.metadata["dataAcquisition"]
-            creationDate = self.metadata["dateCreation"]            
-            self.metadata["dataAcquisition"] = datetime.strptime(acquisitionDate, "%Y-%m-%dT%H:%M:%S.%fZ")
-            self.metadata["dateCreation"] = datetime.strptime(creationDate, "%Y-%m-%dT%H:%M:%SZ")
-            self.metadata["angle"] = float(self.metadata["angle"])
-            
-            self.metadata["clouds"] = float(self.metadata["clouds"])
-            self.quicklookUrl = self.metadata["quicklook"]
-            
-            self.productname = self.metadata["product"]
-            self.dateCreation = self.metadata["dateCreation"]
-            self.dataAcquisition = self.metadata["dataAcquisition"]
-            self.clouds = self.metadata["clouds"]
-            self.angle = self.metadata["angle"]
-            self.gridid = int(self.metadata["tileid"])
+    def extract_metadata(self, metadata_path):
+        instance_class = xmlparser.Parser(metadata_path, self.tagList)
+        instance_class.parse()
+        self.metadata = instance_class.metadata
+        acquisitionDate = self.metadata["dataAcquisition"]
+        creationDate = self.metadata["dateCreation"] 
+        self.metadata["dataAcquisition"] = datetime.strptime(acquisitionDate, "%Y-%m-%dT%H:%M:%S.%fZ")
+        self.metadata["dateCreation"] = datetime.strptime(creationDate, "%Y-%m-%dT%H:%M:%SZ")   
+        self.dateCreation = self.metadata["dateCreation"]
+        self.dataAcquisition = self.metadata["dataAcquisition"]
+        self.metadata["clouds"] = float(self.metadata["clouds"])    
+        self.metadata["angle"] = float(self.metadata["angle"])
+        self.quicklookUrl = self.metadata["quicklook"]
+        self.productname = self.metadata["product"]
+        self.clouds = self.metadata["clouds"]
+        self.angle = self.metadata["angle"]
+        self.gridid = int(self.metadata["tileid"])
+        self.azimuthAngle = self.metadata["azimuthAngle"]
+        self.solarazimuth = self.metadata["solarazimuth"]
+        self.solarzenith = self.metadata["solarzenith"]
+        
 
-            self.azimuthAngle = self.metadata["azimuthAngle"]
-            self.solarazimuth = self.metadata["solarazimuth"]
-            self.solarzenith = self.metadata["solarzenith"]
-        except IOError:
-            raise "Meta data extraction not successful"
-    def parser(self, metadata_path):
-        return xmlparser.Parser(metadata_path, self.tagList)
             

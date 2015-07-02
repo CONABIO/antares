@@ -120,8 +120,8 @@ def main():
     parser = Parser(metadata)
     parser.parse()
     print parser.get_attribute(['L1_METADATA_FILE','IMAGE_ATTRIBUTES','SUN_AZIMUTH'])
-    print parser.get_attribute(['searchResponse','metaData','cartURL'])
-    print json.dumps(parser.metadata, indent=4)
-    print json.dumps(parser.usgs_metadata, indent=4)
+    print parser.get_attribute(['searchResponse','metaData','sceneStartTime'])
+    #print json.dumps(parser.metadata, indent=4)
+    #print json.dumps(parser.usgs_metadata, indent=4)
 if __name__ == "__main__":
     main()

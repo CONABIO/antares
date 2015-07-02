@@ -18,6 +18,10 @@ FILE = "file"
 QUICKLOOK = "quicklook"
 
 def xml_to_json(element, stack, dictionary):
+    '''
+    This method creates a json representation of the given xml structure. It
+    traverses the dom tree and adds elements to the dictionary as it goes.
+    '''
     stack.append(element.nodeName)
     if len(element.firstChild.nodeValue.strip()):
         put_in_dictionary(dictionary, stack, parse_value(element.firstChild.nodeValue.strip()))
@@ -155,7 +159,9 @@ class BaseParser(object):
         This method gets an attribute from the parser object that represents
         a field in the real world object that is being parsed.
         '''
-        local = self.metadata
+        return self._get_attribute(path_to_metadata, self.metadata)
+    def _get_attribute(self, path_to_metadata, dictionary):
+        local = dictionary
         length = len(path_to_metadata) 
         for i in range(length):
             local = local[path_to_metadata[i]]

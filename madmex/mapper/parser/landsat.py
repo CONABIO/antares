@@ -6,13 +6,19 @@ Created on Jun 30, 2015
 
 from __future__ import unicode_literals
 
+import datetime
 import json
 import logging
+import requests
+
 from madmex.mapper.base import BaseParser, ParseError, put_in_dictionary, \
-    parse_value
+    parse_value, xml_to_json
+import xml.dom.minidom as dom
 
 
 LOGGER = logging.getLogger(__name__)
+
+USGS_HTTP_SERVICE = 'http://earthexplorer.usgs.gov/EE/InventoryStream/pathrow?start_path=%d&end_path=%d&start_row=%d&end_row=%d&sensor=%s&start_date=%s&end_date=%s'
 
 def _landsat_harmonizer(value):
     '''
@@ -26,12 +32,40 @@ def _landsat_parse_value(value):
     This method overrides functionality of parse value to add harmonizer process.
     '''
     return parse_value(_landsat_harmonizer(value))
-
+def _get_usgs_metadata(path, row, sensor, date):
+    '''
+    This method creates a url and builds a request with it. The response is then
+    returned to the caller.
+    '''
+    if sensor == "ETM+" or sensor == "ETM":
+        date_object = datetime.datetime.strptime(date, "%Y-%m-%d")
+        date_lansat_change = datetime.datetime.strptime("2003-04-01", "%Y-%m-%d")
+        if date_object > date_lansat_change:
+            sensor_encoding = "LANDSAT_ETM_SLC_OFF"
+        else:
+            sensor_encoding = 'LANDSAT_ETM'
+    elif sensor == "OLI_TIRS":
+        sensor_encoding = "LANDSAT_8"
+    elif sensor == "TM":
+        sensor_encoding = "LANDSAT_TM"
+    usgs_url = USGS_HTTP_SERVICE % (path, path, row, row, sensor_encoding, date, date)
+    LOGGER.debug('USGS metadata will be retrieved from %s.' % usgs_url)
+    request = requests.get(usgs_url)
+    return request
 class Parser(BaseParser):
     '''
     Parses landsat metadata files creating a memory representation of the
     properties found in there.
-    '''         
+    '''
+    
+    def __init__(self, file_path):
+        '''
+        Constructor
+        '''
+        super(Parser, self).__init__(file_path)
+        self.usgs_metadata = None
+        
+             
     def parse(self):
         metadata = open(self.filepath, "r")
         group_dictionary = {}
@@ -54,6 +88,22 @@ class Parser(BaseParser):
                     group_dictionary[key.strip()] = parse_value(value.strip())
         metadata.close()
         self.metadata = groups
+        LOGGER.debug('File metadata has been parsed.')
+        path = self.get_attribute(['L1_METADATA_FILE','PRODUCT_METADATA','WRS_PATH'])
+        row = self.get_attribute(['L1_METADATA_FILE','PRODUCT_METADATA','WRS_ROW'])
+        sensor = self.get_attribute(['L1_METADATA_FILE','PRODUCT_METADATA','SENSOR_ID'])
+        acquisition_date = self.get_attribute(['L1_METADATA_FILE','PRODUCT_METADATA','DATE_ACQUIRED'])
+        request = _get_usgs_metadata(path, row, sensor, acquisition_date)
+        document = dom.parseString(request.text)
+        stack = []
+        self.usgs_metadata = {}
+        xml_to_json(document.documentElement, stack, self.usgs_metadata)  
+        LOGGER.debug('USGS metadata has been parsed.')
+    def get_attribute(self, path_to_metadata):
+        try:
+            return BaseParser.get_attribute(self, path_to_metadata)
+        except Exception:
+            return self._get_attribute(path_to_metadata, self.usgs_metadata)
 def main():
     '''
     TODO: remove this, this is just for testing purposes
@@ -62,6 +112,8 @@ def main():
     parser = Parser(metadata)
     parser.parse()
     print parser.get_attribute(['L1_METADATA_FILE','IMAGE_ATTRIBUTES','SUN_AZIMUTH'])
-    #print json.dumps(parser.metadata, indent=4)
+    print parser.get_attribute(['searchResponse','metaData','cartURL'])
+    print json.dumps(parser.metadata, indent=4)
+    print json.dumps(parser.usgs_metadata, indent=4)
 if __name__ == "__main__":
     main()

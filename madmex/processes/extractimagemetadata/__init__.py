@@ -16,15 +16,15 @@ class Process(Processes):
     '''
     def __init__(self, diction):
         self.diction = diction
-        self.imagepath = self.diction['image']     
+        self.image_path = self.diction['image']     
     def execute(self):
         '''
         execute
         '''
-        formatlist = find_formats()
-        extensionfile = self.get_extension(self.imagepath).strip('.')
-        if extensionfile in formatlist:
-            formatclass = load_class(FORMAT_PACKAGE, extensionfile).Format()
+        format_list = find_formats()
+        extension_file = self.get_extension(self.image_path).strip('.')
+        if extension_file in format_list:
+            format_class = load_class(FORMAT_PACKAGE, extension_file).Format()
         else:
             print 'Format  not supported'
-        self.output = formatclass
+        self.output = format_class

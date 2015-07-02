@@ -25,7 +25,6 @@ class Sensor(BaseSensor):
                     "angle": "VIEWING_ANGLE",
                     "tileid" : "GRID_REFERENCE"
                     }
-        self.metadata_path = None
 
             
     def extract_metadata(self, metadata_path):

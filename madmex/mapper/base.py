@@ -116,19 +116,11 @@ class BaseSensor(object):
         '''
         Constructor
         '''
-        self.dateCreation = None
-        self.dataAcquisition = None      
         self.uuid = uuid.uuid4()
-        self.gridid = None
         self.format = "not set"
-        self.platform = None
         self.product = "not set"
-        self.productname = None
-        self.clouds = None
         self.nodata = -1
-        self.angle = None
-        self.solarazimuth = 0
-        self.solarzenith = 0
+
     
 class BaseFormat(object):
     '''

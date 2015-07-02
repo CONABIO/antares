@@ -24,4 +24,5 @@ class Process(Processes):
         if extensionmetadata in sensorsmetadataext.keys():
             sensorclass = load_class(SENSORS_PACKAGE, sensorsmetadataext[extensionmetadata]).Sensor()
         sensorclass.extract_metadata(self.metadatapath)
+        sensorclass.metadatapath = self.metadatapath
         self.output = sensorclass

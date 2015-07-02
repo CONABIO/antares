@@ -64,16 +64,19 @@ class Parser(BaseParser):
         '''
         super(Parser, self).__init__(file_path)
         self.usgs_metadata = None
-        
-             
     def parse(self):
+        '''
+        The parse method for the landsat instance needs two different sources of
+        metadata. The first source is the usual local file, using this, further
+        information is obtained, and a request to the usgs server is created.
+        The response is then parsed into a new dictionary.
+        '''
         metadata = open(self.filepath, "r")
         group_dictionary = {}
         groups = {}
         stack = []
         LOGGER.debug("File: %s will be parsed as Landsat metadata file." % self.filepath)
-        for line in metadata.readlines():
-           
+        for line in metadata.readlines():      
             if "=" in line:
                 key, value = line.split(" = ")
                 if "group" == key.lower().strip():
@@ -100,6 +103,11 @@ class Parser(BaseParser):
         xml_to_json(document.documentElement, stack, self.usgs_metadata)  
         LOGGER.debug('USGS metadata has been parsed.')
     def get_attribute(self, path_to_metadata):
+        '''
+        Method that overrides the usual behavior of getting an attribute, this
+        class has two dictionaries of metadata, if an attribute is requested,
+        both should be inspected. 
+        '''
         try:
             return BaseParser.get_attribute(self, path_to_metadata)
         except Exception:

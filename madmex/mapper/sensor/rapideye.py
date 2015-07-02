@@ -31,7 +31,6 @@ class Sensor(BaseSensor):
                     "quicklook" : "eop:fileName",
                     "tileid" : "re:tileId"
                     }
-        self.metadata_path = None
     def extract_metadata(self, metadata_path):
         instance_class = rapideyeparser.Parser(metadata_path, self.metadata)
         instance_class.parse()

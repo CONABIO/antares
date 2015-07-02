@@ -15,6 +15,7 @@ from madmex.mapper.base import BaseParser, ParseError, put_in_dictionary, \
     parse_value, xml_to_json
 import xml.dom.minidom as dom
 
+from madmex.configuration import SETTINGS
 
 LOGGER = logging.getLogger(__name__)
 
@@ -38,8 +39,8 @@ def _get_usgs_metadata(path, row, sensor, date):
     returned to the caller.
     '''
     if sensor == "ETM+" or sensor == "ETM":
-        date_object = datetime.datetime.strptime(date, "%Y-%m-%d")
-        date_lansat_change = datetime.datetime.strptime("2003-04-01", "%Y-%m-%d")
+        date_object = datetime.datetime.strptime(date, getattr(SETTINGS, 'DATE_FORMAT'))
+        date_lansat_change = datetime.datetime.strptime('2003-04-01', getattr(SETTINGS, 'DATE_FORMAT'))
         if date_object > date_lansat_change:
             sensor_encoding = "LANDSAT_ETM_SLC_OFF"
         else:
@@ -112,16 +113,4 @@ class Parser(BaseParser):
             return BaseParser.get_attribute(self, path_to_metadata)
         except Exception:
             return self._get_attribute(path_to_metadata, self.usgs_metadata)
-def main():
-    '''
-    TODO: remove this, this is just for testing purposes
-    '''
-    metadata = "/LUSTRE/MADMEX/eodata/etm+/25046/2013/2013-04-03/l1t/LE70250462013093ASN00_MTL.txt"
-    parser = Parser(metadata)
-    parser.parse()
-    print parser.get_attribute(['L1_METADATA_FILE','IMAGE_ATTRIBUTES','SUN_AZIMUTH'])
-    print parser.get_attribute(['searchResponse','metaData','sceneStartTime'])
-    #print json.dumps(parser.metadata, indent=4)
-    #print json.dumps(parser.usgs_metadata, indent=4)
-if __name__ == "__main__":
-    main()
+

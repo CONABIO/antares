@@ -156,11 +156,17 @@ class BaseParser(object):
         pass
     def get_attribute(self, path_to_metadata):
         '''
-        This method gets an attribute from the parser object that represents
-        a field in the real world object that is being parsed.
+        This method is just a decorator for the protected _get_attribute method
+        to provide a nice interface to get attributes from each parser.
+        Classes extending a BaseParser may want to override the behavior of
+        this method to adequate it to their needs.
         '''
         return self._get_attribute(path_to_metadata, self.metadata)
     def _get_attribute(self, path_to_metadata, dictionary):
+        '''
+        This method gets an attribute from the given dictionary that represents
+        a field in the real world object that is being parsed.
+        '''
         local = dictionary
         length = len(path_to_metadata) 
         for i in range(length):

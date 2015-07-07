@@ -6,9 +6,9 @@ Created on Jul 1, 2015
 
 from __future__ import unicode_literals
 
-import json
-from madmex.mapper.base import BaseParser, xml_to_json
+from madmex.mapper.base import BaseParser, _xml_to_json
 import xml.dom.minidom as dom
+
 
 class Parser(BaseParser):
     '''
@@ -21,12 +21,4 @@ class Parser(BaseParser):
         document = dom.parse(self.filepath)
         stack = []
         self.metadata = {}
-        xml_to_json(document.documentElement, stack, self.metadata)    
-
-def main():
-    parser = Parser('/LUSTRE/MADMEX/eodata/wv02/11/2012/2012-09-19/lv2a-multi-ortho/12SEP19190058-M2AS-053114634020_01_P001.XML')
-    parser.parse()
-    print parser.get_attribute(['isd','IMD','BAND_C','ULLAT'])
-    #print json.dumps(parser.metadata, indent=4)
-if __name__ == "__main__":
-    main()
+        _xml_to_json(document.documentElement, stack, self.metadata)    

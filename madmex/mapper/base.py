@@ -6,9 +6,12 @@ Created on Jun 10, 2015
 from __future__ import unicode_literals
 
 import abc
+import logging
+import logging.config
 import os
 import re
 import uuid
+
 import xml.dom.minidom as dom
 
 
@@ -17,30 +20,38 @@ IMAGE = "image"
 FILE = "file"
 QUICKLOOK = "quicklook"
 
-def xml_to_json(element, stack, dictionary):
+LOGGER = logging.getLogger(__name__)
+
+def _xml_to_json(element, stack, dictionary):
     '''
     This method creates a json representation of the given xml structure. It
     traverses the dom tree and adds elements to the dictionary as it goes.
     '''
     stack.append(element.nodeName)
-    if len(element.firstChild.nodeValue.strip()):
+    LOGGER.debug('Processing %s element.' % element.nodeName)
+    if element.firstChild and len(element.firstChild.nodeValue.strip()):
         put_in_dictionary(dictionary, stack, parse_value(element.firstChild.nodeValue.strip()))
     else:
-        put_in_dictionary(dictionary, stack, {})
+        #put_in_dictionary(dictionary, stack, {})
+        pass
     for child in element.childNodes:
         if child.nodeType == dom.Node.ELEMENT_NODE:
-            xml_to_json(child, stack, dictionary)
+            _xml_to_json(child, stack, dictionary)
             stack.pop()
+
 def put_in_dictionary(dictionary, stack, value):
     '''
     This method puts the given value into a tree represented by the dictionary
-    the path to the leaf will be retrieved from the stack.
+    the path to the leaf will be retrieved from the stack. If the a leaf is
+    missing, a empty dictionary will be inserted in its place.
     '''
-    local = dictionary
-    length = len(stack) - 1
-    for i in range(length):
-        local = local[stack[i]]
-    local[stack[length]] = value
+    current = dictionary
+    for i in range(len(stack)-1):
+        if stack[i] not in current:
+            current[stack[i]] = {}
+        current = current[stack[i]]
+    current[stack[len(stack)-1]] = value
+
 def parse_value(value):
     '''
     This method tries to identify the value of a given string, if it is in fact
@@ -61,7 +72,21 @@ def parse_value(value):
             except ValueError:
                 pass
     return value
-
+def _get_attribute(path_to_metadata, dictionary):
+    '''
+    This method gets an attribute from the given dictionary that represents
+    a field in the real world object that is being parsed.
+    '''
+    if not isinstance(path_to_metadata, list) or len(path_to_metadata) == 0:
+        return None
+    try:
+        local = dictionary
+        length = len(path_to_metadata) 
+        for i in range(length):
+            local = local[path_to_metadata[i]]
+        return local
+    except KeyError:
+        return None
 class BundleError(Exception):
     '''
     Exception class indicating a problem when trying to parse a bundle.
@@ -124,7 +149,11 @@ class BaseSensor(object):
         self.format = "not set"
         self.product = "not set"
         self.nodata = -1
-
+        self.parser = None
+    
+    def get_attribute(self, path_to_attribute):
+        return self.parser.get_attribute(path_to_attribute)
+        
     
 class BaseFormat(object):
     '''
@@ -161,15 +190,16 @@ class BaseParser(object):
         Classes extending a BaseParser may want to override the behavior of
         this method to adequate it to their needs.
         '''
-        return self._get_attribute(path_to_metadata, self.metadata)
-    def _get_attribute(self, path_to_metadata, dictionary):
-        '''
-        This method gets an attribute from the given dictionary that represents
-        a field in the real world object that is being parsed.
-        '''
-        local = dictionary
-        length = len(path_to_metadata) 
-        for i in range(length):
-            local = local[path_to_metadata[i]]
-        return local
+        return _get_attribute(path_to_metadata, self.metadata)
+
+    
+if __name__ == '__main__':
+    
+    base = BaseParser("")
+    base.metadata = {u'Dimap_Document': {u'Production': {u'DATASET_PRODUCTION_DATE': u'2010-01-22T15:22:24.589000'}, u'Dataset_Sources': {u'Scene_Source': {u'IMAGING_DATE': u'2009-11-12', u'IMAGING_TIME': u'17:27:23', u'VIEWING_ANGLE': u'-8.792839', u'MISSION': u'SPOT', u'GRID_REFERENCE': u'579312', u'MISSION_INDEX': u'5'}}, u'Data_Processing': {u'PROCESSING_LEVEL': u'1A'}}}
+    
+    print _get_attribute(['Dimap_Document','Production'],base.metadata)
+    print _get_attribute(['Dimap_Document','NoneSense'],base.metadata)
+    print _get_attribute([],base.metadata)
+    print _get_attribute(12345,base.metadata)
     

@@ -9,10 +9,13 @@ from __builtin__ import getattr
 import os
 import unittest
 
-from madmex.core import controller
-from madmex.mapper.parser.landsat import Parser
-
 from madmex.configuration import SETTINGS
+from madmex.core import controller
+from madmex.mapper.base import _get_attribute
+import madmex.mapper.parser.geoeye as geoeye
+import madmex.mapper.parser.landsat as landsat
+import madmex.mapper.parser.spot5 as spot5
+
 
 class Test(unittest.TestCase):
 
@@ -58,6 +61,16 @@ class Test(unittest.TestCase):
         self.assertEqual(value, getattr(SETTINGS, key.upper()))
         del os.environ[ENVIRONMENT_VARIABLE]
         os.remove(path)
+        
+    def test_get_attribute(self):
+        dictionary = {'1': {'2': {'3': '4'}, '5': {'6': '7'}, '8': {'9': '0'}}}
+    
+        self.assertEqual(_get_attribute(['1','5','6'], dictionary), '7')
+        self.assertEqual(_get_attribute(['1','2','3'], dictionary), '4')
+        self.assertEqual(_get_attribute(['9','NoneSense'], dictionary), None)
+        self.assertEqual(_get_attribute([], dictionary), None)
+        self.assertEqual(_get_attribute(None, dictionary), None)
+        self.assertEqual(_get_attribute(123, dictionary), None)
 
     def test_landsat_parser(self):
         '''
@@ -65,12 +78,27 @@ class Test(unittest.TestCase):
         landsat xml file and then two properties are retrieved.
         '''
         metadata = "/LUSTRE/MADMEX/eodata/etm+/25046/2013/2013-04-03/l1t/LE70250462013093ASN00_MTL.txt"
-        parser = Parser(metadata)
+        parser = landsat.Parser(metadata)
         parser.parse()
         sun_azimuth = parser.get_attribute(['L1_METADATA_FILE','IMAGE_ATTRIBUTES','SUN_AZIMUTH'])
         scene_start_time = parser.get_attribute(['searchResponse','metaData','sceneStartTime'])
         self.assertEqual(sun_azimuth, 116.96407755)
         self.assertEqual(scene_start_time, '2013:093:16:49:15.2943749')
+    def test_geoye_parser(self):
+        '''
+        '''
+        parser = geoeye.Parser('/LUSTRE/MADMEX/eodata/wv02/11/2012/2012-09-19/lv2a-multi-ortho/12SEP19190058-M2AS-053114634020_01_P001.XML')
+        parser.parse()
+        ullat = parser.get_attribute(['isd','IMD','BAND_C','ULLAT'])
+        self.assertEqual(ullat, 31.06152605)
+        
+    def test_spot_sensor(self):
+        import madmex.mapper.sensor.spot as spot
+        sensor = spot.Sensor('/LUSTRE/MADMEX/eodata/spot/579312/2009/2009-11-12/1a/579_312_121109_SP5.DIM')
+        self.assertEqual(sensor.get_attribute(spot.ANGLE), float('-8.792839'))
+        self.assertEqual(sensor.get_attribute(spot.SENSOR), 'SPOT')
+        self.assertEqual(sensor.get_attribute(spot.PLATFORM), '5')
+        
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

@@ -9,13 +9,14 @@ from __future__ import unicode_literals
 import datetime
 import json
 import logging
+
 import requests
 
+from madmex.configuration import SETTINGS
 from madmex.mapper.base import BaseParser, ParseError, put_in_dictionary, \
-    parse_value, xml_to_json
+    parse_value, _xml_to_json, _get_attribute
 import xml.dom.minidom as dom
 
-from madmex.configuration import SETTINGS
 
 LOGGER = logging.getLogger(__name__)
 
@@ -82,7 +83,7 @@ class Parser(BaseParser):
                 key, value = line.split(" = ")
                 if "group" == key.lower().strip():
                     stack.append(value.strip())
-                    put_in_dictionary(groups, stack, {})
+                    #put_in_dictionary(groups, stack, {})
                 elif "end_group" == key.lower().strip():
                     if group_dictionary:
                         put_in_dictionary(groups, stack, group_dictionary)
@@ -101,7 +102,7 @@ class Parser(BaseParser):
         document = dom.parseString(request.text)
         stack = []
         self.usgs_metadata = {}
-        xml_to_json(document.documentElement, stack, self.usgs_metadata)  
+        _xml_to_json(document.documentElement, stack, self.usgs_metadata)  
         LOGGER.debug('USGS metadata has been parsed.')
     def get_attribute(self, path_to_metadata):
         '''
@@ -109,8 +110,8 @@ class Parser(BaseParser):
         class has two dictionaries of metadata, if an attribute is requested,
         both should be inspected. 
         '''
-        try:
-            return BaseParser.get_attribute(self, path_to_metadata)
-        except Exception:
-            return self._get_attribute(path_to_metadata, self.usgs_metadata)
+        attribute = BaseParser.get_attribute(self, path_to_metadata)
+        if not attribute:
+            attribute = _get_attribute(path_to_metadata, self.usgs_metadata)
+        return attribute
 

@@ -32,3 +32,6 @@ class Parser(BaseParser):
         except ExpatError:
             print 'error in xml metadata file:%s' % self.filepath
             raise
+    def get_attribute(self, path):
+        # get_attribute()
+        return self.metadata[path]

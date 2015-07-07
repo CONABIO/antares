@@ -25,8 +25,8 @@ class Parser(BaseParser):
         '''
         super(Parser, self).__init__(metadata_path)
         self.metadata_list = metadata_list
-    def parse(self):
         self.metadata = {}
+    def parse(self):
         document = dom.parse(self.filepath)
         for attribute in self.metadata_list:
             values = document.getElementsByTagName(attribute[-1])
@@ -35,8 +35,3 @@ class Parser(BaseParser):
             else:
                 put_in_dictionary(self.metadata, attribute, [value.firstChild.nodeValue for value in values])
     
-    def set_attribute(self, stack, value):
-        put_in_dictionary(self.metadata, stack, value)
-    
-    def apply_format(self, attribute, formatter):
-        put_in_dictionary(self.metadata, attribute, formatter(self.get_attribute(attribute)))

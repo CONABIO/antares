@@ -4,6 +4,7 @@ Created on Jun 3, 2015
 @author: agutierrez
 '''
 from __future__ import unicode_literals
+
 from argparse import ArgumentParser
 import logging
 import os
@@ -189,6 +190,8 @@ class BaseCommand(object):
         '''
         try:
             self.handle(**options)
+        except Exception:
+            LOGGER.error("Error in command execution.");
         finally:
             pass
     def handle(self, **options):
@@ -197,3 +200,4 @@ class BaseCommand(object):
         this method.
         '''
         raise NotImplementedError('Subclasses of BaseCommand must provide a handle() method')
+

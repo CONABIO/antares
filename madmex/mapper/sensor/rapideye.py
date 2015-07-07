@@ -3,45 +3,32 @@ Created on 29/06/2015
 
 @author: erickpalacios
 '''
+from __future__ import unicode_literals
 from datetime import datetime
 
 from madmex.mapper.base import BaseSensor
-import madmex.mapper.parser.rapideye as rapideyeparser
+import madmex.mapper.parser.rapideye as rapideye
 
 
+PRODUCT_NAME = ['re:EarthObservation', 'gml:metaDataProperty', 're:EarthObservationMetaData','eop:productType']
+SENSOR = ['re:EarthObservation', 'gml:using', 'eop:EarthObservationEquipment', 'eop:sensor', 're:Sensor', 'eop:sensorType']
+PLATFORM = ['re:EarthObservation', 'gml:using', 'eop:EarthObservationEquipment', 'eop:platform', 'eop:Platform', 'eop:serialIdentifier']
+CREATION_DATE = ['re:EarthObservation', 'gml:metaDataProperty', 're:EarthObservationMetaData', 'eop:archivedIn', 'eop:ArchivingInformation', 'eop:archivingDate']
+ACQUISITION_DATE = ['re:EarthObservation', 'gml:metaDataProperty', 're:EarthObservationMetaData', 'eop:downlinkedTo', 'eop:DownlinkInformation', 'eop:acquisitionDate']
+ANGLE = ['re:EarthObservation', 'gml:using', 'eop:EarthObservationEquipment', 'eop:acquisitionParameters', 're:Acquisition', 'eop:incidenceAngle']
+CLOUDS = ['re:EarthObservation', 'gml:resultOf', 're:EarthObservationResult', 'opt:cloudCoverPercentage']
+QUICKLOOK = ['quicklook']
+AZIMUTH_ANGLE = ['re:EarthObservation', 'gml:using', 'eop:EarthObservationEquipment', 'eop:acquisitionParameters', 're:Acquisition', 're:azimuthAngle']
+SOLAR_AZIMUTH = ['re:EarthObservation', 'gml:using', 'eop:EarthObservationEquipment', 'eop:acquisitionParameters', 're:Acquisition', 'opt:illuminationAzimuthAngle']
+SOLAR_ZENITH = ['re:EarthObservation', 'gml:using', 'eop:EarthObservationEquipment', 'eop:acquisitionParameters', 're:Acquisition', 'opt:illuminationElevationAngle']
+TILE_ID = ['re:EarthObservation', 'gml:metaDataProperty', 're:EarthObservationMetaData', 're:tileId']
 
 class Sensor(BaseSensor):
     '''
     classdocs
     '''
-    def __init__(self):
+    def __init__(self, metadata_path):
         self.sensor_name = 'rapideye'
         self.metadata_ext = 'xml'
-        self.metadata = {
-                    "productname" : "eop:productType",
-                    "sensor" : "eop:sensorType",
-                    "platform" : "eop:serialIdentifier",
-                    "dataAcquisition" : "eop:acquisitionDate",
-                    "dateCreation" : "eop:archivingDate",
-                    "clouds": "opt:cloudCoverPercentage",
-                    "angle": "eop:incidenceAngle",
-                    "azimuthAngle": "re:azimuthAngle",
-                    "solarazimuth": "opt:illuminationAzimuthAngle",
-                    "solarzenith": "opt:illuminationElevationAngle",
-                    "quicklook" : "eop:fileName",
-                    "tileid" : "re:tileId"
-                    }
-    def extract_metadata(self, metadata_path):
-        instance_class = rapideyeparser.Parser(metadata_path, self.metadata)
-        instance_class.parse()
-        self.metadata = instance_class.metadata
-        acquisitionDate = self.metadata["dataAcquisition"]
-        creationDate = self.metadata["dateCreation"] 
-        self.metadata["dataAcquisition"] = datetime.strptime(acquisitionDate, "%Y-%m-%dT%H:%M:%S.%fZ")
-        self.metadata["dateCreation"] = datetime.strptime(creationDate, "%Y-%m-%dT%H:%M:%SZ")   
-        self.metadata["clouds"] = float(self.metadata["clouds"])    
-        self.metadata["angle"] = float(self.metadata["angle"])
-      
-        
-
-            
+        self.parser = rapideye.Parser(metadata_path)
+        self.parser.parse()

@@ -29,10 +29,10 @@ def _xml_to_json(element, stack, dictionary):
     '''
     stack.append(element.nodeName)
     LOGGER.debug('Processing %s element.' % element.nodeName)
-    if element.firstChild and len(element.firstChild.nodeValue.strip()):
+    if element.firstChild and element.firstChild.nodeValue and len(element.firstChild.nodeValue.strip()):
         put_in_dictionary(dictionary, stack, parse_value(element.firstChild.nodeValue.strip()))
     else:
-        #put_in_dictionary(dictionary, stack, {})
+        put_in_dictionary(dictionary, stack, {})
         pass
     for child in element.childNodes:
         if child.nodeType == dom.Node.ELEMENT_NODE:
@@ -191,15 +191,17 @@ class BaseParser(object):
         this method to adequate it to their needs.
         '''
         return _get_attribute(path_to_metadata, self.metadata)
+    def set_attribute(self, stack, value):
+        '''
+        Puts the given value in the dictionary, using the list of strings to
+        set a path.
+        '''
+        put_in_dictionary(self.metadata, stack, value)
+    def apply_format(self, attribute, formatter):
+        '''
+        This method looks for the value at the given position and replaces it
+        with the result of that value after applying the given formatter.
+        '''
+        put_in_dictionary(self.metadata, attribute, formatter(self.get_attribute(attribute)))
 
-    
-if __name__ == '__main__':
-    
-    base = BaseParser("")
-    base.metadata = {u'Dimap_Document': {u'Production': {u'DATASET_PRODUCTION_DATE': u'2010-01-22T15:22:24.589000'}, u'Dataset_Sources': {u'Scene_Source': {u'IMAGING_DATE': u'2009-11-12', u'IMAGING_TIME': u'17:27:23', u'VIEWING_ANGLE': u'-8.792839', u'MISSION': u'SPOT', u'GRID_REFERENCE': u'579312', u'MISSION_INDEX': u'5'}}, u'Data_Processing': {u'PROCESSING_LEVEL': u'1A'}}}
-    
-    print _get_attribute(['Dimap_Document','Production'],base.metadata)
-    print _get_attribute(['Dimap_Document','NoneSense'],base.metadata)
-    print _get_attribute([],base.metadata)
-    print _get_attribute(12345,base.metadata)
     

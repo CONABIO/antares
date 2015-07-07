@@ -12,9 +12,8 @@ import unittest
 from madmex.configuration import SETTINGS
 from madmex.core import controller
 from madmex.mapper.base import _get_attribute
-import madmex.mapper.parser.geoeye as geoeye
-import madmex.mapper.parser.landsat as landsat
-import madmex.mapper.parser.spot5 as spot5
+
+
 
 
 class Test(unittest.TestCase):
@@ -77,6 +76,7 @@ class Test(unittest.TestCase):
         Test for the landsat parser, creates a parser instance pointing to a
         landsat xml file and then two properties are retrieved.
         '''
+        import madmex.mapper.parser.landsat as landsat
         metadata = "/LUSTRE/MADMEX/eodata/etm+/25046/2013/2013-04-03/l1t/LE70250462013093ASN00_MTL.txt"
         parser = landsat.Parser(metadata)
         parser.parse()
@@ -87,6 +87,7 @@ class Test(unittest.TestCase):
     def test_geoye_parser(self):
         '''
         '''
+        import madmex.mapper.parser.geoeye as geoeye
         parser = geoeye.Parser('/LUSTRE/MADMEX/eodata/wv02/11/2012/2012-09-19/lv2a-multi-ortho/12SEP19190058-M2AS-053114634020_01_P001.XML')
         parser.parse()
         ullat = parser.get_attribute(['isd','IMD','BAND_C','ULLAT'])
@@ -94,10 +95,27 @@ class Test(unittest.TestCase):
         
     def test_spot_sensor(self):
         import madmex.mapper.sensor.spot as spot
-        sensor = spot.Sensor('/LUSTRE/MADMEX/eodata/spot/579312/2009/2009-11-12/1a/579_312_121109_SP5.DIM')
+        path = '/LUSTRE/MADMEX/eodata/spot/579312/2009/2009-11-12/1a/579_312_121109_SP5.DIM'
+        sensor = spot.Sensor(path)
         self.assertEqual(sensor.get_attribute(spot.ANGLE), float('-8.792839'))
         self.assertEqual(sensor.get_attribute(spot.SENSOR), 'SPOT')
         self.assertEqual(sensor.get_attribute(spot.PLATFORM), '5')
+        
+    def test_rapideye_sensor(self):
+        import madmex.mapper.sensor.rapideye as rapideye
+        path = '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/1447720_2013-02-11_RE3_3A_182802_metadata.xml'
+        sensor = rapideye.Sensor(path)
+        self.assertEqual(sensor.get_attribute(rapideye.ANGLE), 3.96)
+        self.assertEqual(sensor.get_attribute(rapideye.PRODUCT_NAME), 'L3A')
+        self.assertEqual(sensor.get_attribute(rapideye.SENSOR), 'OPTICAL')
+        self.assertEqual(sensor.get_attribute(rapideye.PLATFORM), 'RE-3')
+        self.assertEqual(sensor.get_attribute(rapideye.CREATION_DATE), '2013-04-26T17:48:34Z')
+        self.assertEqual(sensor.get_attribute(rapideye.ACQUISITION_DATE), '2013-02-11T18:04:21.337522Z')
+        self.assertEqual(sensor.get_attribute(rapideye.CLOUDS), 0.0)
+        self.assertEqual(sensor.get_attribute(rapideye.AZIMUTH_ANGLE), 278.21)
+        self.assertEqual(sensor.get_attribute(rapideye.SOLAR_AZIMUTH), 162.0359)
+        self.assertEqual(sensor.get_attribute(rapideye.SOLAR_ZENITH), 56.02738)
+        self.assertEqual(sensor.get_attribute(rapideye.TILE_ID), 1447720)
         
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

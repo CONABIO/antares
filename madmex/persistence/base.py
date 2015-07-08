@@ -17,7 +17,7 @@ class BasePersist():
                              'Extending classes must provide a way to persist.'
                              'objects.'
                              )
-    def find_by_id(self, token):
+    def get(self, token):
         '''
         The implementors of this method should retrieve the object that had been
         persisted in the past using the id.
@@ -26,7 +26,7 @@ class BasePersist():
                             'Extending classes must provide a way to find'
                             'objects using its id.'
                             )
-    def delete_by_id(self, token):
+    def delete(self, token):
         '''
         Implementors of this method should perform the necessary process to
         delete an object that had been persisted in the past using the id.

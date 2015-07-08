@@ -18,10 +18,10 @@ class FileSystemPersist(BasePersist):
     def persist(self):
         BasePersist.persist(self)
         
-    def find_by_id(self, token):
+    def get(self, token):
         BasePersist.find_by_id(self, token)
         
-    def delete_by_id(self, token):
+    def delete(self, token):
         BasePersist.delete_by_id(self, token)
         
         

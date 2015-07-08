@@ -7,10 +7,7 @@ from __future__ import unicode_literals
 
 import logging
 
-from sqlalchemy.orm.session import sessionmaker
-
 from madmex.persistence.base import BasePersist, BaseAction
-from madmex.persistence.database.connection import ENGINE
 
 
 LOGGER = logging.getLogger(__name__)
@@ -43,6 +40,7 @@ class InsertAction(BaseAction):
         '''
         Adds the object own by the instance of this class to the session.
         '''
+        LOGGER.debug('Insert object %s into database.' % self.orm_object)
         self.session.add(self.orm_object)
         self.success = True
     def undo(self):
@@ -50,5 +48,6 @@ class InsertAction(BaseAction):
         Deletes the object own by the given instance of this class from the
         session.
         '''
+        LOGGER.debug('Insert object %s into database.' % self.orm_object)
         self.session.delete(self.orm_object)
         self.success = False

@@ -14,8 +14,6 @@ from madmex.core import controller
 from madmex.mapper.base import _get_attribute
 
 
-
-
 class Test(unittest.TestCase):
 
     def test_copyright(self):
@@ -116,7 +114,55 @@ class Test(unittest.TestCase):
         self.assertEqual(sensor.get_attribute(rapideye.SOLAR_AZIMUTH), 162.0359)
         self.assertEqual(sensor.get_attribute(rapideye.SOLAR_ZENITH), 56.02738)
         self.assertEqual(sensor.get_attribute(rapideye.TILE_ID), 1447720)
-        
+    def test_database_insert_action(self):
+        import madmex.persistence.database.connection as connection 
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm.session import sessionmaker
+        from madmex.persistence.database.operations import InsertAction
+        my_database = 'sqlite:///%s' % os.path.abspath('../madmex/persistence/database/sqlite_antares.db');
+        klass = sessionmaker(bind=create_engine(my_database))
+        session = klass()
+        organization_name = 'MyOrganization'
+        organization = connection.Organization(
+            name=organization_name,
+            description='An organization to do what I want.',
+            country='Robo-Hungarian Empire',
+            url='http://placekitten.com/')
+        query = 'SELECT count(*) FROM organization WHERE name="%s";' % organization_name
+        try:
+            action = InsertAction(organization, session)
+            action.do()
+            session.commit()
+            
+            result_set = session.execute(query)
+            for row in result_set:
+                self.assertGreater(row['count(*)'], 0)
+            action.undo()
+            session.commit()
+            result_set = session.execute(query)
+            for row in result_set:
+                self.assertEqual(row['count(*)'], 0)
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+    def test_filesystem_insert_action(self):
+        import json
+        from madmex.persistence.filesystem.operations import InsertAction
+        name = 'coolest_file_ever.txt'
+        dictionary = {"one":1, "two":2, "tree":3}
+        my_file = open(name, 'w')
+        json.dump(dictionary, my_file, indent=4)
+        my_file.close()
+        action = InsertAction(name, '/LUSTRE/MADMEX/staging/')
+        action.do()
+        self.assertTrue(action.success, 'Awesome, everything is ok.')
+        self.assertTrue(os.path.isfile(action.new_file))
+        action.undo()
+        self.assertFalse(action.success)
+        self.assertFalse(os.path.isfile(action.new_file))
+        os.remove(name)
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

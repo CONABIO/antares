@@ -18,13 +18,6 @@ class FileSystemPersist(BasePersist):
     def persist(self):
         BasePersist.persist(self)
         
-    def get(self, token):
-        BasePersist.find_by_id(self, token)
-        
-    def delete(self, token):
-        BasePersist.delete_by_id(self, token)
-        
-        
 class InsertAction(BaseAction):
     '''
     This implementation of the BaseAction class represents a file copy. When
@@ -48,7 +41,8 @@ class InsertAction(BaseAction):
             shutil.copy(self.file_to_copy, self.destination)
             self.success = True
         except IOError:
-            print 'Something went wrong during do action.'
+            LOGGER.debug('Something went wrong during do action, probably the'
+                'file %s does not exists.' % self.file_to_copy)
             self.success = False
     def undo(self):
         '''
@@ -56,8 +50,9 @@ class InsertAction(BaseAction):
         '''
         try:
             LOGGER.debug('Delete file %s.' % self.new_file)
-            os.remove(self.new_file)
-            self.success = False
+            if self.success:
+                os.remove(self.new_file)
+                self.success = False
         except IOError:
-            print 'Something went wrong during undo action.'
+            LOGGER.debug('Something went wrong during undo action.')
             self.success = True

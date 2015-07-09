@@ -22,9 +22,12 @@ class Process(Processes):
         execute
         '''
         format_list = find_formats()
-        extension_file = self.get_extension(self.image_path).strip('.')
+        extension_file = self.get_extension(self.image_path)
         if extension_file in format_list:
-            format_class = load_class(FORMAT_PACKAGE, extension_file).Format()
+            format_class = load_class(FORMAT_PACKAGE, extension_file).Format(self.image_path)
+            data_class = format_class.data_class
+            data = data_class.open_file()
+            data_class.extract_metadata(data)
         else:
             print 'Format  not supported'
-        self.output = format_class
+        self.output = data_class

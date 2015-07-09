@@ -3,6 +3,8 @@ Created on 18/06/2015
 
 @author: erickpalacios
 '''
+import os
+
 class BaseBundle(object):
     '''
     This class serves as a base shell for a bundle. A bundle is a set of files
@@ -35,4 +37,18 @@ class BaseBundle(object):
         raise NotImplementedError(
             'subclasses of BaseBundle must provide a '
             'is_consistent() method')
+    def get_entries(self, path):
+        "return list of entries within a directory"
+        return os.listdir(path)
+    def join_path_folder(self, path, folder):
+        '''
+        return path of folder
+        '''
+        return os.path.join(path, folder)
+    def get_extension(self, filename):
+        '''
+        return extension of file given it's name
+        '''
+        path_name, file_extension = os.path.splitext(filename)
+        return file_extension.strip('.')
         

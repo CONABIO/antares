@@ -4,17 +4,17 @@ Created on 10/06/2015
 @author: erickpalacios
 '''
 from madmex.processes.base import Processes
-from madmex.processes.bundle.base import BaseBundle
 import logging
-from madmex.mapper.format import find_formats
-from madmex.mapper.sensor import get_sensors_and_metadata_extensions
+from madmex.mapper.format import find_formats, find_specifications
+from madmex.mapper.sensor import get_metadata_extensions
+from madmex.processes.bundle.imageandmetadata import Bundle
 
 LOGGER = logging.getLogger(__name__)
 
-METADATA = "metadata"
-IMAGE = "image"
+METADATA = 'metadata'
+IMAGE = 'image'
 
-class Process(Processes, BaseBundle):
+class Process(Processes):
     '''
     classdocs
     '''
@@ -30,25 +30,29 @@ class Process(Processes, BaseBundle):
         '''
         execute
         '''
+        extensions_file = map(self.get_extension, self.file_list)
         image_extensions = find_formats()
-        extensions_file = [x.strip('.') for x in map(self.get_extension, self.file_list)]
-        result_scan_image = self.scan(image_extensions, extensions_file)
-        sensors_metadata_extensions = get_sensors_and_metadata_extensions()
-        metadata_extensions = sensors_metadata_extensions.keys()
-        result_scan_metadata = self.scan(metadata_extensions, extensions_file)
-        if self.is_consistent(result_scan_image, result_scan_metadata):
-            self.image_path = self.join_path_folder(self.path, self.file_list[result_scan_image])
-            self.metadata_path = self.join_path_folder(self.path, self.file_list[result_scan_metadata])
-            print 'is consistent'
-            LOGGER.info('the directory is consistent')
-            self.output[METADATA] = self.metadata_path
-            self.output[IMAGE] = self.image_path
+        metadata_extensions = get_metadata_extensions()
+        bundle_class = Bundle(extensions_file, image_extensions, metadata_extensions)
+        bundle_class.identify()
+        if bundle_class.is_consistent():
+            self.image_path = self.join_path_folder(self.path, self.file_list[bundle_class.result_scan_image])
+            self.metadata_path = self.join_path_folder(self.path, self.file_list[bundle_class.result_scan_metadata])
+            specifications_extensions = find_specifications(self.get_extension(self.image_path))
+            if specifications_extensions is not None:
+                extensions_img_metadata = [self.get_extension(self.image_path), self.get_extension(self.metadata_path)]
+                extensions_file_not_img_metadata = [x for x in self.extensions_file if x not in extensions_img_metadata]
+                if bundle_class.identify_specifications(extensions_file_not_img_metadata, specifications_extensions):
+                    print 'is consistent'
+                    LOGGER.info('the directory is consistent')
+                    self.output[METADATA] = self.metadata_path
+                    self.output[IMAGE] = self.image_path
+                else:
+                    print 'failed in specifications'                      
+            else:
+                    print 'is consistent'
+                    self.output[METADATA] = self.metadata_path
+                    self.output[IMAGE] = self.image_path
         else:
             LOGGER.info('the directory is not consistent')
             print 'not consistent'
-    def is_consistent(self, result_scan_image, result_scan_metadata):
-        if isinstance(result_scan_image, int) and isinstance(result_scan_metadata, int) and len(self.file_list) > 0:
-            return True
-        else:
-            return False
-        

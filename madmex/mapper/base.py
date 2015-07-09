@@ -15,6 +15,7 @@ import uuid
 import xml.dom.minidom as dom
 
 
+
 METADATA = "metadata"
 IMAGE = "image"
 FILE = "file"
@@ -100,23 +101,24 @@ class BaseBundle(object):
     class is in charge of looking for the needed files and throw an error in
     case any of the given files is missing or is incorrect.
     '''
-    
-    __metaclass__ = abc.ABCMeta
-
-    def __init__(self, path):
+    def scan(self, list_ref, list_test):
         '''
-        Constructor
+        This method test whether the elements of list_test are in list_ref and if success return the index 
+        list_ref is the reference list
+        list_test is the list that we want to test
         '''
-        self.path = path
-        self.file_list = os.listdir(path)
-        self.regex_dict = {}
-    def scan(self):
-        '''
-        This method will traverse through the list of files in the given
-        directory using the given regex dictionary, creating a map for the
-        founded files.
-        '''
-        raise NotImplementedError('subclasses of BaseBundle must provide a scan() method')
+        val = False
+        k = 0
+        while k < len(list_ref) and (not val):
+            try:
+                index = list_test.index(list_ref[k])
+                val = True
+                result = index
+            except ValueError:
+                    k = k+1
+        if k == len(list_ref) and (not val):
+            result = 'not founded'
+        return result
     def is_consistent(self):
         '''
         Subclasses must implement this method.
@@ -124,6 +126,20 @@ class BaseBundle(object):
         raise NotImplementedError(
             'subclasses of BaseBundle must provide a '
             'is_consistent() method')
+    def get_entries(self, path):
+        "return list of entries within a directory"
+        return os.listdir(path)
+    def join_path_folder(self, path, folder):
+        '''
+        return path of folder
+        '''
+        return os.path.join(path, folder)
+    def get_extension(self, filename):
+        '''
+        return extension of file given it's name
+        '''
+        path_name, file_extension = os.path.splitext(filename)
+        return file_extension.strip('.')
         
 class BaseData(object):
     '''
@@ -159,7 +175,11 @@ class BaseFormat(object):
     '''
     Implementers of this class will represent a data format.
     '''
-    
+    def __init__(self):
+        '''
+        Constructor
+        '''
+        
 class ParseError(Exception):
     '''
     Handy exception for any error that happens during the parsing process.

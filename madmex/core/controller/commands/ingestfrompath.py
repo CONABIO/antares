@@ -6,7 +6,6 @@ Created on Jun 3, 2015
 from __future__ import unicode_literals
 from madmex.core.controller.base import BaseCommand
 from madmex.processes.modelprocess import MadmexProcess
-
 class Command(BaseCommand):
     '''
     classdocs
@@ -40,6 +39,5 @@ class Command(BaseCommand):
             process([], True)
         
         print 'using object obj_madmex_process to obtain info'
-        print obj_madmex_process.extractsensormetadata_output.sensor_name
-        print obj_madmex_process.extractimagemetadata_output.format_name
-    
+        print obj_madmex_process.extract_image_metadata_output.driver
+        print obj_madmex_process.extract_image_metadata_output.footprint

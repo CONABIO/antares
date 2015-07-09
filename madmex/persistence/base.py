@@ -35,7 +35,6 @@ class BasePersist():
                             'Extending classes must provide a way to delete'
                             'objects using its id.'
                             )
-        
 class BaseAction():
     '''
     This class represents an action that can be done and then undone in case

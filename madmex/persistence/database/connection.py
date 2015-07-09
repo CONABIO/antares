@@ -20,7 +20,7 @@ BASE = declarative_base()
 
 ENGINE = create_engine(getattr(SETTINGS, 'ANTARES_DATABASE'))
 
-SESSION = klass = sessionmaker(ENGINE)
+SESSION_MAKER = sessionmaker(ENGINE)
 
 CAN_TRAIN_TABLE = Table(
     'can_train',

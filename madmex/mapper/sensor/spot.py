@@ -19,6 +19,9 @@ TILE_ID = ['Dimap_Document', 'Dataset_Sources', 'Scene_Source', 'GRID_REFERENCE'
 CLOUDS = ['clouds']
 QUICKLOOK = ['quicklook']
 
+SENSOR_NAME = 'spot'
+METADATA_EXT = 'dim'
+
 class Sensor(BaseSensor):
     '''
     This class represents a Spot Sensor object. It owns a Spot parser in charge
@@ -26,9 +29,8 @@ class Sensor(BaseSensor):
     are the paths to such metadata, from outside this file, this fields can be
     invoked with the get_attribute function.
     '''
+
     def __init__(self, metadata_path):
-        self.sensor_name = 'spot'
-        self.metadata_ext = 'dim'
         self.parser = spot5.Parser(metadata_path, [PRODUCT, SENSOR, PLATFORM, CREATION_DATE, ACQUISITION_DATE, ACQUISITION_TIME, ANGLE, TILE_ID])
         self.parser.parse()
         self.parser.apply_format(ANGLE, lambda x: float(x))

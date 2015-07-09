@@ -10,13 +10,25 @@ def find_sensors():
 
     return find_in_dir(__path__[0],'')
 
+def get_metadata_extensions():
+    
+    list_sensors = find_sensors()
+    metadata_extensions = list()
+    for k in range(0,len(list_sensors)):
+        metadata_ext = load_class(SENSORS_PACKAGE, list_sensors[k]).METADATA_EXT
+        metadata_extensions.append(metadata_ext)
+    return metadata_extensions
+
+
 def get_sensors_and_metadata_extensions():
     
     list_sensors = find_sensors()
     dict_metadata_extension = dict()
     for k in range(0,len(list_sensors)):
-        instance_class = load_class(SENSORS_PACKAGE, list_sensors[k]).Sensor()
-        dict_metadata_extension[instance_class.metadata_ext] = instance_class.sensor_name
+        module = load_class(SENSORS_PACKAGE, list_sensors[k])
+        sensor_name = module.SENSOR_NAME
+        metadata_ext = module.METADATA_EXT
+        dict_metadata_extension[metadata_ext] = sensor_name
     return dict_metadata_extension
         
     

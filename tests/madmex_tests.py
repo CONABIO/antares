@@ -11,7 +11,11 @@ import unittest
 
 from madmex.configuration import SETTINGS
 from madmex.core import controller
-from madmex.mapper.base import _get_attribute
+from madmex.mapper.base import _get_attribute, BaseBundle
+from madmex.mapper.sensor.rapideye import ACQUISITION_DATE
+from tests.tools import create_random_acquisition_date, \
+    create_random_creation_date, create_random_date_no_format, DummyBundle, \
+    ErrorDummyBundle
 
 
 class Test(unittest.TestCase):
@@ -163,6 +167,71 @@ class Test(unittest.TestCase):
         self.assertFalse(action.success)
         self.assertFalse(os.path.isfile(action.new_file))
         os.remove(name)
+    
+        
+    def test_persist_bundle_with_error(self):
+        from madmex.persistence.driver import persist_bundle
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm.session import sessionmaker
+        dummy = ErrorDummyBundle()
+        persist_bundle(dummy)
+        
+        
+        my_database = 'sqlite:///%s' % os.path.abspath('../madmex/persistence/database/sqlite_antares.db');
+        klass = sessionmaker(bind=create_engine(my_database))
+        session = klass()
+        query = 'SELECT count(*) FROM product WHERE uuid="%s";' % dummy.uuid_id
+        print query
+        try:
+            result_set = session.execute(query)
+            for row in result_set:
+                self.assertEqual(row['count(*)'], 0)
+            for file_name in dummy.get_files():
+                dest = dummy.get_destination()
+                print 'dest: ' + dest
+                full_path = os.path.join(dummy.get_destination(), os.path.basename(file_name))
+                print full_path
+                self.assertFalse(os.path.isfile(full_path))
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+        
+        
+        
+    def test_persist_bundle(self):
+        from madmex.persistence.driver import persist_bundle
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm.session import sessionmaker
+        dummy = DummyBundle()
+        persist_bundle(dummy)
+        
+        
+        my_database = 'sqlite:///%s' % os.path.abspath('../madmex/persistence/database/sqlite_antares.db');
+        klass = sessionmaker(bind=create_engine(my_database))
+        session = klass()
+        query = 'SELECT count(*) FROM product WHERE uuid="%s";' % dummy.uuid_id
+        print query
+        try:
+            result_set = session.execute(query)
+            for row in result_set:
+                self.assertGreater(row['count(*)'], 0)
+            # Delete object from database.
+            session.delete(dummy.get_database_object())
+            session.commit()
+            for file_name in dummy.get_files():
+                full_path = os.path.join(dummy.get_destination(), os.path.basename(file_name))
+                self.assertTrue(os.path.isfile(full_path))
+                # Remove file from filesystem.
+                os.remove(full_path)
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+    
+        
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

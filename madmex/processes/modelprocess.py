@@ -26,16 +26,16 @@ class MadmexProcess(object):
         if flag:
             instance_class = self.load_processes_class(PROCESSES_PACKAGE, 'extractsensormetadata', self.bundle_output)
             instance_class.execute()
-            self.extractsensormetadata_output = instance_class.output
+            self.extract_sensor_metadata_output = instance_class.output
         else:
-            self.extractsensormetadata_output = input_data
+            self.extract_sensor_metadata_output = input_data
     def extract_image_metadata(self, input_data, flag):
         if flag:
             instance_class = self.load_processes_class(PROCESSES_PACKAGE, 'extractimagemetadata', self.bundle_output)
             instance_class.execute()
-            self.extractimagemetadata_output = instance_class.output
+            self.extract_image_metadata_output = instance_class.output
         else:
-            self.extractimagemetadata_output = input_data
+            self.extract_image_metadata_output = input_data
         
     
     def applysql(self, input_data):

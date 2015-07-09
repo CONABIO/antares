@@ -34,7 +34,7 @@ class Processes(object):
         return extension of file given it's name
         '''
         path_name, file_extension = os.path.splitext(filename)
-        return file_extension
+        return file_extension.strip('.')
         
     def create_output_file(self):
         '''

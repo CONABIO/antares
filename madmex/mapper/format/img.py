@@ -4,6 +4,8 @@ Created on 30/06/2015
 @author: erickpalacios
 '''
 from madmex.mapper.base import BaseFormat
+from madmex.mapper.data.raster import Data
+FORMAT = "HFA"
 
 class Format(BaseFormat):
     '''
@@ -11,10 +13,9 @@ class Format(BaseFormat):
     '''
 
 
-    def __init__(self):
+    def __init__(self, image_path):
         '''
         Constructor
         '''
-        self.format_name = 'img'
-    def __str__(self):
-        return self.format_name
+        self.data_class = Data(image_path, FORMAT)
+        

@@ -16,6 +16,7 @@ from madmex.mapper.sensor.rapideye import ACQUISITION_DATE
 from tests.tools import create_random_acquisition_date, \
     create_random_creation_date, create_random_date_no_format, DummyBundle, \
     ErrorDummyBundle
+from madmex.mapper import bundle
 
 
 class Test(unittest.TestCase):
@@ -62,7 +63,6 @@ class Test(unittest.TestCase):
         self.assertEqual(value, getattr(SETTINGS, key.upper()))
         del os.environ[ENVIRONMENT_VARIABLE]
         os.remove(path)
-        
     def test_get_attribute(self):
         dictionary = {'1': {'2': {'3': '4'}, '5': {'6': '7'}, '8': {'9': '0'}}}
     
@@ -230,8 +230,44 @@ class Test(unittest.TestCase):
             raise
         finally:
             session.close()
-    
-        
+    def test_persist_bundle_sensor(self):
+        from madmex.persistence.driver import persist_bundle
+        folder = '/LUSTRE/MADMEX/staging/madmex_antares/test_ingest/556_297_041114_dim_img_spot'
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm.session import sessionmaker
+        from madmex.mapper.bundle.sensorbundle import Bundle
+        #from madmex.configuration import SETTINGS
+
+        dummy = Bundle(folder)
+        #dummy.target = '/LUSTRE/MADMEX/staging/'
+        target_url = getattr(SETTINGS, 'TEST_FOLDER')
+        print target_url
+        persist_bundle(dummy)
+        my_database = 'sqlite:///%s' % os.path.abspath('../madmex/persistence/database/sqlite_antares.db');
+        klass = sessionmaker(bind=create_engine(my_database))
+        session = klass()
+        query = 'SELECT count(*) FROM product WHERE uuid="%s";' % dummy.uuid_id
+
+        try:
+            result_set = session.execute(query)
+            for row in result_set:
+                self.assertGreater(row['count(*)'], 0)
+            session.delete(dummy.get_database_object())
+            session.commit()
+            for file_name in dummy.get_files():
+                full_path = os.path.join(target_url, os.path.basename(file_name))
+                self.assertTrue(os.path.isfile(full_path))
+                os.remove(full_path)
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
+
+    
+
+
+    

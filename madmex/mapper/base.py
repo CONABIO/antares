@@ -12,6 +12,10 @@ import os
 import re
 import uuid
 
+from geoalchemy2.elements import WKTElement
+import ogr
+import osr
+
 import xml.dom.minidom as dom
 
 
@@ -135,12 +139,25 @@ class BaseData(object):
     Implementers of this class will represent a Data object from the outside 
     world. In this case Data can be a raster image.
     '''
-    
     def __init__(self):
         '''
         Constructor
         '''
-
+    def get_footprint(self):
+        '''
+        Returns the extent of the raster image.
+        '''
+        raise NotImplementedError('Implementing classes must provide a'
+            'method to get the extent of the image.')    
+    def _footprint_helper(self, ring, spacial_reference):
+        targetSR = osr.SpatialReference()
+        targetSR.ImportFromEPSG(4326)  # Geo WGS84
+        coordTrans = osr.CoordinateTransformation(spacial_reference, targetSR)
+        footprint = ogr.Geometry(ogr.wkbPolygon)
+        footprint.AddGeometry(ring)
+        footprint.Transform(coordTrans) 
+        wkt = WKTElement(footprint.ExportToWkt(), srid=4326)
+        return wkt
 class BaseSensor(object):
     '''
     Implementers of this class represent a sensor.

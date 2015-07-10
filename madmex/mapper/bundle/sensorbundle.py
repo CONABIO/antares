@@ -9,6 +9,7 @@ from madmex.mapper.sensor import get_metadata_extensions,\
     get_sensors_and_metadata_extensions
 import logging
 from madmex import load_class
+from datetime import datetime
 
 METADATA = 'metadata'
 IMAGE = 'image'
@@ -28,9 +29,9 @@ class Bundle(BaseBundle):
         '''
         self.path = path
         self.file_list = self.get_entries(path)
-    
-    def get_files(self):
-        self.files = {METADATA:list(), IMAGE:list()}
+        self.database_object = None
+        self.target = None 
+        self.files = {METADATA:list(), IMAGE:list()}   
         extensions_file = map(self.get_extension, self.file_list)
         image_extensions = find_formats()
         metadata_extensions = get_metadata_extensions()
@@ -44,24 +45,32 @@ class Bundle(BaseBundle):
             LOGGER.info('the directory is consistent')
             self.files[METADATA] = self.metadata_path
             self.files[IMAGE] = self.image_path
-            return self.files
         else:
             LOGGER.info('the directory is not consistent')
             print 'not consistent'
-            
+    def get_files(self):
+        return [self.image_path, self.metadata_path]
     def get_database_object(self):
         '''
         Create instance of Database object
         '''
         sensor_class = self.sensor_model()
         image_class =  self.image_model()
-        print sensor_class
-        print image_class
-        print sensor_class.parser.metadata
-        print image_class.driver
-        print image_class.footprint
-
-        
+        self.uuid_id = sensor_class.uuid
+        if not self.database_object:
+            import madmex.persistence.database.connection as database
+            self.database_object = database.RawProduct(
+                uuid = self.uuid_id,
+                acquisition_date = datetime.strptime(sensor_class.get_attribute(sensor_class.sensor_module.ACQUISITION_DATE), '%Y-%m-%d'),
+                ingest_date = datetime.now(),
+                path = self.path,
+                legend = None,
+                geometry = str(image_class.footprint),
+                information = None,
+                product_type = None,
+                type = "raw"
+                )
+        return self.database_object
     def identify(self, image_extensions, metadata_extensions, extensions_file):
         '''
         Identify image file and metadata file in list of extensions of files within directory
@@ -77,21 +86,23 @@ class Bundle(BaseBundle):
             return True
         else:
             return False
-        
     def sensor_model(self):
         '''
         Create instance of sensor object
         '''
+        print 'extracting metadata of sensor'
         sensors_metadata_ext = get_sensors_and_metadata_extensions()
         if self.extension_metadata in sensors_metadata_ext.keys():
             sensor_module = load_class(SENSORS_PACKAGE, sensors_metadata_ext[self.extension_metadata])
             sensor_class = sensor_module.Sensor(self.metadata_path)
-        return sensor_class
-    
+            sensor_class.sensor_module = sensor_module
+        return sensor_class  
     def image_model(self):
         '''
         Create instance of image object
         '''
+        print 'extracting metadata of image'
+
         format_list = find_formats()
         if self.extension_image in format_list:
             format_class = load_class(FORMAT_PACKAGE, self.extension_image).Format(self.image_path)
@@ -103,24 +114,14 @@ class Bundle(BaseBundle):
         return data_class
     
 if __name__ == "__main__":
-    folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea9/folder_test/556_297_041114_dim_img_spot'
+    folder = '/LUSTRE/MADMEX/staging/madmex_antares/test_ingest/556_297_041114_dim_img_spot'
     bundle_class = Bundle(folder)
     files = bundle_class.get_files()
     print files
-    bundle_class.get_database_object()
+    orm = bundle_class.get_database_object()
+    print orm
     
-    folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea9/folder_test/556_297_041114_xml_tif_rapideye'
-    bundle_class = Bundle(folder)
-    files = bundle_class.get_files()
-    print files
-    bundle_class.get_database_object()
-    
-    
-    folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea9/folder_test/556_297_041114_xml_img_sindatosxml'
-    bundle_class = Bundle(folder)
-    files = bundle_class.get_files()
-    print files
-    bundle_class.get_database_object()
+
         
 
         

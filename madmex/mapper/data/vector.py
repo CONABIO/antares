@@ -4,12 +4,9 @@ Created on 10/06/2015
 @author: erickpalacios
 '''
 from __future__ import unicode_literals
-
 import logging
-
 import gdal
 import ogr
-
 from madmex.mapper.base import BaseData
 
 
@@ -21,7 +18,6 @@ LOGGER = logging.getLogger(__name__)
 class Data(BaseData):
     
     def __init__(self, image_path, ogr_format):
-        
         self.image_path = image_path
         try:
             self.driver = ogr.GetDriverByName(ogr_format)
@@ -54,4 +50,3 @@ class Data(BaseData):
         ring.CloseRings()
         spacial_reference = self.layer.GetSpatialRef()
         return self._footprint_helper(ring, spacial_reference)
-

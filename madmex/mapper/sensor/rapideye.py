@@ -29,6 +29,6 @@ class Sensor(BaseSensor):
     classdocs
     '''
     def __init__(self, metadata_path):
-
+        super(Sensor, self).__init__()
         self.parser = rapideye.Parser(metadata_path)
         self.parser.parse()

@@ -53,8 +53,6 @@ class Data(BaseData):
         ring.AddPoint_2D(self.geotransform[0] + self.geotransform[1] * self.dataShape[0], self.geotransform[3] + self.geotransform[5] * self.dataShape[1])  
         ring.AddPoint_2D(self.geotransform[0], self.geotransform[3] + self.geotransform[5] * self.dataShape[1]) 
         ring.CloseRings()
-        
         spacial_reference = osr.SpatialReference()
         spacial_reference.ImportFromWkt(self.projection)
-        
         return self._footprint_helper(ring, spacial_reference)

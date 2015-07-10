@@ -33,12 +33,13 @@ def persist_bundle(bundle):
     actions = []
     session = SESSION_MAKER()
     try:
+        for file_name in bundle.get_files():
+            actions.append(filesystem.InsertAction(file_name, destination))
         actions.append(database.InsertAction(
             bundle.get_database_object(), 
             session)
             )
-        for file_name in bundle.get_files():
-            actions.append(filesystem.InsertAction(file_name, destination))
+
         def do_result(action):
             action.do()
             session.commit()
@@ -46,12 +47,16 @@ def persist_bundle(bundle):
         if not reduce(lambda x,y: x and y, map(do_result, actions)):
             LOGGER.debug('Some action went wrong at persistence process, ' 
                 'rollback will be performed.')
+            print 'Some action went wrong at persistence process, rollback will be performed.'
             for action in actions:
                 action.undo()
             session.commit()
         else:
+            print 'Ingestion was successful.'
             LOGGER.debug('Ingestion was successful.')
     except Exception:
+        print 'Not expected error at persistence.driver'
         LOGGER.error('Not expected error at persistence.driver')
+        raise
     finally:
         session.close()

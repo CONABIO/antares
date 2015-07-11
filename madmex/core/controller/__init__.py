@@ -92,7 +92,8 @@ def execute(argv=None):
     '''
     Main entry point for the MADMex system.
     '''
+    print madmex_copyright()
     madmex.setup()
     launcher = CommandLineLauncher(argv)
     launcher.execute()
-    print madmex_copyright()
+    

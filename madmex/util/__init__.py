@@ -4,6 +4,12 @@ madmex.util
 This package contains several useful classes and methods.
 '''
 
+from __future__ import unicode_literals
+
+import os
+from os.path import isdir
+
+
 def format_string(string, spaces, size):
     output = ""
     chunk = size - spaces - 2  
@@ -13,14 +19,55 @@ def format_string(string, spaces, size):
         output += space_string(spaces+4, " ") + "'"+string [i:i+indented_chunk] + "'\n"
     return output
 
-def space_string(spaces, ch):
+def space_string(length, ch):
+    '''
+    Creates a string repeating the given string, length times.
+    '''
     output = ""
     i = 0
-    while i < spaces:
+    while i < length:
         output += ch
         i+= 1
     return output
-
+def is_file(path):
+    '''
+    Checks if url is a file.
+    ''' 
+    return os.path.isfile(path)
+def is_directory(path):
+    '''
+    Checks if url is a directory.
+    '''    
+    return os.path.isdir(path)
+def create_directory_path_two(directory):
+    '''
+    Creates directories if not existing as subdirectories in a destination folder
+    '''
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+def is_empty(path):
+    '''
+    Check if directory is empty.
+    '''
+    return True if not os.listdir(path) else False
+def create_file_name(path, file_name):
+    '''
+    Joins path with filename.
+    '''
+    return os.path.join(path, file_name)
+def remove_file(path):
+    '''
+    Removes the file in the given path.
+    '''
+    os.remove(path)
+def relative_path(path, relative):
+    return os.path.abspath(os.path.join(os.path.dirname(path), relative))
+def get_contents_from_folder(path):
+    return os.listdir(path)
+def get_files_from_folder(path):
+    return [ f for f in os.listdir(path) if os.path.isfile(os.path.join(path,f)) ]
+def get_directories_from_folder(path):
+    return [ f for f in os.listdir(path) if os.path.isdir(os.path.join(path,f)) ]
 # a => \u00E1
 # e => \u00E9
 # i => \u00ED

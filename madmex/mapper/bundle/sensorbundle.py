@@ -3,6 +3,7 @@ Created on 09/07/2015
 
 @author: erickpalacios
 '''
+from __future__ import unicode_literals
 from madmex.mapper.base import BaseBundle
 from madmex.mapper.format import find_formats
 from madmex.mapper.sensor import get_metadata_extensions,\
@@ -112,6 +113,8 @@ class Bundle(BaseBundle):
         else:
             print 'Format  not supported'
         return data_class
+    def get_name(self):
+        return 'Sensor'
     
 if __name__ == "__main__":
     folder = '/LUSTRE/MADMEX/staging/madmex_antares/test_ingest/556_297_041114_dim_img_spot'

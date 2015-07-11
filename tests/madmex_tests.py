@@ -204,6 +204,7 @@ class Test(unittest.TestCase):
         from madmex.persistence.driver import persist_bundle
         from sqlalchemy import create_engine
         from sqlalchemy.orm.session import sessionmaker
+        from madmex.util import remove_file
         dummy = DummyBundle()
         persist_bundle(dummy)
         
@@ -224,7 +225,7 @@ class Test(unittest.TestCase):
                 full_path = os.path.join(dummy.get_destination(), os.path.basename(file_name))
                 self.assertTrue(os.path.isfile(full_path))
                 # Remove file from filesystem.
-                os.remove(full_path)
+                remove_file(full_path)
         except:
             session.rollback()
             raise

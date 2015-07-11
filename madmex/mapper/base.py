@@ -142,6 +142,17 @@ class BaseBundle(object):
         '''
         path_name, file_extension = os.path.splitext(filename)
         return file_extension.strip('.')
+    def can_identify(self, path):
+        '''
+        Implementors of this class should provide a method that determines if a
+        certain path meets the requirements to instance a bundle. This method
+        yields True if those requirements are met, returns False otherwise.
+        '''
+        raise NotImplementedError('The bundle should be able to identify a path.')
+    def get_name(self):
+        '''
+        '''
+        return 'BaseBundle'
 class BaseData(object):
     '''
     Implementers of this class will represent a Data object from the outside 

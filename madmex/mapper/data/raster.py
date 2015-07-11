@@ -56,3 +56,4 @@ class Data(BaseData):
         spacial_reference = osr.SpatialReference()
         spacial_reference.ImportFromWkt(self.projection)
         return self._footprint_helper(ring, spacial_reference)
+    

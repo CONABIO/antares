@@ -138,7 +138,7 @@ class BaseData(object):
         '''
         Constructor
         '''
-    def get_footprint(self):
+    def _get_footprint(self):
         '''
         Returns the extent of the raster image.
         '''

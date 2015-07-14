@@ -21,3 +21,4 @@ class Parser(BaseParser):
         stack = []
         self.metadata = {}
         _xml_to_json(document.documentElement, stack, self.metadata)
+        

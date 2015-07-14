@@ -5,6 +5,7 @@ Created on Jun 4, 2015
 '''
 from __future__ import unicode_literals
 
+from geoalchemy2.types import Geometry
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -206,7 +207,7 @@ class Product(BASE):
     ingest_date = Column(DateTime())
     path = Column(String, unique=True)  
     legend = Column(Integer, ForeignKey('legend.pk_id'))
-    geometry = Column(String)
+    geometry = Column(Geometry('POLYGON'))
     information = Column(Integer, ForeignKey('information.pk_id'))
     product_type = Column(Integer, ForeignKey('product_type.pk_id'))
     can_train = relationship(
@@ -1521,6 +1522,7 @@ def populate_database():
         unit=session.query(Unit).filter(Unit.name == x['unit']).first()) for x in bands_array]
     session.add_all(bands)
     session.commit()
+    session.close_all()
 
 if __name__ == '__main__':
     create_database()

@@ -9,7 +9,7 @@ from datetime import datetime
 from madmex.mapper.base import BaseSensor
 import madmex.mapper.parser.rapideye as rapideye
 
-SENSOR_NAME = 'rapideye'
+SENSOR_NAME = ['sensor_name']
 METADATA_EXT = 'xml'
 PRODUCT_NAME = ['re:EarthObservation', 'gml:metaDataProperty', 're:EarthObservationMetaData','eop:productType']
 SENSOR = ['re:EarthObservation', 'gml:using', 'eop:EarthObservationEquipment', 'eop:sensor', 're:Sensor', 'eop:sensorType']
@@ -32,3 +32,5 @@ class Sensor(BaseSensor):
         super(Sensor, self).__init__()
         self.parser = rapideye.Parser(metadata_path)
         self.parser.parse()
+        self.parser.apply_format(ACQUISITION_DATE, lambda x: datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%fZ"))
+        self.parser.set_attribute(SENSOR_NAME, 'rapideye')

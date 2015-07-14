@@ -23,7 +23,7 @@ class Data(BaseData):
             self.driver = ogr.GetDriverByName(ogr_format)
         except AttributeError:
             LOGGER.error('Cannot access driver for format %s' % ogr_format)
-    def open_file(self):
+    def _open_file(self):
         '''
         Open the vector image file with ogr.
         '''
@@ -31,13 +31,13 @@ class Data(BaseData):
             return self.driver.Open(self.image_path, 0) # 0 means read-only. 1 means writeable.
         except Exception:
             LOGGER.error('Unable to open shape file: %s' % self.image_path)
-    def extract_metadata(self, data):
+    def _extract_metadata(self, data):
         '''
         Extract metadata from the raster image file using gdal functions.
         '''
         self.layer = data.GetLayer()
         self.footprint = self.get_footprint()
-    def get_footprint(self):
+    def _get_footprint(self):
         '''
         Returns the extent of the shape image.
         '''

@@ -6,11 +6,14 @@ Created on Jul 8, 2015
 from __future__ import unicode_literals
 
 import logging
+import sys
+import traceback
 
 from madmex.configuration import SETTINGS
 from madmex.persistence.database.connection import SESSION_MAKER
 import madmex.persistence.database.operations as database
 import madmex.persistence.filesystem.operations as filesystem
+from madmex.util import create_directory_path
 
 
 LOGGER = logging.getLogger(__name__)
@@ -29,7 +32,8 @@ def persist_bundle(bundle):
     rollback is performed in all of them, the result is the same state as before
     the method was called.
     '''
-    destination = getattr(SETTINGS, 'TEST_FOLDER')
+    destination = bundle.get_output_directory()
+    create_directory_path(destination)
     actions = []
     session = SESSION_MAKER()
     try:
@@ -42,7 +46,6 @@ def persist_bundle(bundle):
 
         def do_result(action):
             action.do()
-            session.commit()
             return action.success    
         if not reduce(lambda x,y: x and y, map(do_result, actions)):
             LOGGER.debug('Some action went wrong at persistence process, ' 
@@ -50,11 +53,13 @@ def persist_bundle(bundle):
             print 'Some action went wrong at persistence process, rollback will be performed.'
             for action in actions:
                 action.undo()
-            session.commit()
         else:
             print 'Ingestion was successful.'
             LOGGER.debug('Ingestion was successful.')
     except Exception:
+        print '-'*60
+        traceback.print_exc(file=sys.stdout)
+        print '-'*60
         print 'Not expected error at persistence.driver'
         LOGGER.error('Not expected error at persistence.driver')
         raise

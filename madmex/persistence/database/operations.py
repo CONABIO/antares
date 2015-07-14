@@ -7,6 +7,8 @@ from __future__ import unicode_literals
 
 import logging
 
+from sqlalchemy.exc import IntegrityError
+
 from madmex.persistence.base import BasePersist, BaseAction
 
 
@@ -36,13 +38,23 @@ class InsertAction(BaseAction):
         Adds the object own by the instance of this class to the session.
         '''
         LOGGER.debug('Insert object %s into database.' % self.orm_object)
-        self.session.add(self.orm_object)
-        self.success = True
+        try:
+            self.session.add(self.orm_object)
+            self.session.commit()
+            self.success = True
+        except IntegrityError:
+            LOGGER.debug('Duplicate key value violates unique constraint.')
+            self.success = False
+        except Exception:
+            LOGGER.debug('Error during database insertion.')
+            self.success = False
     def undo(self):
         '''
         Deletes the object own by the given instance of this class from the
         session.
         '''
-        LOGGER.debug('Insert object %s into database.' % self.orm_object)
-        self.session.delete(self.orm_object)
+        if self.success:
+            LOGGER.debug('Delete object %s from database.' % self.orm_object)
+            self.session.delete(self.orm_object)
+            self.session.commit()
         self.success = False

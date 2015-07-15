@@ -40,8 +40,8 @@ def _xml_to_json(element, stack, dictionary):
         ):
         put_in_dictionary(dictionary, stack, parse_value(element.firstChild.nodeValue.strip()))
     else:
+        # This line might be removed.
         put_in_dictionary(dictionary, stack, {})
-        pass
     for child in element.childNodes:
         if child.nodeType == dom.Node.ELEMENT_NODE:
             _xml_to_json(child, stack, dictionary)
@@ -73,7 +73,7 @@ def parse_value(value):
         return re.sub(pattern, r'\1', value)
     else:
         try:
-            return int(value) 
+            return int(value)
         except ValueError:
             try:
                 return float(value)
@@ -89,7 +89,7 @@ def _get_attribute(path_to_metadata, dictionary):
         return None
     try:
         local = dictionary
-        length = len(path_to_metadata) 
+        length = len(path_to_metadata)
         for i in range(length):
             local = local[path_to_metadata[i]]
         return local
@@ -107,9 +107,7 @@ class BaseBundle(object):
     class is in charge of looking for the needed files and throw an error in
     case any of the given files is missing or is incorrect.
     '''
-    
     __metaclass__ = abc.ABCMeta
-
     def __init__(self, path):
         '''
         Constructor
@@ -131,11 +129,9 @@ class BaseBundle(object):
         raise NotImplementedError(
             'subclasses of BaseBundle must provide a '
             'is_consistent() method')
-     
-
 class BaseData(object):
     '''
-    Implementers of this class will represent a Data object from the outside 
+    Implementers of this class will represent a Data object from the outside
     world. In this case Data can be a raster image.
     '''
     def __init__(self):
@@ -147,14 +143,17 @@ class BaseData(object):
         Returns the extent of the raster image.
         '''
         raise NotImplementedError('Implementing classes must provide a'
-            'method to get the extent of the image.')    
+            'method to get the extent of the image.')
     def _footprint_helper(self, ring, spacial_reference):
-        targetSR = osr.SpatialReference()
-        targetSR.ImportFromEPSG(4326)  # Geo WGS84
-        coordTrans = osr.CoordinateTransformation(spacial_reference, targetSR)
+        '''
+        Calculates transformations that are common to raster and shape objects.
+        '''
+        spatial_reference = osr.SpatialReference()
+        spatial_reference.ImportFromEPSG(4326)  # Geo WGS84
+        coordinate_transformation = osr.CoordinateTransformation(spacial_reference, spatial_reference)
         footprint = ogr.Geometry(ogr.wkbPolygon)
         footprint.AddGeometry(ring)
-        footprint.Transform(coordTrans) 
+        footprint.Transform(coordinate_transformation) 
         wkt = WKTElement(footprint.ExportToWkt(), srid=4326)
         return wkt
 class BaseSensor(object):

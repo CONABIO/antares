@@ -112,7 +112,11 @@ class Parser(BaseParser):
             'PRODUCT_METADATA',
             'SENSOR_ID'
             ])
-        acquisition_date = self.get_attribute(['L1_METADATA_FILE', 'PRODUCT_METADATA', 'DATE_ACQUIRED'])
+        acquisition_date = self.get_attribute([
+            'L1_METADATA_FILE',
+            'PRODUCT_METADATA',
+            'DATE_ACQUIRED']
+            )
         request = _get_usgs_metadata(path, row, sensor, acquisition_date)
         document = dom.parseString(request.text)
         stack = []

@@ -39,7 +39,6 @@ class Command(BaseCommand):
         text_file = open("from_%s_to_%s.txt" % (from_number, to_number), "w")
         text_file.write("%s" % sum_of_numbers)
         text_file.close()
-        
         print (_('The sum of the numbers from %s to %s is: %s') % (
             from_number,
             to_number,

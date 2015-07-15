@@ -7,20 +7,21 @@ Created on Jun 30, 2015
 from __future__ import unicode_literals
 
 import datetime
-import json
 import logging
 
 import requests
 
 from madmex.configuration import SETTINGS
-from madmex.mapper.base import BaseParser, ParseError, put_in_dictionary, \
+from madmex.mapper.base import BaseParser, put_in_dictionary, \
     parse_value, _xml_to_json, _get_attribute
 import xml.dom.minidom as dom
 
 
 LOGGER = logging.getLogger(__name__)
 
-USGS_HTTP_SERVICE = 'http://earthexplorer.usgs.gov/EE/InventoryStream/pathrow?start_path=%d&end_path=%d&start_row=%d&end_row=%d&sensor=%s&start_date=%s&end_date=%s'
+USGS_HTTP_SERVICE = 'http://earthexplorer.usgs.gov/EE/InventoryStream/pathrow?' + \
+                    'start_path=%d&end_path=%d&start_row=%d&end_row=%d&sensor=' + \
+                    '%s&start_date=%s&end_date=%s'
 
 def _landsat_harmonizer(value):
     '''
@@ -41,7 +42,10 @@ def _get_usgs_metadata(path, row, sensor, date):
     '''
     if sensor == "ETM+" or sensor == "ETM":
         date_object = datetime.datetime.strptime(date, getattr(SETTINGS, 'DATE_FORMAT'))
-        date_lansat_change = datetime.datetime.strptime('2003-04-01', getattr(SETTINGS, 'DATE_FORMAT'))
+        date_lansat_change = datetime.datetime.strptime(
+            '2003-04-01',
+            getattr(SETTINGS, 'DATE_FORMAT')
+            )
         if date_object > date_lansat_change:
             sensor_encoding = "LANDSAT_ETM_SLC_OFF"
         else:
@@ -51,7 +55,7 @@ def _get_usgs_metadata(path, row, sensor, date):
     elif sensor == "TM":
         sensor_encoding = "LANDSAT_TM"
     usgs_url = USGS_HTTP_SERVICE % (path, path, row, row, sensor_encoding, date, date)
-    LOGGER.debug('USGS metadata will be retrieved from %s.' % usgs_url)
+    LOGGER.debug('USGS metadata will be retrieved from %s.', usgs_url)
     request = requests.get(usgs_url)
     return request
 class Parser(BaseParser):
@@ -59,7 +63,6 @@ class Parser(BaseParser):
     Parses landsat metadata files creating a memory representation of the
     properties found in there.
     '''
-    
     def __init__(self, file_path):
         '''
         Constructor
@@ -77,8 +80,8 @@ class Parser(BaseParser):
         group_dictionary = {}
         groups = {}
         stack = []
-        LOGGER.debug("File: %s will be parsed as Landsat metadata file." % self.filepath)
-        for line in metadata.readlines():      
+        LOGGER.debug("File: %s will be parsed as Landsat metadata file.", self.filepath)
+        for line in metadata.readlines():
             if "=" in line:
                 key, value = line.split(" = ")
                 if "group" == key.lower().strip():
@@ -94,21 +97,33 @@ class Parser(BaseParser):
         metadata.close()
         self.metadata = groups
         LOGGER.debug('File metadata has been parsed.')
-        path = self.get_attribute(['L1_METADATA_FILE','PRODUCT_METADATA','WRS_PATH'])
-        row = self.get_attribute(['L1_METADATA_FILE','PRODUCT_METADATA','WRS_ROW'])
-        sensor = self.get_attribute(['L1_METADATA_FILE','PRODUCT_METADATA','SENSOR_ID'])
-        acquisition_date = self.get_attribute(['L1_METADATA_FILE','PRODUCT_METADATA','DATE_ACQUIRED'])
+        path = self.get_attribute([
+            'L1_METADATA_FILE',
+            'PRODUCT_METADATA',
+            'WRS_PATH'
+            ])
+        row = self.get_attribute([
+            'L1_METADATA_FILE',
+            'PRODUCT_METADATA',
+            'WRS_ROW'
+            ])
+        sensor = self.get_attribute([
+            'L1_METADATA_FILE',
+            'PRODUCT_METADATA',
+            'SENSOR_ID'
+            ])
+        acquisition_date = self.get_attribute(['L1_METADATA_FILE', 'PRODUCT_METADATA', 'DATE_ACQUIRED'])
         request = _get_usgs_metadata(path, row, sensor, acquisition_date)
         document = dom.parseString(request.text)
         stack = []
         self.usgs_metadata = {}
-        _xml_to_json(document.documentElement, stack, self.usgs_metadata)  
+        _xml_to_json(document.documentElement, stack, self.usgs_metadata)
         LOGGER.debug('USGS metadata has been parsed.')
     def get_attribute(self, path_to_metadata):
         '''
         Method that overrides the usual behavior of getting an attribute, this
         class has two dictionaries of metadata, if an attribute is requested,
-        both should be inspected. 
+        both should be inspected.
         '''
         attribute = BaseParser.get_attribute(self, path_to_metadata)
         if not attribute:

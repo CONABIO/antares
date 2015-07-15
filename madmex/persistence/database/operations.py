@@ -13,7 +13,7 @@ from madmex.persistence.base import BaseAction
 
 
 LOGGER = logging.getLogger(__name__)
-        
+
 class InsertAction(BaseAction):
     '''
     This class implements a BaseAction by inserting into a database using the
@@ -24,7 +24,7 @@ class InsertAction(BaseAction):
         '''
         Constructor
         '''
-        super(InsertAction,self).__init__()
+        super(InsertAction, self).__init__()
         self.orm_object = orm_object
         self.session = session
         self.success = False

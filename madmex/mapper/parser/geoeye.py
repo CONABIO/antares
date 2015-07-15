@@ -16,9 +16,8 @@ class Parser(BaseParser):
     Usually, World View Sensor comes with two metadata files so we will parse
     them both, and add them into a in memory json representation of them.
     '''
-        
     def parse(self):
         document = dom.parse(self.filepath)
         stack = []
         self.metadata = {}
-        _xml_to_json(document.documentElement, stack, self.metadata)    
+        _xml_to_json(document.documentElement, stack, self.metadata)

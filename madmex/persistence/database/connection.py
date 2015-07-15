@@ -205,7 +205,7 @@ class Product(BASE):
     uuid = Column(String, unique=True)
     acquisition_date = Column(DateTime())
     ingest_date = Column(DateTime())
-    path = Column(String, unique=True)  
+    path = Column(String, unique=True)
     legend = Column(Integer, ForeignKey('legend.pk_id'))
     geometry = Column(Geometry('POLYGON'))
     information = Column(Integer, ForeignKey('information.pk_id'))

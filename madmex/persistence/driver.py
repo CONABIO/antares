@@ -9,7 +9,7 @@ import logging
 import sys
 import traceback
 
-from madmex.configuration import SETTINGS
+from madmex import _
 from madmex.persistence.database.connection import SESSION_MAKER
 import madmex.persistence.database.operations as database
 import madmex.persistence.filesystem.operations as filesystem
@@ -24,8 +24,7 @@ def persist_bundle(bundle):
     is responsibility of the bundle to provide information about which files
     should be persisted in the file system, and to build the database object
     that will be inserted in the database. The database is configured using the
-    session maker in the connection module. 
-    
+    session maker in the connection module.
     In order to achieve its purpose, this method creates a list of the actions
     to perform. Once the list is fully populated, it calls the do method for
     each element in the list. If any of the actions in the list fails, a
@@ -40,17 +39,20 @@ def persist_bundle(bundle):
         for file_name in bundle.get_files():
             actions.append(filesystem.InsertAction(file_name, destination))
         actions.append(database.InsertAction(
-            bundle.get_database_object(), 
+            bundle.get_database_object(),
             session)
             )
 
         def do_result(action):
+            '''
+            Lamdbda function to perform an action and return the result.
+            '''
             action.do()
-            return action.success    
-        if not reduce(lambda x,y: x and y, map(do_result, actions)):
+            return action.success
+        if not reduce(lambda x, y: x and y, map(do_result, actions)):
             LOGGER.debug('Some action went wrong at persistence process, ' 
                 'rollback will be performed.')
-            print 'Some action went wrong at persistence process, rollback will be performed.'
+            print _('Some action went wrong at persistence process, rollback will be performed.')
             for action in actions:
                 action.undo()
         else:

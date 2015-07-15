@@ -32,7 +32,7 @@ class Parser(BaseParser):
         only a few attributes are looked up and added to the metadata dictionary.
         In the future it might be desirable to implement a full parser for this
         sensor. Specifications for the metadata xml file can be found in:
-        
+        http://www.spotimage.fr/dimap/spec/dictionary/Spot_Scene/DIMAP_DOCUMENT.htm
         '''
         document = dom.parse(self.filepath)
         for attribute in self.metadata_list:
@@ -40,4 +40,8 @@ class Parser(BaseParser):
             if len(values) == 1:
                 put_in_dictionary(self.metadata, attribute, values[0].firstChild.nodeValue)
             else:
-                put_in_dictionary(self.metadata, attribute, [value.firstChild.nodeValue for value in values])
+                put_in_dictionary(
+                    self.metadata,
+                    attribute, 
+                    [value.firstChild.nodeValue for value in values]
+                    )

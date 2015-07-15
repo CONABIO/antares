@@ -1,4 +1,7 @@
 '''
+Created on Jul 10, 2015
+
+@author: agutierrez
 madmex.util
 This package contains several useful classes and methods.
 '''
@@ -50,7 +53,7 @@ def create_directory_path(directory):
     '''
     if not os.path.exists(directory):
         os.makedirs(directory)
-        
+
 def is_empty(path):
     '''
     Check if directory is empty.
@@ -68,7 +71,7 @@ def remove_file(path):
     Removes the file in the given path.
     '''
     os.remove(path)
-    
+
 def relative_path(path, relative):
     '''
     Joins a base path with a relative one and returns an absoulte representation

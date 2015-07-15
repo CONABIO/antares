@@ -27,6 +27,13 @@ class Parser(BaseParser):
         self.metadata_list = metadata_list
         self.metadata = {}
     def parse(self):
+        '''
+        Spot metadata file is rather complex, instead of parsing the whole file,
+        only a few attributes are looked up and added to the metadata dictionary.
+        In the future it might be desirable to implement a full parser for this
+        sensor. Specifications for the metadata xml file can be found in:
+        
+        '''
         document = dom.parse(self.filepath)
         for attribute in self.metadata_list:
             values = document.getElementsByTagName(attribute[-1])
@@ -34,4 +41,3 @@ class Parser(BaseParser):
                 put_in_dictionary(self.metadata, attribute, values[0].firstChild.nodeValue)
             else:
                 put_in_dictionary(self.metadata, attribute, [value.firstChild.nodeValue for value in values])
-    

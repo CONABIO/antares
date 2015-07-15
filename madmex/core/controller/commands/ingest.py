@@ -61,5 +61,3 @@ class Command(BaseCommand):
                 persist_bundle(bundle)
             else:
                 LOGGER.info('No bundle was able to identify the directory: %s.', path)
-            
-                

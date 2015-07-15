@@ -9,16 +9,10 @@ import logging
 
 from sqlalchemy.exc import IntegrityError
 
-from madmex.persistence.base import BasePersist, BaseAction
+from madmex.persistence.base import BaseAction
 
 
 LOGGER = logging.getLogger(__name__)
-
-class DatabasePersist(BasePersist):
-    def persist(self):
-        BasePersist.persist(self)
-
-        
         
 class InsertAction(BaseAction):
     '''

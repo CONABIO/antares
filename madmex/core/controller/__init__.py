@@ -96,4 +96,3 @@ def execute(argv=None):
     madmex.setup()
     launcher = CommandLineLauncher(argv)
     launcher.execute()
-    

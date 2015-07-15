@@ -36,19 +36,13 @@ class Command(BaseCommand):
         to_number = int(options['sum'][1])
         for number in range(from_number, to_number + 1):
             sum_of_numbers = sum_of_numbers + int(number)
-        
-        if options['sum']:
-            output = options['sum']
-        else:
-            output = 'my_output.txt'
-        
         text_file = open("from_%s_to_%s.txt" % (from_number, to_number), "w")
         text_file.write("%s" % sum_of_numbers)
         text_file.close()
         
-        _greet()
-        print (_('The sum of the numbers from %s to %s is: %s') % (from_number, to_number, sum_of_numbers)).encode('utf-8')
+        print (_('The sum of the numbers from %s to %s is: %s') % (
+            from_number,
+            to_number,
+            sum_of_numbers
+            )).encode('utf-8')
         print (_('This is a stub for the Change Detection Command.')).encode('utf-8')
-
-def _greet():
-    print 'I don\' care what the base Command has to say, I am overiding it.'

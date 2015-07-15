@@ -24,6 +24,7 @@ class InsertAction(BaseAction):
         '''
         Constructor
         '''
+        super(InsertAction,self).__init__()
         self.file_to_copy = file_to_copy
         self.destination = destination
         self.success = False

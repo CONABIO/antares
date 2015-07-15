@@ -102,7 +102,7 @@ class Sensor(BaseSensor):
         self.parser = rapideye.Parser(metadata_path)
         self.parser.parse()
         self.parser.apply_format(
-            ACQUISITION_DATE, 
+            ACQUISITION_DATE,
             lambda x: datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%fZ")
             )
         self.parser.set_attribute(SENSOR_NAME, 'rapideye')

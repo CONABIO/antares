@@ -42,6 +42,6 @@ class Parser(BaseParser):
             else:
                 put_in_dictionary(
                     self.metadata,
-                    attribute, 
+                    attribute,
                     [value.firstChild.nodeValue for value in values]
                     )

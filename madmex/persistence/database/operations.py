@@ -27,7 +27,7 @@ class InsertAction(BaseAction):
         self.orm_object = orm_object
         self.session = session
         self.success = False
-    def do(self):
+    def act(self):
         '''
         Adds the object own by the instance of this class to the session.
         '''

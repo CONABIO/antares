@@ -26,7 +26,7 @@ def persist_bundle(bundle):
     that will be inserted in the database. The database is configured using the
     session maker in the connection module.
     In order to achieve its purpose, this method creates a list of the actions
-    to perform. Once the list is fully populated, it calls the do method for
+    to perform. Once the list is fully populated, it calls the act method for
     each element in the list. If any of the actions in the list fails, a
     rollback is performed in all of them, the result is the same state as before
     the method was called.
@@ -47,7 +47,7 @@ def persist_bundle(bundle):
             '''
             Lamdbda function to perform an action and return the result.
             '''
-            action.do()
+            action.act()
             return action.success
         if not reduce(lambda x, y: x and y, map(do_result, actions)):
             LOGGER.debug('Some action went wrong at persistence process, ' 

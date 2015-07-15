@@ -28,7 +28,7 @@ class InsertAction(BaseAction):
         self.destination = destination
         self.success = False
         self.new_file = os.path.join(destination, os.path.basename(file_to_copy))
-    def do(self):
+    def act(self):
         '''
         It copies the file to the target location.
         '''
@@ -37,7 +37,7 @@ class InsertAction(BaseAction):
             shutil.copy(self.file_to_copy, self.destination)
             self.success = True
         except IOError:
-            LOGGER.debug('Something went wrong during do action, probably the'
+            LOGGER.debug('Something went wrong during act action, probably the'
                 'file %s does not exists.' % self.file_to_copy)
             self.success = False
     def undo(self):

@@ -100,7 +100,7 @@ def get_directories_from_folder(path):
 def get_path_from_list(paths):
     '''
     Given a list of paths, this method returns a path joining all of them.
-    '''    
+    '''
     my_path = ''
     for path in paths:
         my_path = os.path.join(my_path, path)

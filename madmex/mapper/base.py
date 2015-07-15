@@ -32,8 +32,12 @@ def _xml_to_json(element, stack, dictionary):
     traverses the dom tree and adds elements to the dictionary as it goes.
     '''
     stack.append(element.nodeName)
-    LOGGER.debug('Processing %s element.' % element.nodeName)
-    if element.firstChild and element.firstChild.nodeValue and len(element.firstChild.nodeValue.strip()):
+    LOGGER.debug('Processing %s element.', element.nodeName)
+    if (
+        element.firstChild and
+        element.firstChild.nodeValue and
+        len(element.firstChild.nodeValue.strip())
+        ):
         put_in_dictionary(dictionary, stack, parse_value(element.firstChild.nodeValue.strip()))
     else:
         put_in_dictionary(dictionary, stack, {})

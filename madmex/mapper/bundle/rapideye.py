@@ -78,7 +78,7 @@ class Bundle(BaseBundle):
         '''
         Creates the database object that will be ingested for this bundle.
         '''
-        return RawProduct (
+        return RawProduct(
                 uuid=str(uuid.uuid4()),
                 acquisition_date=self.get_sensor().get_attribute(rapideye.ACQUISITION_DATE),
                 ingest_date=datetime.now(),
@@ -94,14 +94,18 @@ class Bundle(BaseBundle):
         Lazily creates and returns a sensor object for this bundle.
         '''
         if not self.sensor:
-            self.sensor = rapideye.Sensor(self.file_dictionary[r'^\d{7}_\d{4}-\d{2}-\d{2}_RE\d_3A_\d{6}_metadata\.xml$'])
+            self.sensor = rapideye.Sensor(self.file_dictionary[
+                r'^\d{7}_\d{4}-\d{2}-\d{2}_RE\d_3A_\d{6}_metadata\.xml$'
+                ])
         return self.sensor
     def get_raster(self):
         '''
         Lazily creates and returns a raster object for this bundle.
         '''
         if self.raster is None:
-            self.raster = raster.Data(self.file_dictionary[r'^\d{7}_\d{4}-\d{2}-\d{2}_RE\d_3A_\d{6}\.tif$'], FORMAT)
+            self.raster = raster.Data(self.file_dictionary[
+                r'^\d{7}_\d{4}-\d{2}-\d{2}_RE\d_3A_\d{6}\.tif$'
+                ], FORMAT)
         return self.raster
     def get_output_directory(self):
         '''
@@ -115,5 +119,12 @@ class Bundle(BaseBundle):
             year = self.get_sensor().get_attribute(rapideye.ACQUISITION_DATE).strftime('%Y')
             date = self.get_sensor().get_attribute(rapideye.ACQUISITION_DATE).strftime('%Y-%m-%d')
             product_name = self.get_sensor().get_attribute(rapideye.PRODUCT_NAME)
-            self.output_directory = get_path_from_list([destination, sensor_name, grid_id, year, date, product_name])
+            self.output_directory = get_path_from_list([
+                destination, 
+                sensor_name, 
+                grid_id, 
+                year, 
+                date, 
+                product_name
+                ])
         return self.output_directory

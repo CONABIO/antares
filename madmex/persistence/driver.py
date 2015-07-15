@@ -50,7 +50,7 @@ def persist_bundle(bundle):
             action.act()
             return action.success
         if not reduce(lambda x, y: x and y, map(do_result, actions)):
-            LOGGER.debug('Some action went wrong at persistence process, ' 
+            LOGGER.debug('Some action went wrong at persistence process, '
                 'rollback will be performed.')
             print _('Some action went wrong at persistence process, rollback will be performed.')
             for action in actions:

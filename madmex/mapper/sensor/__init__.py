@@ -1,10 +1,13 @@
+'''
+madmex.mapper.sensor
+'''
 from __future__ import unicode_literals
 from xml.dom.minidom import Document
 
 from madmex import find_in_dir
 from madmex import load_class
 
-class DublinCoreMetadata:
+class DublinCoreMetadata(object):
     '''
     This class creates an instance of an object compliant with the Dublin Core
     specification found in:
@@ -49,9 +52,9 @@ class DublinCoreMetadata:
         metadata.setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
         document.appendChild(metadata)
         self._add_property(document, 'title')
-        for name in dir(self): 
+        for name in dir(self):
             if not name.startswith('_') and not name.startswith('to'):
-                self._add_property(document,name)
+                self._add_property(document, name)
         return document
     def _add_property(self, document, attribute):
         '''

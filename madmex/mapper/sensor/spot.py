@@ -32,13 +32,13 @@ class Sensor(BaseSensor):
     def __init__(self, metadata_path):
         super(Sensor, self).__init__()
         self.parser = spot5.Parser(metadata_path, [
-            PRODUCT, 
-            SENSOR, 
-            PLATFORM, 
-            CREATION_DATE, 
-            ACQUISITION_DATE, 
-            ACQUISITION_TIME, 
-            ANGLE, 
+            PRODUCT,
+            SENSOR,
+            PLATFORM,
+            CREATION_DATE,
+            ACQUISITION_DATE,
+            ACQUISITION_TIME,
+            ANGLE,
             TILE_ID
             ])
         self.parser.parse()

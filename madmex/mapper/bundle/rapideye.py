@@ -120,11 +120,11 @@ class Bundle(BaseBundle):
             date = self.get_sensor().get_attribute(rapideye.ACQUISITION_DATE).strftime('%Y-%m-%d')
             product_name = self.get_sensor().get_attribute(rapideye.PRODUCT_NAME)
             self.output_directory = get_path_from_list([
-                destination, 
-                sensor_name, 
-                grid_id, 
-                year, 
-                date, 
+                destination,
+                sensor_name,
+                grid_id,
+                year,
+                date,
                 product_name
                 ])
         return self.output_directory

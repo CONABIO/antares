@@ -28,6 +28,7 @@ class Data(BaseData):
         '''
         Constructor
         '''
+        super(Data, self).__init__()
         self.image_path = image_path
         self.data_file = self._open_file()
         self.metadata = {}
@@ -57,7 +58,7 @@ class Data(BaseData):
         '''
         Returns the extent of the raster image.
         '''
-        ring = ogr.Geometry(ogr.wkbLinearRing) 
+        ring = ogr.Geometry(ogr.wkbLinearRing)
         geotransform = self.get_attribute('geotransform')
         data_shape = self.get_attribute('data_shape')
         ring.AddPoint_2D(geotransform[0], geotransform[3])
@@ -67,7 +68,7 @@ class Data(BaseData):
             geotransform[3] + geotransform[5] * data_shape[1]
             )
         ring.AddPoint_2D(geotransform[0], geotransform[3] + geotransform[5] * data_shape[1])
-        ring.CloseRings()    
+        ring.CloseRings()
         spacial_reference = osr.SpatialReference()
         spacial_reference.ImportFromWkt(self.get_attribute('projection'))
         return self._footprint_helper(ring, spacial_reference)

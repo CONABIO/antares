@@ -5,36 +5,6 @@ Created on Jul 7, 2015
 '''
 from __future__ import unicode_literals
 
-class BasePersist():
-    def __init__(self):
-        '''
-        Constructor
-        '''
-    def persist(self):
-        '''
-        '''
-        raise NotImplemented(
-                             'Extending classes must provide a way to persist.'
-                             'objects.'
-                             )
-    def get(self, token):
-        '''
-        The implementors of this method should retrieve the object that had been
-        persisted in the past using the id.
-        '''
-        raise NotImplemented(
-                            'Extending classes must provide a way to find'
-                            'objects using its id.'
-                            )
-    def delete(self, token):
-        '''
-        Implementors of this method should perform the necessary process to
-        delete an object that had been persisted in the past using the id.
-        '''
-        raise NotImplemented(
-                            'Extending classes must provide a way to delete'
-                            'objects using its id.'
-                            )
 class BaseAction():
     '''
     This class represents an action that can be done and then undone in case

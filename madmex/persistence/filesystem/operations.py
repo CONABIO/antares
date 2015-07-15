@@ -9,14 +9,10 @@ import logging
 import os
 import shutil
 
-from madmex.persistence.base import BasePersist, BaseAction
+from madmex.persistence.base import BaseAction
 
 
 LOGGER = logging.getLogger(__name__)
-
-class FileSystemPersist(BasePersist):
-    def persist(self):
-        BasePersist.persist(self)
         
 class InsertAction(BaseAction):
     '''
@@ -37,7 +33,7 @@ class InsertAction(BaseAction):
         It copies the file to the target location.
         '''
         try:
-            LOGGER.debug('Copy file %s to %s.' % (self.file_to_copy, self.destination))
+            LOGGER.debug('Copy file %s to %s.', self.file_to_copy, self.destination)
             shutil.copy(self.file_to_copy, self.destination)
             self.success = True
         except IOError:
@@ -46,10 +42,10 @@ class InsertAction(BaseAction):
             self.success = False
     def undo(self):
         '''
-        Removes de file from the target location.
+        Removes the file from the target location.
         '''
         try:
-            LOGGER.debug('Delete file %s.' % self.new_file)
+            LOGGER.debug('Delete file %s.', self.new_file)
             if self.success:
                 os.remove(self.new_file)
                 self.success = False

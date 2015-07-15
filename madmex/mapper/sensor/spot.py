@@ -5,7 +5,6 @@ Created on 29/06/2015
 '''
 from __future__ import unicode_literals
 from madmex.mapper.base import BaseSensor
-from datetime import datetime
 import madmex.mapper.parser.spot5 as spot5
 
 PRODUCT = ['Dimap_Document', 'Data_Processing', 'PROCESSING_LEVEL']
@@ -32,7 +31,16 @@ class Sensor(BaseSensor):
 
     def __init__(self, metadata_path):
         super(Sensor, self).__init__()
-        self.parser = spot5.Parser(metadata_path, [PRODUCT, SENSOR, PLATFORM, CREATION_DATE, ACQUISITION_DATE, ACQUISITION_TIME, ANGLE, TILE_ID])
+        self.parser = spot5.Parser(metadata_path, [
+            PRODUCT, 
+            SENSOR, 
+            PLATFORM, 
+            CREATION_DATE, 
+            ACQUISITION_DATE, 
+            ACQUISITION_TIME, 
+            ANGLE, 
+            TILE_ID
+            ])
         self.parser.parse()
         self.parser.apply_format(ANGLE, lambda x: float(x))
         self.parser.set_attribute(CLOUDS, 999)

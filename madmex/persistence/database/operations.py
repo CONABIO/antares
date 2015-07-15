@@ -24,6 +24,7 @@ class InsertAction(BaseAction):
         '''
         Constructor
         '''
+        super(InsertAction,self).__init__()
         self.orm_object = orm_object
         self.session = session
         self.success = False
@@ -31,7 +32,7 @@ class InsertAction(BaseAction):
         '''
         Adds the object own by the instance of this class to the session.
         '''
-        LOGGER.debug('Insert object %s into database.' % self.orm_object)
+        LOGGER.debug('Insert object %s into database.', self.orm_object)
         try:
             self.session.add(self.orm_object)
             self.session.commit()
@@ -48,7 +49,7 @@ class InsertAction(BaseAction):
         session.
         '''
         if self.success:
-            LOGGER.debug('Delete object %s from database.' % self.orm_object)
+            LOGGER.debug('Delete object %s from database.', self.orm_object)
             self.session.delete(self.orm_object)
             self.session.commit()
         self.success = False

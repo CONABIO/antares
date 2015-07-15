@@ -160,7 +160,7 @@ class BaseData(object):
             )
         footprint = ogr.Geometry(ogr.wkbPolygon)
         footprint.AddGeometry(ring)
-        footprint.Transform(coordinate_transformation) 
+        footprint.Transform(coordinate_transformation)
         wkt = WKTElement(footprint.ExportToWkt(), srid=4326)
         return wkt
 
@@ -178,6 +178,9 @@ class BaseSensor(object):
         self.nodata = -1
         self.parser = None
     def get_attribute(self, path_to_attribute):
+        '''
+        Returns the attribute found in the given path.
+        '''
         return self.parser.get_attribute(path_to_attribute)
 
 class BaseFormat(object):

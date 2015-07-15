@@ -13,7 +13,7 @@ from madmex.persistence.base import BaseAction
 
 
 LOGGER = logging.getLogger(__name__)
-        
+
 class InsertAction(BaseAction):
     '''
     This implementation of the BaseAction class represents a file copy. When

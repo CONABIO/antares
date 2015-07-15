@@ -80,6 +80,7 @@ def parse_value(value):
             except ValueError:
                 pass
     return value
+
 def _get_attribute(path_to_metadata, dictionary):
     '''
     This method gets an attribute from the given dictionary that represents
@@ -95,11 +96,13 @@ def _get_attribute(path_to_metadata, dictionary):
         return local
     except KeyError:
         return None
+
 class BundleError(Exception):
     '''
     Exception class indicating a problem when trying to parse a bundle.
     '''
     pass
+
 class BaseBundle(object):
     '''
     This class serves as a base shell for a bundle. A bundle is a set of files
@@ -129,6 +132,7 @@ class BaseBundle(object):
         raise NotImplementedError(
             'subclasses of BaseBundle must provide a '
             'is_consistent() method')
+
 class BaseData(object):
     '''
     Implementers of this class will represent a Data object from the outside
@@ -150,17 +154,20 @@ class BaseData(object):
         '''
         spatial_reference = osr.SpatialReference()
         spatial_reference.ImportFromEPSG(4326)  # Geo WGS84
-        coordinate_transformation = osr.CoordinateTransformation(spacial_reference, spatial_reference)
+        coordinate_transformation = osr.CoordinateTransformation(
+            spacial_reference,
+            spatial_reference
+            )
         footprint = ogr.Geometry(ogr.wkbPolygon)
         footprint.AddGeometry(ring)
         footprint.Transform(coordinate_transformation) 
         wkt = WKTElement(footprint.ExportToWkt(), srid=4326)
         return wkt
+
 class BaseSensor(object):
     '''
     Implementers of this class represent a sensor.
     '''
-    
     def __init__(self):
         '''
         Constructor
@@ -170,16 +177,14 @@ class BaseSensor(object):
         self.product = "not set"
         self.nodata = -1
         self.parser = None
-    
     def get_attribute(self, path_to_attribute):
         return self.parser.get_attribute(path_to_attribute)
-        
-    
+
 class BaseFormat(object):
     '''
     Implementers of this class will represent a data format.
     '''
-    
+
 class ParseError(Exception):
     '''
     Handy exception for any error that happens during the parsing process.
@@ -223,5 +228,3 @@ class BaseParser(object):
         with the result of that value after applying the given formatter.
         '''
         put_in_dictionary(self.metadata, attribute, formatter(self.get_attribute(attribute)))
-
-    

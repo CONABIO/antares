@@ -17,6 +17,7 @@ import ogr
 import osr
 
 import xml.dom.minidom as dom
+from madmex.util import get_files_from_folder, create_file_name
 
 
 METADATA = "metadata"
@@ -132,7 +133,31 @@ class BaseBundle(object):
         raise NotImplementedError(
             'subclasses of BaseBundle must provide a '
             'is_consistent() method')
+    def _look_for_files(self):
+        '''
+        This method will be called by the constructor to look for files in the
+        given directory. In order for a bundle to be valid, a file for each
+        regular expression must be found.
+        '''
+        for key in self.file_dictionary.iterkeys():
+            for name in get_files_from_folder(self.path):
+                if re.match(key, name):
+                    self.file_dictionary[key] = create_file_name(self.path, name)
 
+    def can_identify(self):
+        '''
+        If all of the regular expressions got a matching file, then the directory
+        can be identified as a bundle.
+        '''
+        return len(self.get_files()) == len(self.file_dictionary)
+
+    def get_files(self):
+        '''
+        Retrieves a list with the files found in the directory that this bundle
+        represents.
+        '''
+        return [file_path for file_path in self.file_dictionary.itervalues() if file_path]
+    
 class BaseData(object):
     '''
     Implementers of this class will represent a Data object from the outside

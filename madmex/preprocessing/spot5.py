@@ -3,8 +3,13 @@ Created on 15/07/2015
 
 @author: erickpalacios
 '''
-import numpy as np
+from __future__ import unicode_literals
+
+import gdal
+
 from madmex.mapper.bundle.spot5 import Bundle
+import numpy as np
+
 
 def calc_spot_rad(data,gain,offset):
     b = 0
@@ -45,8 +50,29 @@ def Spot5DN2TOA(indir):
     print bundle.can_identify()
     if bundle.can_identify():
         raster = bundle.get_raster()
+    
+    
+def gdal_error_handler(err_class, err_num, err_msg):
+    errtype = {
+        gdal.CE_None:'None',
+        gdal.CE_Debug:'Debug',
+        gdal.CE_Warning:'Warning',
+        gdal.CE_Failure:'Failure',
+        gdal.CE_Fatal:'Fatal'
+    }
+    err_msg = err_msg.replace('\n',' ')
+    err_class = errtype.get(err_class, 'None')
+    print 'Error Number: %s' % (err_num)
+    print 'Error Type: %s' % (err_class)
+    print 'Error Message: %s' % (err_msg)
+    
+    
+    
 
 if __name__ == '__main__':
     
+    # install error handler
+    gdal.PushErrorHandler(gdal_error_handler)
     folder = '/Volumes/Imagenes_originales/SPOT5/SPOTMarz/SinNubes/E55542961503031J1A02002/SCENE01'
     Spot5DN2TOA(folder)
+    gdal.PopErrorHandler()

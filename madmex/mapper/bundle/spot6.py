@@ -11,15 +11,10 @@ from datetime import datetime
 from madmex.configuration import SETTINGS
 from madmex.util import get_path_from_list
 
-FORMAT = 'GTiff'
-
-IMAGE = r'IMAGERY.TIF$'
-METADATA = r'METADATA.DIM$'
-PREVIEW = r'PREVIEW.JPG'
-ICON = r'ICON.JPG'
-STYLE = r'STYLE.XSL'
-OTHER = r'TN_01.TIF'
-
+IMAGE = r'IMG.*\.JP2$'
+METADATA = r'DIM.*\.XML$'
+PREVIEW = r'PREVIEW.*\.JPG$'
+ICON = r'ICON.*\.JPG$'
 
 class Bundle(BaseBundle):
     '''            
@@ -36,14 +31,13 @@ class Bundle(BaseBundle):
                         IMAGE:None,
                         METADATA:None,
                         PREVIEW:None,
-                        ICON:None,
-                        STYLE:None,
-                        OTHER:None, 
+                        ICON:None
                            }
         self._look_for_files()
         self.sensor = None
         self.raster = None
         self.output_directory = None
+        
     def get_name(self):
         '''
         Returns the name of this bundle.
@@ -101,3 +95,10 @@ class Bundle(BaseBundle):
         return self.output_directory
 
         
+        
+if __name__ == '__main__':
+    folder = '/Volumes/Imagenes_originales/SPOT6/E6554293150227_1751231K3A0U12N17L1003001/PROD_SPOT6_001/VOL_SPOT6_001_A/IMG_SPOT6_MS_001_A'
+    
+    bundle = Bundle(folder)
+    print bundle.get_files()
+    print bundle.can_identify()

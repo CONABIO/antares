@@ -44,12 +44,7 @@ def calc_distance_Sun_Earth(datestr):
     
     return sun_distance
 
-def Spot5DN2TOA(indir):
-    print "Start folder: ", indir
-    bundle = Bundle(indir)
-    print bundle.can_identify()
-    if bundle.can_identify():
-        raster = bundle.get_raster()
+
     
     
 def gdal_error_handler(err_class, err_num, err_msg):
@@ -65,7 +60,12 @@ def gdal_error_handler(err_class, err_num, err_msg):
     print 'Error Number: %s' % (err_num)
     print 'Error Type: %s' % (err_class)
     print 'Error Message: %s' % (err_msg)
-    
+
+def Spot5DN2TOA(indir):
+    print "Start folder: ", indir
+    bundle = Bundle(indir)
+    print bundle.can_identify()
+
     
     
 

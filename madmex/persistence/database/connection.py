@@ -247,6 +247,11 @@ def create_database():
     This method creates the database model in the database engine.
     '''
     BASE.metadata.create_all(ENGINE)
+def delete_database():
+    '''
+    This method deletes the database model in the database engine.
+    '''
+    BASE.metadata.drop_all(ENGINE)
 # a => \u00E1
 # e => \u00E9
 # i => \u00ED
@@ -1526,4 +1531,5 @@ def populate_database():
 
 if __name__ == '__main__':
     create_database()
+    #delete_database()
     populate_database()

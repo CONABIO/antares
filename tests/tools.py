@@ -73,7 +73,7 @@ class DummyBundle(BaseBundle):
     def get_files(self):
         return self.files
     
-    def get_destination(self):
+    def get_output_directory(self):
         return self.target_url
     
     def get_database_object(self):

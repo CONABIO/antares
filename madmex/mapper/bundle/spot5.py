@@ -3,6 +3,9 @@ Created on 15/07/2015
 
 @author: erickpalacios
 '''
+
+from __future__ import unicode_literals
+
 from madmex.mapper.base import BaseBundle
 from madmex.persistence.database.connection import RawProduct
 import madmex.mapper.sensor.spot5 as spot5

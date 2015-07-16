@@ -17,8 +17,8 @@ class Bundle(BaseBundle):
         '''
         Constructor
         '''
-        super(Bundle, self).__init__()
-        pass
+        super(Bundle, self).__init__(params)
+        self.target = None
     def can_identify(self):
         '''
         Test if the parsed path can be identified as a Spot bundle.
@@ -29,3 +29,5 @@ class Bundle(BaseBundle):
         Returns the name of the bundle.
         '''
         return 'Spot'
+    def get_output_directory(self):
+        return self.target

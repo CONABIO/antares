@@ -9,14 +9,20 @@ from __builtin__ import getattr
 import os
 import unittest
 
+from sqlalchemy.engine import create_engine
+
 from madmex.configuration import SETTINGS
 from madmex.core import controller
+from madmex.mapper import bundle
 from madmex.mapper.base import _get_attribute, BaseBundle
 from madmex.mapper.sensor.rapideye import ACQUISITION_DATE
+from madmex.persistence.database.connection import BASE
 from tests.tools import create_random_acquisition_date, \
     create_random_creation_date, create_random_date_no_format, DummyBundle, \
     ErrorDummyBundle
-from madmex.mapper import bundle
+
+
+ENGINE = create_engine(getattr(SETTINGS, 'ANTARES_TEST_DATABASE'))
 
 
 class Test(unittest.TestCase):
@@ -29,12 +35,13 @@ class Test(unittest.TestCase):
 
 
     def setUp(self):
-        pass
+        BASE.metadata.create_all(bind=ENGINE)
 
 
     def tearDown(self):
+        BASE.metadata.drop_all(bind=ENGINE)
+        
         pass
-
 
     def testName(self):
         pass
@@ -96,7 +103,7 @@ class Test(unittest.TestCase):
         self.assertEqual(ullat, 31.06152605)
         
     def test_spot_sensor(self):
-        import madmex.mapper.sensor.spot as spot
+        import madmex.mapper.sensor.spot5 as spot
         path = '/LUSTRE/MADMEX/eodata/spot/579312/2009/2009-11-12/1a/579_312_121109_SP5.DIM'
         sensor = spot.Sensor(path)
         self.assertEqual(sensor.get_attribute(spot.ANGLE), float('-8.792839'))
@@ -105,6 +112,7 @@ class Test(unittest.TestCase):
         
     def test_rapideye_sensor(self):
         import madmex.mapper.sensor.rapideye as rapideye
+        import datetime
         path = '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/1447720_2013-02-11_RE3_3A_182802_metadata.xml'
         sensor = rapideye.Sensor(path)
         self.assertEqual(sensor.get_attribute(rapideye.ANGLE), 3.96)
@@ -112,7 +120,7 @@ class Test(unittest.TestCase):
         self.assertEqual(sensor.get_attribute(rapideye.SENSOR), 'OPTICAL')
         self.assertEqual(sensor.get_attribute(rapideye.PLATFORM), 'RE-3')
         self.assertEqual(sensor.get_attribute(rapideye.CREATION_DATE), '2013-04-26T17:48:34Z')
-        self.assertEqual(sensor.get_attribute(rapideye.ACQUISITION_DATE), '2013-02-11T18:04:21.337522Z')
+        self.assertEqual(sensor.get_attribute(rapideye.ACQUISITION_DATE), datetime.datetime.strptime('2013-02-11T18:04:21.337522Z', "%Y-%m-%dT%H:%M:%S.%fZ"))
         self.assertEqual(sensor.get_attribute(rapideye.CLOUDS), 0.0)
         self.assertEqual(sensor.get_attribute(rapideye.AZIMUTH_ANGLE), 278.21)
         self.assertEqual(sensor.get_attribute(rapideye.SOLAR_AZIMUTH), 162.0359)
@@ -123,29 +131,29 @@ class Test(unittest.TestCase):
         from sqlalchemy import create_engine
         from sqlalchemy.orm.session import sessionmaker
         from madmex.persistence.database.operations import InsertAction
-        my_database = 'sqlite:///%s' % os.path.abspath('../madmex/persistence/database/sqlite_antares.db');
+        my_database = getattr(SETTINGS, 'ANTARES_TEST_DATABASE')
         klass = sessionmaker(bind=create_engine(my_database))
         session = klass()
         organization_name = 'MyOrganization'
         organization = connection.Organization(
             name=organization_name,
-            description='An organization to do what I want.',
+            description='An organization to act what I want.',
             country='Robo-Hungarian Empire',
             url='http://placekitten.com/')
-        query = 'SELECT count(*) FROM organization WHERE name="%s";' % organization_name
+        query = 'SELECT count(*) FROM organization WHERE name=\'%s\';' % organization_name
         try:
             action = InsertAction(organization, session)
-            action.do()
+            action.act()
             session.commit()
             
             result_set = session.execute(query)
             for row in result_set:
-                self.assertGreater(row['count(*)'], 0)
+                self.assertGreater(row['count'], 0)
             action.undo()
             session.commit()
             result_set = session.execute(query)
             for row in result_set:
-                self.assertEqual(row['count(*)'], 0)
+                self.assertEqual(row['count'], 0)
         except:
             session.rollback()
             raise
@@ -160,7 +168,7 @@ class Test(unittest.TestCase):
         json.dump(dictionary, my_file, indent=4)
         my_file.close()
         action = InsertAction(name, '/LUSTRE/MADMEX/staging/')
-        action.do()
+        action.act()
         self.assertTrue(action.success, 'Awesome, everything is ok.')
         self.assertTrue(os.path.isfile(action.new_file))
         action.undo()
@@ -177,19 +185,21 @@ class Test(unittest.TestCase):
         persist_bundle(dummy)
         
         
-        my_database = 'sqlite:///%s' % os.path.abspath('../madmex/persistence/database/sqlite_antares.db');
+        my_database = getattr(SETTINGS, 'ANTARES_TEST_DATABASE')
         klass = sessionmaker(bind=create_engine(my_database))
         session = klass()
-        query = 'SELECT count(*) FROM product WHERE uuid="%s";' % dummy.uuid_id
+        query = 'SELECT count(*) FROM product WHERE uuid=\'%s\';' % dummy.uuid_id
         print query
         try:
             result_set = session.execute(query)
             for row in result_set:
-                self.assertEqual(row['count(*)'], 0)
+                print dir(row.keys)
+                print row.keys
+                self.assertEqual(row['count'], 0)
             for file_name in dummy.get_files():
-                dest = dummy.get_destination()
+                dest = dummy.get_output_directory()
                 print 'dest: ' + dest
-                full_path = os.path.join(dummy.get_destination(), os.path.basename(file_name))
+                full_path = os.path.join(dummy.get_output_directory(), os.path.basename(file_name))
                 print full_path
                 self.assertFalse(os.path.isfile(full_path))
         except:
@@ -200,7 +210,7 @@ class Test(unittest.TestCase):
         
         
         
-    def test_persist_bundle(self):
+    def persist_bundle(self):
         from madmex.persistence.driver import persist_bundle
         from sqlalchemy import create_engine
         from sqlalchemy.orm.session import sessionmaker
@@ -209,20 +219,20 @@ class Test(unittest.TestCase):
         persist_bundle(dummy)
         
         
-        my_database = 'sqlite:///%s' % os.path.abspath('../madmex/persistence/database/sqlite_antares.db');
+        my_database = getattr(SETTINGS, 'ANTARES_TEST_DATABASE')
         klass = sessionmaker(bind=create_engine(my_database))
         session = klass()
-        query = 'SELECT count(*) FROM product WHERE uuid="%s";' % dummy.uuid_id
+        query = 'SELECT count(*) FROM product WHERE uuid=\'%s\';' % dummy.uuid_id
         print query
         try:
             result_set = session.execute(query)
             for row in result_set:
-                self.assertGreater(row['count(*)'], 0)
+                self.assertGreater(row['count'], 0)
             # Delete object from database.
             session.delete(dummy.get_database_object())
             session.commit()
             for file_name in dummy.get_files():
-                full_path = os.path.join(dummy.get_destination(), os.path.basename(file_name))
+                full_path = os.path.join(dummy.get_output_directory(), os.path.basename(file_name))
                 self.assertTrue(os.path.isfile(full_path))
                 # Remove file from filesystem.
                 remove_file(full_path)
@@ -231,28 +241,30 @@ class Test(unittest.TestCase):
             raise
         finally:
             session.close()
-    def test_persist_bundle_sensor(self):
+    def persist_bundle_sensor(self):
         from madmex.persistence.driver import persist_bundle
         folder = '/LUSTRE/MADMEX/staging/madmex_antares/test_ingest/556_297_041114_dim_img_spot'
         from sqlalchemy import create_engine
         from sqlalchemy.orm.session import sessionmaker
-        from madmex.mapper.bundle.sensorbundle import Bundle
+        from madmex.mapper.bundle.spot import Bundle
         #from madmex.configuration import SETTINGS
 
         dummy = Bundle(folder)
         #dummy.target = '/LUSTRE/MADMEX/staging/'
         target_url = getattr(SETTINGS, 'TEST_FOLDER')
         print target_url
+        #TODO please fix me, horrible hack
+        dummy.target = target_url
         persist_bundle(dummy)
-        my_database = 'sqlite:///%s' % os.path.abspath('../madmex/persistence/database/sqlite_antares.db');
+        my_database = getattr(SETTINGS, 'ANTARES_TEST_DATABASE')
         klass = sessionmaker(bind=create_engine(my_database))
         session = klass()
-        query = 'SELECT count(*) FROM product WHERE uuid="%s";' % dummy.uuid_id
+        query = 'SELECT count(*) FROM product WHERE uuid=\'%s\';' % dummy.uuid_id
 
         try:
             result_set = session.execute(query)
             for row in result_set:
-                self.assertGreater(row['count(*)'], 0)
+                self.assertGreater(row['count'], 0)
             session.delete(dummy.get_database_object())
             session.commit()
             for file_name in dummy.get_files():

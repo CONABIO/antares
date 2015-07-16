@@ -60,14 +60,12 @@ def gdal_error_handler(err_class, err_num, err_msg):
     print 'Error Number: %s' % (err_num)
     print 'Error Type: %s' % (err_class)
     print 'Error Message: %s' % (err_msg)
-
+    
+    
 def Spot5DN2TOA(indir):
-    print "Start folder: ", indir
+    print "Start folder: "
     bundle = Bundle(indir)
     print bundle.can_identify()
-
-    
-    
 
 if __name__ == '__main__':
     

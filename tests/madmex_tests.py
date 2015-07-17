@@ -149,7 +149,11 @@ class Test(unittest.TestCase):
         os.remove(name)
         
 class UtilTest(unittest.TestCase):
-    
+    def test_space_string(self):
+        from madmex.util import space_string
+        self.assertEqual(space_string(6, '*'), '******')
+        self.assertEqual(space_string(4, 'cd'), 'cdcdcdcd')
+        self.assertEqual(space_string(-4, 'whatever'), '')
     
 class DatabaseTest(unittest.TestCase):
 

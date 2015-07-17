@@ -24,12 +24,16 @@ class Data(BaseData):
     inheritance from this class to represent each type of image file, right now
     it is only a helper class to open raster files.
     '''
-    def __init__(self, image_path):
+    def __init__(self, image_path, gdal_format):
         '''
         Constructor
         '''
         super(Data, self).__init__()
         self.image_path = image_path
+        try:
+            self.driver = gdal.GetDriverByName(gdal_format)
+        except AttributeError:
+            LOGGER.error('Cannot access driver for format %s' % gdal_format)
         self.data_file = self._open_file()
         self.metadata = {}
         self._extract_metadata()

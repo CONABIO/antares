@@ -43,7 +43,7 @@ class Bundle(BaseBundle):
         '''
         Returns the name of this bundle.
         '''
-        return 'Spot5'
+        return 'Spot6'
     def get_database_object(self):
         '''
         Creates the database object that will be ingested for this bundle.

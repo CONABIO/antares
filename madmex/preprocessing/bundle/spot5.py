@@ -15,7 +15,7 @@ from madmex.preprocessing.base import calculate_rad_ref
 class Bundle(Bundle_spot5):
     def __init__(self, path):
         super(Bundle, self).__init__(path)
-        self.FORMAT = "GTiff"
+        self.FORMAT = 'GTiff'
         self.IMAGE = r'IMAGERY.TIF$'
         self.METADATA = r'METADATA.DIM$'
         self.PREVIEW = r'PREVIEW.JPG'
@@ -31,8 +31,11 @@ class Bundle(Bundle_spot5):
                         self.OTHER:None, 
                            }
         self._look_for_files()        
+
     def get_sensor(self):
-        Bundle_spot5.get_sensor(self)
+        return Bundle_spot5.get_sensor(self)
+
+
     def calculate_toa(self):
         srs = osr.SpatialReference()
         srs.ImportFromEPSG(int(self.sensor.get_attribute(spot5.HORIZONTAL_CS_CODE).replace("epsg:", "")))     
@@ -45,9 +48,8 @@ class Bundle(Bundle_spot5):
         self.toa = calculate_rad_ref(self.data_array, gain, offset, imaging_date, sun_elevation)
         print self.get_output_directory()
     def export(self):
-        #driver = gdal.GetDriverByName(self.FORMAT)
-        print self.get_output_directory()
-
+        driver = gdal.GetDriverByName(self.FORMAT)
+        
         
     def get_raster(self):
         data_file = self._open_file()

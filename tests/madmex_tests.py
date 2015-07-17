@@ -10,6 +10,7 @@ import os
 import unittest
 
 from sqlalchemy.engine import create_engine
+from sqlalchemy.orm.session import sessionmaker
 
 from madmex.configuration import SETTINGS
 from madmex.core import controller
@@ -32,19 +33,6 @@ class Test(unittest.TestCase):
         Pulls copyright string and checks format is correct.
         """
         self.assertRegexpMatches(controller.madmex_copyright(), r"MADMex \d{4}-\d{4}")
-
-
-    def setUp(self):
-        BASE.metadata.create_all(bind=ENGINE)
-
-
-    def tearDown(self):
-        BASE.metadata.drop_all(bind=ENGINE)
-        
-        pass
-
-    def testName(self):
-        pass
 
     def test_configuration(self):
         """
@@ -71,6 +59,9 @@ class Test(unittest.TestCase):
         del os.environ[ENVIRONMENT_VARIABLE]
         os.remove(path)
     def test_get_attribute(self):
+        '''
+        Tests the get attribute function. This tries several scenarios.
+        '''
         dictionary = {'1': {'2': {'3': '4'}, '5': {'6': '7'}, '8': {'9': '0'}}}
     
         self.assertEqual(_get_attribute(['1','5','6'], dictionary), '7')
@@ -95,6 +86,8 @@ class Test(unittest.TestCase):
         self.assertEqual(scene_start_time, '2013:093:16:49:15.2943749')
     def test_geoye_parser(self):
         '''
+        Test an instance of the geowye parser class to check if we can retrieve
+        the attributes correctly.
         '''
         import madmex.mapper.parser.geoeye as geoeye
         parser = geoeye.Parser('/LUSTRE/MADMEX/eodata/wv02/11/2012/2012-09-19/lv2a-multi-ortho/12SEP19190058-M2AS-053114634020_01_P001.XML')
@@ -103,6 +96,10 @@ class Test(unittest.TestCase):
         self.assertEqual(ullat, 31.06152605)
         
     def test_spot_sensor(self):
+        '''
+        Test an instance of the spot sensor class to check if it parses its
+        attributes correctly.
+        '''
         import madmex.mapper.sensor.spot5 as spot
         path = '/LUSTRE/MADMEX/eodata/spot/579312/2009/2009-11-12/1a/579_312_121109_SP5.DIM'
         sensor = spot.Sensor(path)
@@ -111,6 +108,10 @@ class Test(unittest.TestCase):
         self.assertEqual(sensor.get_attribute(spot.PLATFORM), '5')
         
     def test_rapideye_sensor(self):
+        '''
+        Test an instance of the rapideye sensor class to check if it parses its
+        attributes correctly.
+        '''
         import madmex.mapper.sensor.rapideye as rapideye
         import datetime
         path = '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/1447720_2013-02-11_RE3_3A_182802_metadata.xml'
@@ -126,40 +127,11 @@ class Test(unittest.TestCase):
         self.assertEqual(sensor.get_attribute(rapideye.SOLAR_AZIMUTH), 162.0359)
         self.assertEqual(sensor.get_attribute(rapideye.SOLAR_ZENITH), 56.02738)
         self.assertEqual(sensor.get_attribute(rapideye.TILE_ID), 1447720)
-    def test_database_insert_action(self):
-        import madmex.persistence.database.connection as connection 
-        from sqlalchemy import create_engine
-        from sqlalchemy.orm.session import sessionmaker
-        from madmex.persistence.database.operations import InsertAction
-        my_database = getattr(SETTINGS, 'ANTARES_TEST_DATABASE')
-        klass = sessionmaker(bind=create_engine(my_database))
-        session = klass()
-        organization_name = 'MyOrganization'
-        organization = connection.Organization(
-            name=organization_name,
-            description='An organization to act what I want.',
-            country='Robo-Hungarian Empire',
-            url='http://placekitten.com/')
-        query = 'SELECT count(*) FROM organization WHERE name=\'%s\';' % organization_name
-        try:
-            action = InsertAction(organization, session)
-            action.act()
-            session.commit()
-            
-            result_set = session.execute(query)
-            for row in result_set:
-                self.assertGreater(row['count'], 0)
-            action.undo()
-            session.commit()
-            result_set = session.execute(query)
-            for row in result_set:
-                self.assertEqual(row['count'], 0)
-        except:
-            session.rollback()
-            raise
-        finally:
-            session.close()
+
     def test_filesystem_insert_action(self):
+        '''
+        Creates several dummy files and then persists them into the filesystem.
+        '''
         import json
         from madmex.persistence.filesystem.operations import InsertAction
         name = 'coolest_file_ever.txt'
@@ -175,41 +147,85 @@ class Test(unittest.TestCase):
         self.assertFalse(action.success)
         self.assertFalse(os.path.isfile(action.new_file))
         os.remove(name)
-    
         
+class UtilTest(unittest.TestCase):
+    
+    
+class DatabaseTest(unittest.TestCase):
+
+    def setUp(self):
+        BASE.metadata.create_all(bind=ENGINE)
+        self.database = getattr(SETTINGS, 'ANTARES_TEST_DATABASE')
+        self.session = None
+
+    def tearDown(self):
+        BASE.metadata.drop_all(bind=ENGINE)
+        
+    def get_session(self):
+        if self.session is None:
+            klass = sessionmaker(bind=create_engine(self.database))
+            self.session = klass()
+        return self.session
+    
+class DatabaseSimpleTests(DatabaseTest):
+    def test_database_insert_action(self):
+        '''
+        Tests a simple insert into the Organization table. This will ensure
+        that the connection is properly configured.
+        '''
+        import madmex.persistence.database.connection as connection 
+        from madmex.persistence.database.operations import InsertAction
+        organization_name = 'MyOrganization'
+        organization = connection.Organization(
+            name=organization_name,
+            description='An organization to act what I want.',
+            country='Robo-Hungarian Empire',
+            url='http://placekitten.com/')
+        query = 'SELECT count(*) FROM organization WHERE name=\'%s\';' % organization_name
+        try:
+            action = InsertAction(organization, self.get_session())
+            action.act()
+            self.get_session().commit()
+            result_set = self.get_session().execute(query)
+            for row in result_set:
+                self.assertGreater(row['count'], 0)
+            action.undo()
+            self.get_session().commit()
+            result_set = self.get_session().execute(query)
+            for row in result_set:
+                self.assertEqual(row['count'], 0)
+        except:
+            self.get_session().rollback()
+            raise
+        finally:
+            self.get_session().close()
+    
+class DatabaseBundleInsertionTest(DatabaseTest):
     def test_persist_bundle_with_error(self):
+        '''
+        Tests the behavior of persisting a bundle object when the file to
+        be persisted in the filesystem does not exists.
+        '''
         from madmex.persistence.driver import persist_bundle
-        from sqlalchemy import create_engine
-        from sqlalchemy.orm.session import sessionmaker
         dummy = ErrorDummyBundle()
         persist_bundle(dummy)
         
-        
-        my_database = getattr(SETTINGS, 'ANTARES_TEST_DATABASE')
-        klass = sessionmaker(bind=create_engine(my_database))
-        session = klass()
         query = 'SELECT count(*) FROM product WHERE uuid=\'%s\';' % dummy.uuid_id
-        print query
         try:
-            result_set = session.execute(query)
+            result_set = self.get_session().execute(query)
             for row in result_set:
                 print dir(row.keys)
                 print row.keys
                 self.assertEqual(row['count'], 0)
             for file_name in dummy.get_files():
-                dest = dummy.get_output_directory()
-                print 'dest: ' + dest
                 full_path = os.path.join(dummy.get_output_directory(), os.path.basename(file_name))
-                print full_path
                 self.assertFalse(os.path.isfile(full_path))
         except:
-            session.rollback()
+            self.get_session().rollback()
             raise
         finally:
-            session.close()
-        
-        
-        
+            self.get_session().close()
+            
     def persist_bundle(self):
         from madmex.persistence.driver import persist_bundle
         from sqlalchemy import create_engine
@@ -276,6 +292,9 @@ class Test(unittest.TestCase):
             raise
         finally:
             session.close()
+    
+
+
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

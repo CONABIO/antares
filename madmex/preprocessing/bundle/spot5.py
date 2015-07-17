@@ -3,6 +3,7 @@ Created on 16/07/2015
 
 @author: erickpalacios
 '''
+from __future__ import unicode_literals
 from madmex.mapper.bundle.spot5 import Bundle as Bundle_spot5
 import madmex.mapper.sensor.spot5 as spot5
 import gdal

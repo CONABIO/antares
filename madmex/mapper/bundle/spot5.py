@@ -4,7 +4,7 @@ Created on 15/07/2015
 @author: erickpalacios
 '''
 
-from __future__ import unicode_literals
+#from __future__ import unicode_literals
 
 from madmex.mapper.base import BaseBundle
 from madmex.persistence.database.connection import RawProduct
@@ -13,6 +13,7 @@ import madmex.mapper.data.raster as raster
 from datetime import datetime
 from madmex.configuration import SETTINGS
 from madmex.util import get_path_from_list
+
 
 class Bundle(BaseBundle):
     '''            
@@ -52,7 +53,7 @@ class Bundle(BaseBundle):
                 ingest_date=datetime.now(),
                 path=self.get_output_directory(),
                 legend=None,
-                geometry=self.get_raster().get_attribute('footprint'),
+                geometry=self.get_raster().get_attribute(raster.FOOTPRINT),
                 information=None,
                 product_type=None,
                 type='raw'
@@ -77,11 +78,8 @@ class Bundle(BaseBundle):
         persisted on the file system.
         '''
         if self.output_directory is None:
-            print self.get_sensor()
-            print self.sensor
             destination = getattr(SETTINGS, 'TEST_FOLDER')
-            #sensor_name = self.get_sensor().get_attribute(spot5.SENSOR)
-            sensor_name = self.sensor.get_attribute(spot5.SENSOR)
+            sensor_name = self.get_sensor().get_attribute(spot5.SENSOR)
             grid_id = unicode(self.get_sensor().get_attribute(spot5.GRID_REFERENCE))
             year = self.get_sensor().get_attribute(spot5.ACQUISITION_DATE).strftime('%Y')
             date = self.get_sensor().get_attribute(spot5.ACQUISITION_DATE).strftime('%Y-%m-%d')
@@ -99,4 +97,9 @@ if __name__ == '__main__':
     folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea9/folder_test/556_297_041114_dim_img_spot'
     bundle = Bundle(folder)
     print bundle.can_identify()
+    print bundle.get_raster().metadata
+    print bundle.get_raster().get_attribute((raster.FOOTPRINT))
+    print bundle.get_raster().get_attribute((raster.GEO_TRANSFORM))
+
         
+

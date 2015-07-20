@@ -5,6 +5,7 @@ Created on 29/06/2015
 '''
 from madmex.mapper.base import BaseSensor
 import madmex.mapper.parser.spot5 as spot5
+from datetime import datetime
 
 PROCESSING_LEVEL = ['Dimap_Document', 'Data_Processing', 'PROCESSING_LEVEL']
 SENSOR = ['Dimap_Document', 'Dataset_Sources', 'Source_Information', 'Scene_Source', 'MISSION']
@@ -63,6 +64,10 @@ class Sensor(BaseSensor):
             ])
         self.parser.parse()
         self.parser.apply_format(ANGLE, lambda x: float(x))
+        self.parser.apply_format(
+            ACQUISITION_DATE,
+            lambda x: datetime.strptime(x, "%Y-%m-%d")
+            )
         self.parser.set_attribute(CLOUDS, 999)
         self.parser.set_attribute(QUICKLOOK, 'PREVIEW.JPG')
         self.parser.set_attribute(SOLAR_IRRADIANCE, [1843,1568,1052,233])

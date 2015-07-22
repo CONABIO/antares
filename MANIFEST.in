@@ -1,1 +1,2 @@
 recursive-include madmex/locale *.mo
+recursive-include madmex/configuration *.ini

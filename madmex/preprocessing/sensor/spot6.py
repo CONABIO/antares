@@ -3,17 +3,23 @@ Created on 15/07/2015
 
 @author: erickpalacios
 '''
-from madmex.mapper.bundle.spot6 import Bundle as Bundle_spot6
-import madmex.mapper.sensor.spot6 as spot6
-import gdal
-from madmex import LOGGER
-import numpy as np
-from madmex.preprocessing.base import calculate_rad_ref
+from __future__ import unicode_literals
+
 from datetime import datetime
-from madmex.mapper.data import raster
-import numpy
+import os
 import re
+
+import gdal
+import numpy
+
+from madmex import LOGGER
+from madmex.mapper.bundle.spot6 import Bundle as Bundle_spot6
+from madmex.mapper.data import raster
+import madmex.mapper.sensor.spot6 as spot6
+from madmex.preprocessing.base import calculate_rad_ref
 from madmex.util import create_directory_path
+import numpy as np
+
 
 class Bundle(Bundle_spot6):
     def __init__(self, path):
@@ -46,10 +52,10 @@ class Bundle(Bundle_spot6):
         return Bundle_spot6.get_raster(self)
     def get_sensor(self):
         return Bundle_spot6.get_sensor(self)
-    def calculate_toa(self):
         self.get_sensor()
-        LOGGER.debug('sun_elevation: %s' % self.get_sensor().get_attribute(spot6.SUN_ELEVATION))
+    def calculate_toa(self):
         LOGGER.debug('band display order: %s' % self.get_sensor().get_attribute(spot6.BAND_DISPLAY_ORDER)) 
+        LOGGER.debug('sun_elevation: %s' % self.get_sensor().get_attribute(spot6.SUN_ELEVATION))
         LOGGER.debug('band index: %s' % self.get_sensor().get_attribute(spot6.BAND_INDEX)) 
         sun_elevation = np.deg2rad(float(numpy.median(self.get_sensor().get_attribute(spot6.SUN_ELEVATION))))
         gain = map(float, self.sensor.get_attribute(spot6.PHYSICAL_GAIN))
@@ -62,7 +68,7 @@ class Bundle(Bundle_spot6):
         self.toa = calculate_rad_ref(self.data_array, gain, offset, imaging_date, sun_elevation)
     def export(self):
         #outname = re.sub(r'.TIF', '', self.file_dictionary[self.IMAGE]) + '_TOA.tif'
-        outname = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea11/spot/SinNubes/resultados3'
+        outname = os.path.join(os.path.expanduser('~'), 'SinNubes/resultados')
         create_directory_path(outname)
         outname+= '/toa_res.tif'
         LOGGER.info('Results of folder %s is %s' % (self.path, outname))

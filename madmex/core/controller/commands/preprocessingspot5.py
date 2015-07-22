@@ -53,15 +53,17 @@ class Command(BaseCommand):
         '''
         This is the code that does preprocessing.
         '''
-        path_directory = options['path']
-        folders = next(os.walk(path_directory[0]))[1]
-        for folder in folders:
-            path_folder = os.path.join(path_directory[0], folder)
-            path_scene = next(os.walk(path_folder))[1]
-            path = os.path.join(path_folder, path_scene[0])
-            bundle = get_bundle_from_path(path)
-            if bundle:
-                LOGGER.info('Directory %s is a %s bundle.', path, bundle.get_name())
-                bundle.preprocessing()
-            else:
-                LOGGER.info('No bundle was able to identify the directory: %s.', path)
+        path_directory = options['path'][0]
+        name = 'SCENE01'
+        for root, dirs, files in os.walk(path_directory):
+            if name in dirs:
+                path =  os.path.join(root, name)
+                bundle = get_bundle_from_path(path)
+                if bundle:
+                    LOGGER.info('Directory %s is a %s bundle.', path, bundle.get_name())
+                    bundle.preprocessing()
+                else:
+                    LOGGER.info('No bundle was able to identify the directory: %s.', path)
+                
+    def find(self, name, path):
+        pass

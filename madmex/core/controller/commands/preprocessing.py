@@ -56,7 +56,6 @@ class Command(BaseCommand):
         '''
         path_directory = options['path'][0]
         name = options['name'][0]
-        #name = 'SCENE01'
         for root, dirs, files in os.walk(path_directory):
             if name in dirs:
                 path =  os.path.join(root, name)

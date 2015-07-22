@@ -5,7 +5,7 @@ Created on 10/06/2015
 
 @author: erickpalacios
 '''
-from __future__ import unicode_literals
+#from __future__ import unicode_literals
 
 import logging
 
@@ -42,24 +42,25 @@ class Data(BaseData):
         self.metadata ={}
         try:
             LOGGER.info("Extracting metadata of driver %s" % gdal_format)
-            print "Extracting metadata of driver %s" % gdal_format
             self.driver = gdal.GetDriverByName(gdal_format)
+            LOGGER.info('driver: %s' % self.driver)
+            #print 'driver:'
+            #print self.driver
+            LOGGER.info('Extracting metadata of driver %s' % gdal_format)
+            #print "Extracting metadata of driver %s" % gdal_format
             self.metadata[DRIVER_METADATA[0]] = self.driver.GetMetadata()
-            #self.driver_metadata = self.driver.GetMetadata()
         except AttributeError:
             LOGGER.error('Cannot access driver for format %s' % gdal_format)
         self.data_file = self._open_file()
         if self.data_file != None:
             LOGGER.info("Extracting metadata of file %s" % self.data_file)
-            print "Extracting metadata of file %s" % self.data_file
+            LOGGER.info("Extracting metadata of file %s" % self.data_file)
             self.metadata[METADATA_FILE[0]] = self.data_file.GetMetadata()
-            #self.metadata = self.data_file.GetMetadata()
-            #self.raster_info = {}
         else:
             LOGGER.error("Image %s does not provide metadata" % self.data_file)
         if self.data_file.GetRasterBand(1)!= None:
             LOGGER.info("Getting properties projection, geotransform, data_shape and footprint of raster %s" % self.data_file)
-            print "Getting properties projection, geotransform, data_shape and footprint of raster %s" % self.data_file
+            #print "Getting properties projection, geotransform, data_shape and footprint of raster %s" % self.data_file
             self._extract_raster_properties()
 
     def _open_file(self, mode=gdalconst.GA_ReadOnly):
@@ -68,6 +69,7 @@ class Data(BaseData):
         '''
         try:
             LOGGER.debug('Open raster file: %s', self.image_path)
+            LOGGER.info('Open raster file: %s' % self.image_path)
             return gdal.Open(self.image_path, mode)
         except RuntimeError:
             LOGGER.error('Unable to open raster file %s', self.image_path)
@@ -101,15 +103,18 @@ class Data(BaseData):
             spacial_reference.ImportFromWkt(self.get_attribute(PROJECTION))
             return self._footprint_helper(ring, spacial_reference)
         except:
-            LOGGER.error('Unable to get footprint of %s', self.image_path)
-            print 'Unable to get footprint'
+            LOGGER.info('Unable to get footprint of %s', self.image_path)
+            #print 'Unable to get footprint'
     def get_attribute(self, path_to_attribute):
         '''
         Returns the attribute that is found in the given path
         '''
         return _get_attribute(path_to_attribute, self.metadata)
     def create_from_reference(self, outname, width_raster, height_raster, number_of_bands, type_format, geotransform, projection, options = []):
-        data = self.driver.Create(outname, width_raster, height_raster, number_of_bands, type_format, options)
+        format_create = 'GTiff'
+        driver = gdal.GetDriverByName(format_create)
+        options = ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND']
+        data = driver.Create(outname, width_raster, height_raster, number_of_bands, type_format, options)
         data.SetGeoTransform(geotransform)
         data.SetProjection(projection)
         return data

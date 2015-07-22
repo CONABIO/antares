@@ -79,7 +79,7 @@ class Bundle(BaseBundle):
         '''
         if self.output_directory is None:
             destination = getattr(SETTINGS, 'TEST_FOLDER')
-            sensor_name = self.get_sensor().get_attribute(spot5.SENSOR)
+            sensor_name = self.get_sensor().get_attribute(spot5.SENSOR)+self.get_sensor().get_attribute(spot5.PLATFORM)
             grid_id = unicode(self.get_sensor().get_attribute(spot5.GRID_REFERENCE))
             year = self.get_sensor().get_attribute(spot5.ACQUISITION_DATE).strftime('%Y')
             date = self.get_sensor().get_attribute(spot5.ACQUISITION_DATE).strftime('%Y-%m-%d')
@@ -100,6 +100,7 @@ if __name__ == '__main__':
     print bundle.get_raster().metadata
     print bundle.get_raster().get_attribute((raster.FOOTPRINT))
     print bundle.get_raster().get_attribute((raster.GEO_TRANSFORM))
+    print bundle.get_sensor()
 
         
 

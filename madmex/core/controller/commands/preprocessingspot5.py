@@ -56,7 +56,9 @@ class Command(BaseCommand):
         path_directory = options['path']
         folders = next(os.walk(path_directory[0]))[1]
         for folder in folders:
-            path = os.path.join(path_directory[0], folder)
+            path_folder = os.path.join(path_directory[0], folder)
+            path_scene = next(os.walk(path_folder))[1]
+            path = os.path.join(path_folder, path_scene[0])
             bundle = get_bundle_from_path(path)
             if bundle:
                 LOGGER.info('Directory %s is a %s bundle.', path, bundle.get_name())

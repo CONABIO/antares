@@ -29,7 +29,7 @@ HORIZONTAL_CS_CODE = ['Dimap_Document', 'Coordinate_Reference_System', 'Horizont
 SUN_AZIMUTH = ['Dimap_Document', 'Dataset_Sources', 'Source_Information', 'Scene_Source', 'SUN_AZIMUTH']
 SUN_ELEVATION = ['Dimap_Document', 'Dataset_Sources', 'Source_Information', 'Scene_Source', 'SUN_ELEVATION']
 GRID_REFERENCE =['Dimap_Document', 'Dataset_Sources', 'Source_Information', 'Scene_Source', 'GRID_REFERENCE']
-SOLAR_IRRADIANCE = ['SOLAR_IRRADIANCE']
+SOLAR_IRRADIANCE = ['SOLAR_IRRADIANCE']  # soudani et al 2006
 class Sensor(BaseSensor):
     '''
     This class represents a Spot Sensor object. It owns a Spot parser in charge
@@ -71,3 +71,4 @@ class Sensor(BaseSensor):
         self.parser.set_attribute(CLOUDS, 999)
         self.parser.set_attribute(QUICKLOOK, 'PREVIEW.JPG')
         self.parser.set_attribute(SOLAR_IRRADIANCE, [1843,1568,1052,233])
+        

@@ -12,9 +12,7 @@ def calc_spot_rad(data,gain,offset):
     for g in gain:
         rad[b,:,:] = data[b,:,:]/g+offset[b]
         b = b+1
-        
     return rad
-
 def calc_spot5_toa(rad, sun_distance, sun_elevation):
     E = [1843,1568,1052,233]
     BANDS = 4
@@ -23,7 +21,6 @@ def calc_spot5_toa(rad, sun_distance, sun_elevation):
         toa[i,:,:] = (np.pi*rad[i,:,:]*sun_distance)/(E[i]*np.cos(sun_elevation))
         
     return toa
-
 def calc_distance_Sun_Earth(datestr):
     """
     returns distance between sun and earth in AU for a given date. Date needs to be a string using format YYYY-MM-DD or datetime object from metadata
@@ -36,7 +33,6 @@ def calc_distance_Sun_Earth(datestr):
     elif isinstance(datestr, datetime.datetime ):
         sun.compute(datestr)
     sun_distance = sun.earth_distance  # needs to be between 0.9832898912 AU and 1.0167103335 AU
-    
     return sun_distance
 def calculate_rad_ref(data, gain, offset, imaging_date, sun_elevation):
     rad = calc_spot_rad(data.astype(np.float), gain, offset)

@@ -66,6 +66,5 @@ class Command(BaseCommand):
                     bundle.preprocessing()
                 else:
                     LOGGER.info('No bundle was able to identify the directory: %s.', path)
-                
-    def find(self, name, path):
-        pass
+            else:
+                LOGGER.info('No directory with given name found')

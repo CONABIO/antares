@@ -3,33 +3,18 @@ Created on 15/07/2015
 
 @author: erickpalacios
 '''
-#from __future__ import unicode_literals
-#from madmex.preprocessing.bundle import spot6
 from madmex.mapper.bundle.spot6 import Bundle as Bundle_spot6
 import madmex.mapper.sensor.spot6 as spot6
-import gdal, gdalconst
+import gdal
 from madmex import LOGGER
-import osr
 import numpy as np
 from madmex.preprocessing.base import calculate_rad_ref
 from datetime import datetime
 from madmex.mapper.data import raster
 import numpy
+import re
+from madmex.util import create_directory_path
 
-def Spot6DN2TOA(indir):
-    print "Start folder: ", indir
-    bundle = Bundle(indir)
-    if bundle.can_identify():
-        print 'folder correctly identified'
-        bundle.get_raster_properties()
-        print 'raster properties successfully extracted'
-        bundle.get_sensor()
-        print 'finished extracting metadata of sensor'
-        bundle.calculate_toa()
-        print 'finished toa calculated'
-        bundle.export()
-        print 'finished export'
-        print 'finished DN to TOA'
 class Bundle(Bundle_spot6):
     def __init__(self, path):
         super(Bundle, self).__init__(path)
@@ -76,15 +61,11 @@ class Bundle(Bundle_spot6):
         imaging_date = str(datetime.date(imaging_date)) #to remove 00:00:00
         self.toa = calculate_rad_ref(self.data_array, gain, offset, imaging_date, sun_elevation)
     def export(self):
-        outname = self.get_output_directory() + '/toa_res.tif'
-        #outname = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea11/spot6/IMG_SPOT6_MS_001_A' + '/toa_res'
+        #outname = re.sub(r'.TIF', '', self.file_dictionary[self.IMAGE]) + '_TOA.tif'
+        outname = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea11/spot/SinNubes/resultados3'
+        create_directory_path(outname)
+        outname+= '/toa_res.tif'
+        LOGGER.info('Results of folder %s is %s' % (self.path, outname))
         data_file = self.get_raster().create_from_reference(outname, self.toa.shape[2], self.toa.shape[1], self.toa.shape[0], gdal.GDT_Float32, self.geotransform, self.projection)
         self.get_raster().write_raster(self.number_of_bands, data_file, self.toa) 
         data_file = None
-
-
-if __name__ == '__main__':
-    
-    #folder = '/Volumes/Imagenes_originales/SPOT6/E6554293150227_1751231K3A0U12N17L1003001/PROD_SPOT6_001/VOL_SPOT6_001_A/IMG_SPOT6_MS_001_A'
-    folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea11/spot6/IMG_SPOT6_MS_001_A'
-    Spot6DN2TOA(folder)

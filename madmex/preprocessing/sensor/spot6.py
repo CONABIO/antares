@@ -76,8 +76,8 @@ class Bundle(Bundle_spot6):
         imaging_date = str(datetime.date(imaging_date)) #to remove 00:00:00
         self.toa = calculate_rad_ref(self.data_array, gain, offset, imaging_date, sun_elevation)
     def export(self):
-        outname = self.get_output_directory() + '/toa_res'
-        outname = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea11/spot6/IMG_SPOT6_MS_001_A' + '/toa_res'
+        outname = self.get_output_directory() + '/toa_res.tif'
+        #outname = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea11/spot6/IMG_SPOT6_MS_001_A' + '/toa_res'
         data_file = self.get_raster().create_from_reference(outname, self.toa.shape[2], self.toa.shape[1], self.toa.shape[0], gdal.GDT_Float32, self.geotransform, self.projection)
         self.get_raster().write_raster(self.number_of_bands, data_file, self.toa) 
         data_file = None

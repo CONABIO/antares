@@ -9,7 +9,7 @@ setup(name='madmex',
   author_email='agutierrez@conabio.gob.mx',
   url='http://www.conabio.gob.mx/',
   packages=find_packages(),
-  pakcage_data= {'':['*.mo', '*.po']},
+  pakcage_data= {'madmex':['locale/es_MX/LC_MESSAGES/*']},
   scripts=['madmex/bin/madmex'],
   zip_safe = False,
  )

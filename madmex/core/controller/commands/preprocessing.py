@@ -49,12 +49,14 @@ class Command(BaseCommand):
         be preprocessed.
         '''
         parser.add_argument('--path', nargs='*')
+        parser.add_argument('--name', nargs='*')
     def handle(self, **options):
         '''
         This is the code that does preprocessing.
         '''
         path_directory = options['path'][0]
-        name = 'SCENE01'
+        name = options['name'][0]
+        #name = 'SCENE01'
         for root, dirs, files in os.walk(path_directory):
             if name in dirs:
                 path =  os.path.join(root, name)

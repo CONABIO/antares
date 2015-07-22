@@ -3,22 +3,28 @@ Created on 15/07/2015
 
 @author: erickpalacios
 '''
-from madmex.mapper.bundle.spot5 import Bundle as Bundle_spot5
-import madmex.mapper.sensor.spot5 as spot5
-import gdal
-from madmex import LOGGER
-import osr
-import numpy as np
-from madmex.preprocessing.base import calculate_rad_ref
+from __future__ import unicode_literals
+
 from datetime import datetime
-from madmex.mapper.data import raster
-from madmex.util import create_directory_path
+import os
 import re
+
+import gdal
+import osr
+
+from madmex import LOGGER
+from madmex.mapper.bundle.spot5 import Bundle as Bundle_spot5
+from madmex.mapper.data import raster
+import madmex.mapper.sensor.spot5 as spot5
+from madmex.preprocessing.base import calculate_rad_ref
+from madmex.util import create_directory_path
+import numpy as np
+
 
 class Bundle(Bundle_spot5):
     def __init__(self, path):
         super(Bundle, self).__init__(path)
-        self.FORMAT = "GTiff"
+        self.FORMAT = 'GTiff'
         self.IMAGE = r'IMAGERY.TIF$'
         self.METADATA = r'METADATA.DIM$'
         self.PREVIEW = r'PREVIEW.JPG'
@@ -80,7 +86,7 @@ class Bundle(Bundle_spot5):
         self.toa = calculate_rad_ref(self.data_array, gain, offset, imaging_date, sun_elevation)
     def export(self):
         #outname = re.sub(r'.TIF', '', self.file_dictionary[self.IMAGE]) + '_TOA.tif'    
-        outname = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea11/spot/SinNubes/resultados2'
+        outname = os.path.join(os.path.expanduser('~'), 'SinNubes/resultados')
         create_directory_path(outname)
         outname+= '/toa_res.tif'
         LOGGER.info('Results of folder %s is %s' % (self.path, outname))

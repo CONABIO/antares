@@ -58,7 +58,7 @@ class Data(BaseData):
         if self.data_file.GetRasterBand(1)!= None:
             LOGGER.info("Getting properties projection, geotransform, data_shape and footprint of raster %s" % self.data_file)
             self._extract_raster_properties()
-
+        self.data_array = None
     def _open_file(self, mode=gdalconst.GA_ReadOnly):
         '''
         Open the raster image file with gdal.
@@ -78,7 +78,6 @@ class Data(BaseData):
         put_in_dictionary(self.metadata, GEO_TRANSFORM, self.data_file.GetGeoTransform())
         put_in_dictionary(self.metadata, DATA_SHAPE, (self.data_file.RasterXSize, self.data_file.RasterYSize, self.data_file.RasterCount))
         put_in_dictionary(self.metadata, FOOTPRINT, self._get_footprint())
-
     def _get_footprint(self):
         '''
         Returns the extent of the raster image.
@@ -100,11 +99,37 @@ class Data(BaseData):
             return self._footprint_helper(ring, spacial_reference)
         except:
             LOGGER.info('Unable to get footprint of %s', self.image_path)
-    def get_attribute(self, path_to_attribute):
+    def read_data_file_as_array(self):
         '''
-        Returns the attribute that is found in the given path
+        Read image data from already opened image
         '''
-        return _get_attribute(path_to_attribute, self.metadata)
+        if self.data_array is None:
+            if self.data_file != None:
+                self.data_array = self.data_file.ReadAsArray()
+                self.close()
+            else:
+                self.data_file = self._open_file()
+                self.data_array = self.data_file.ReadAsArray()
+                self.close()
+        return self.data_array
+    def gcps(self):
+        '''
+        Get gcps from image
+        '''
+        if self.data_file != None:
+            gcps = self.data_file.GetGCPs()
+            self.close()
+            return gcps
+        else:
+            self.data_file = self._open_file()
+            gcps = self.data_file.GetGCPs()
+            self.close()
+            return gcps
+    def gcps_to_geotransform(self):
+        '''
+        Gcps to geotransform using gdal
+        '''
+        return gdal.GCPsToGeoTransform(self.gcps()) 
     def create_from_reference(self, outname, width_raster, height_raster, number_of_bands, type_format, geotransform, projection, options = []):
         format_create = 'GTiff'
         driver = gdal.GetDriverByName(format_create)
@@ -118,11 +143,15 @@ class Data(BaseData):
         data_file: data that will have the data in parameter data_to_write
         '''
         for b in range(number_of_bands):
-            data_file.GetRasterBand(b+1).WriteArray(data_to_write[b,:,:])  
-        
+            data_file.GetRasterBand(b+1).WriteArray(data_to_write[b,:,:])       
     def close(self):
         '''
         Method for closing the gdal file
         '''
         self.data_file = None
-
+    def get_attribute(self, path_to_attribute):
+        '''
+        Returns the attribute that is found in the given path
+        '''
+        return _get_attribute(path_to_attribute, self.metadata)
+    

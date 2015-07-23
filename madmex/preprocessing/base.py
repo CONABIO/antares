@@ -41,9 +41,8 @@ def calculate_rad_toa_spot5(data, gain, offset, imaging_date, sun_elevation):
 def calculate_rad_rapideye(data, radiometricScaleFactor=0.009999999776482582, radiometricOffsetValue=0.0):
     """
     Convert DN into RAD according to RE documentation
-    returns sensor radiance of that pixel in watts per steradian per square meter (W/m2/sr/μm).
+    returns sensor radiance of that pixel in watts per steradian per square meter.
     """
-    
     rad = data * radiometricScaleFactor + radiometricOffsetValue
     rad[rad == radiometricOffsetValue] = 0
     return rad
@@ -54,9 +53,8 @@ def calculate_toa_rapideye(rad, sun_distance, sun_elevation):
     """  
     BANDS = 5
     solar_zenit = 90 - sun_elevation
-    EAI = [1997.8, 1863.5, 1560.4, 1395.0, 1124.4]  # Exo-Atmospheric Irradiance in W/m2/μm
+    EAI = [1997.8, 1863.5, 1560.4, 1395.0, 1124.4]  # Exo-Atmospheric Irradiance in 
     toa = rad
     for i in range(BANDS):
-        toa[i, :, :] = rad[i, :, :] * (np.pi * (sun_distance * sun_distance)) / (EAI[i] * np.cos(np.pi * solar_zenit / 180))
-        
+        toa[i, :, :] = rad[i, :, :] * (np.pi * (sun_distance * sun_distance)) / (EAI[i] * np.cos(np.pi * solar_zenit / 180)) 
     return toa

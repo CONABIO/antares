@@ -6,14 +6,14 @@ Created on 16/07/2015
 
 import numpy as np
 
-def calculate_spot_rad(data,gain,offset):
+def calculate_rad_spot5(data,gain,offset):
     b = 0
     rad = data
     for g in gain:
         rad[b,:,:] = data[b,:,:]/g+offset[b]
         b = b+1
     return rad
-def calculate_spot5_toa(rad, sun_distance, sun_elevation):
+def calculate_toa_spot5(rad, sun_distance, sun_elevation):
     E = [1843,1568,1052,233]
     BANDS = 4
     toa = rad
@@ -34,11 +34,11 @@ def calculate_distance_Sun_Earth(datestr):
         sun.compute(datestr)
     sun_distance = sun.earth_distance  # needs to be between 0.9832898912 AU and 1.0167103335 AU
     return sun_distance
-def calculate_rad_ref(data, gain, offset, imaging_date, sun_elevation):
-    rad = calculate_spot_rad(data.astype(np.float), gain, offset)
+def calculate_rad_toa_spot5(data, gain, offset, imaging_date, sun_elevation):
+    rad = calculate_rad_spot5(data.astype(np.float), gain, offset)
     sun_distance = calculate_distance_Sun_Earth(str(imaging_date))
-    return calculate_spot5_toa(rad, sun_distance, sun_elevation)
-def calculate_rapideye_rad(data, radiometricScaleFactor=0.009999999776482582, radiometricOffsetValue=0.0):
+    return calculate_toa_spot5(rad, sun_distance, sun_elevation)
+def calculate_rad_rapideye(data, radiometricScaleFactor=0.009999999776482582, radiometricOffsetValue=0.0):
     """
     Convert DN into RAD according to RE documentation
     returns sensor radiance of that pixel in watts per steradian per square meter (W/m2/sr/μm).
@@ -47,9 +47,7 @@ def calculate_rapideye_rad(data, radiometricScaleFactor=0.009999999776482582, ra
     rad = data * radiometricScaleFactor + radiometricOffsetValue
     rad[rad == radiometricOffsetValue] = 0
     return rad
-
-    
-def calculate_rapideye_toa(rad, sun_distance, sun_elevation):
+def calculate_toa_rapideye(rad, sun_distance, sun_elevation):
     """
     Calculates TOA from RAD according to RE documentation
     needs Sun earth distance and sun elevation

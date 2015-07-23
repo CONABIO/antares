@@ -51,8 +51,7 @@ class Bundle(Bundle_spot6):
         metadata_band_order = self.sensor.get_attribute(spot6.BAND_DISPLAY_ORDER)
         image_band_order = self.get_sensor().get_attribute(spot6.BAND_INDEX)
         data_array = self.get_raster().read_data_file_as_array()[map(lambda x: image_band_order.index(x), metadata_band_order), :, :]
-        imaging_date = self.sensor.get_attribute(spot6.ACQUISITION_DATE)
-        imaging_date = str(datetime.date(imaging_date)) #to remove 00:00:00
+        imaging_date = str(datetime.date(self.sensor.get_attribute(spot6.ACQUISITION_DATE))) #to remove 00:00:00
         self.toa = calculate_rad_toa_spot5(data_array, gain, offset, imaging_date, sun_elevation)
     def export(self):
         #outname = re.sub(r'.JP2', '', self.file_dictionary[self.IMAGE]) + '_TOA.TIF'

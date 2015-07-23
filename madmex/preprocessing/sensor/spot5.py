@@ -66,11 +66,10 @@ class Bundle(Bundle_spot5):
         offset = [0] * len(gain)
         metadata_band_order = self.get_sensor().get_attribute(spot5.BAND_DESCRIPTION)
         data_array = self.get_raster().read_data_file_as_array()[map(lambda x: image_band_order.index(x), metadata_band_order), :, :]
-        imaging_date = self.sensor.get_attribute(spot5.ACQUISITION_DATE)
-        imaging_date = str(datetime.date(imaging_date)) #to remove 00:00:00
+        imaging_date = str(datetime.date(self.sensor.get_attribute(spot5.ACQUISITION_DATE))) #to remove 00:00:00
         self.toa = calculate_rad_toa_spot5(data_array, gain, offset, imaging_date, sun_elevation)   
     def export(self):
-        #outname = re.sub(r'.TIF', '', self.file_dictionary[self.IMAGE]) + '_TOA.tif'     
+        #outname = re.sub(r'.TIF', '', self.file_dictionary[self.IMAGE]) + '_TOA.tif'    
         outname = os.path.join(os.path.expanduser('~'), 'SinNubes/resultados')
         create_directory_path(outname)
         outname+= '/toa_res.tif'

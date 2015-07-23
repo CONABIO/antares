@@ -42,15 +42,16 @@ class Bundle(Bundle_spot6):
         self.get_sensor()
     def calculate_toa(self):
         self.number_of_bands = self.get_raster().get_attribute(raster.DATA_SHAPE)[2]
-        LOGGER.debug('band metadata order: %s' % self.get_sensor().get_attribute(spot6.BAND_DISPLAY_ORDER)) 
-        LOGGER.debug('sun_elevation: %s' % self.get_sensor().get_attribute(spot6.SUN_ELEVATION))
-        LOGGER.debug('band image order: %s' % self.get_sensor().get_attribute(spot6.BAND_INDEX)) 
-        sun_elevation = np.deg2rad(float(numpy.median(self.get_sensor().get_attribute(spot6.SUN_ELEVATION))))
-        gain = map(float, self.sensor.get_attribute(spot6.PHYSICAL_GAIN))
-        offset = map(float, self.sensor.get_attribute(spot6.PHYSICAL_BIAS))
         metadata_band_order = self.sensor.get_attribute(spot6.BAND_DISPLAY_ORDER)
         image_band_order = self.get_sensor().get_attribute(spot6.BAND_INDEX)
+        LOGGER.debug('band metadata order: %s' % self.get_sensor().get_attribute(spot6.BAND_DISPLAY_ORDER)) 
+        LOGGER.debug('band image order: %s' % self.get_sensor().get_attribute(spot6.BAND_INDEX)) 
+        LOGGER.info('reordering data_array')
         data_array = self.get_raster().read_data_file_as_array()[map(lambda x: image_band_order.index(x), metadata_band_order), :, :]
+        sun_elevation = np.deg2rad(float(numpy.median(self.get_sensor().get_attribute(spot6.SUN_ELEVATION))))
+        LOGGER.debug('sun_elevation: %s' % sun_elevation)
+        gain = map(float, self.sensor.get_attribute(spot6.PHYSICAL_GAIN))
+        offset = map(float, self.sensor.get_attribute(spot6.PHYSICAL_BIAS))
         imaging_date = str(datetime.date(self.sensor.get_attribute(spot6.ACQUISITION_DATE))) #to remove 00:00:00
         self.toa = calculate_rad_toa_spot5(data_array, gain, offset, imaging_date, sun_elevation)
     def export(self):

@@ -44,10 +44,7 @@ class Data(BaseData):
             LOGGER.info("Extracting metadata of driver %s" % gdal_format)
             self.driver = gdal.GetDriverByName(gdal_format)
             LOGGER.info('driver: %s' % self.driver)
-            #print 'driver:'
-            #print self.driver
             LOGGER.info('Extracting metadata of driver %s' % gdal_format)
-            #print "Extracting metadata of driver %s" % gdal_format
             self.metadata[DRIVER_METADATA[0]] = self.driver.GetMetadata()
         except AttributeError:
             LOGGER.error('Cannot access driver for format %s' % gdal_format)
@@ -60,7 +57,6 @@ class Data(BaseData):
             LOGGER.error("Image %s does not provide metadata" % self.data_file)
         if self.data_file.GetRasterBand(1)!= None:
             LOGGER.info("Getting properties projection, geotransform, data_shape and footprint of raster %s" % self.data_file)
-            #print "Getting properties projection, geotransform, data_shape and footprint of raster %s" % self.data_file
             self._extract_raster_properties()
 
     def _open_file(self, mode=gdalconst.GA_ReadOnly):
@@ -104,7 +100,6 @@ class Data(BaseData):
             return self._footprint_helper(ring, spacial_reference)
         except:
             LOGGER.info('Unable to get footprint of %s', self.image_path)
-            #print 'Unable to get footprint'
     def get_attribute(self, path_to_attribute):
         '''
         Returns the attribute that is found in the given path

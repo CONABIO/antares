@@ -45,7 +45,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         '''
         This command defines only an additional argument. The user must provide
-        a path to preprocessed and the name of the folder with the information
+        a path to directory and the name of the folder with the information that will be preprocessed
         '''
         parser.add_argument('--path', nargs='*')
         parser.add_argument('--name', nargs='*')

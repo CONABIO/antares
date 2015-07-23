@@ -54,18 +54,19 @@ class Bundle(Bundle_spot5):
         return Bundle_spot5.get_sensor(self)
     def calculate_toa(self):
         self.number_of_bands = self.get_raster().get_attribute(raster.DATA_SHAPE)[2]
+        metadata_band_order = self.get_sensor().get_attribute(spot5.BAND_DESCRIPTION)
         image_band_order = self.get_raster().get_attribute(raster.METADATA_FILE)['TIFFTAG_IMAGEDESCRIPTION'].split(" ")[:self.number_of_bands]
-        LOGGER.debug('sun_elevation: %s' % self.get_sensor().get_attribute(spot5.SUN_ELEVATION))
         LOGGER.debug('band metadata order: %s' % self.get_sensor().get_attribute(spot5.BAND_DESCRIPTION)) 
         LOGGER.debug('band image order: %s' % image_band_order)
+        LOGGER.info('reordering data_array')
+        data_array = self.get_raster().read_data_file_as_array()[map(lambda x: image_band_order.index(x), metadata_band_order), :, :]
         self.projection = osr.SpatialReference()
         self.projection.ImportFromEPSG(int(self.get_sensor().get_attribute(spot5.HORIZONTAL_CS_CODE).replace("epsg:", "")))
-        LOGGER.debug('projection: %s' % self.projection.ExportToWkt())   
+        LOGGER.debug('projection: %s' % self.projection.ExportToWkt())  
         sun_elevation = np.deg2rad(float(self.get_sensor().get_attribute(spot5.SUN_ELEVATION)))
+        LOGGER.debug('sun_elevation: %s' % sun_elevation) 
         gain = map(float, self.get_sensor().get_attribute(spot5.PHYSICAL_GAIN))
         offset = [0] * len(gain)
-        metadata_band_order = self.get_sensor().get_attribute(spot5.BAND_DESCRIPTION)
-        data_array = self.get_raster().read_data_file_as_array()[map(lambda x: image_band_order.index(x), metadata_band_order), :, :]
         imaging_date = str(datetime.date(self.sensor.get_attribute(spot5.ACQUISITION_DATE))) #to remove 00:00:00
         self.toa = calculate_rad_toa_spot5(data_array, gain, offset, imaging_date, sun_elevation)   
     def export(self):

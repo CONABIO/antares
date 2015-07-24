@@ -58,23 +58,26 @@ class Bundle(Bundle_spot5):
         image_band_order = self.get_raster().get_attribute(raster.METADATA_FILE)['TIFFTAG_IMAGEDESCRIPTION'].split(" ")[:self.number_of_bands]
         LOGGER.debug('band metadata order: %s' % self.get_sensor().get_attribute(spot5.BAND_DESCRIPTION)) 
         LOGGER.debug('band image order: %s' % image_band_order)
+        self.geotransform_from_gcps = self.get_raster().gcps_to_geotransform()
         LOGGER.info('reordering data_array')
         data_array = self.get_raster().read_data_file_as_array()[map(lambda x: image_band_order.index(x), metadata_band_order), :, :]
         self.projection = osr.SpatialReference()
         self.projection.ImportFromEPSG(int(self.get_sensor().get_attribute(spot5.HORIZONTAL_CS_CODE).replace("epsg:", "")))
         LOGGER.debug('projection: %s' % self.projection.ExportToWkt())  
-        sun_elevation = np.deg2rad(float(self.get_sensor().get_attribute(spot5.SUN_ELEVATION)))
+        sun_elevation = float(self.get_sensor().get_attribute(spot5.SUN_ELEVATION))
         LOGGER.debug('sun_elevation: %s' % sun_elevation) 
         gain = map(float, self.get_sensor().get_attribute(spot5.PHYSICAL_GAIN))
         offset = [0] * len(gain)
-        imaging_date = str(datetime.date(self.sensor.get_attribute(spot5.ACQUISITION_DATE))) #to remove 00:00:00
-        self.toa = calculate_rad_toa_spot5(data_array, gain, offset, imaging_date, sun_elevation)   
+        hrg = self.get_sensor().get_attribute(spot5.HRG)
+        LOGGER.debug('HRG type: %s' % hrg)
+        imaging_date = datetime.date(self.sensor.get_attribute(spot5.ACQUISITION_DATE))
+        self.toa = calculate_rad_toa_spot5(data_array, gain, offset, imaging_date, sun_elevation, hrg, self.number_of_bands)   
     def export(self):
-        #outname = re.sub(r'.TIF', '', self.file_dictionary[self.IMAGE]) + '_TOA.tif'    
-        outname = os.path.join(os.path.expanduser('~'), 'SinNubes/resultados')
+        outname = os.path.join(os.path.expanduser('~'), 'Documents/CONABIO/Tareas/Tarea11/spot/SinNubes/resultados2')
         create_directory_path(outname)
         outname+= '/toa_res.tif'
-        LOGGER.info('Results of folder %s is %s' % (self.path, outname))
-        data_file = self.get_raster().create_from_reference(outname, self.toa.shape[2], self.toa.shape[1], self.toa.shape[0], gdal.GDT_Float32, self.get_raster().gcps_to_geotransform(), self.projection.ExportToWkt())
+        #outname = re.sub(r'.TIF', '', self.file_dictionary[self.IMAGE]) + '_TOA.tif'    
+        LOGGER.info('Result of folder %s is %s' % (self.path, outname))
+        data_file = self.get_raster().create_from_reference(outname, self.toa.shape[2], self.toa.shape[1], self.toa.shape[0], self.geotransform_from_gcps, self.projection.ExportToWkt())
         self.get_raster().write_raster(self.number_of_bands, data_file, self.toa) 
         data_file = None

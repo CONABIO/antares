@@ -99,7 +99,7 @@ if __name__ == '__main__':
     print bundle.can_identify()
     print bundle.get_raster().metadata
     print bundle.get_raster().get_attribute((raster.FOOTPRINT))
-    print bundle.get_raster().get_attribute((raster.GEO_TRANSFORM))
+    print bundle.get_raster().get_attribute((raster.GEOTRANSFORM))
     print bundle.get_sensor()
 
         

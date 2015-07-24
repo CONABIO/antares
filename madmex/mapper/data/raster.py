@@ -23,7 +23,7 @@ LOGGER = logging.getLogger(__name__)
 DRIVER_METADATA = ['driver_metadata'] 
 METADATA_FILE = ['metadata_file']
 PROJECTION = ['properties', 'projection']
-GEO_TRANSFORM = ['properties', 'geotransform']
+GEOTRANSFORM = ['properties', 'geotransform']
 DATA_SHAPE = ['properties', 'data_shape']
 FOOTPRINT = ['properties', 'footprint']
 
@@ -51,20 +51,18 @@ class Data(BaseData):
         self.data_file = self._open_file()
         if self.data_file != None:
             LOGGER.info("Extracting metadata of file %s" % self.data_file)
-            LOGGER.info("Extracting metadata of file %s" % self.data_file)
             self.metadata[METADATA_FILE[0]] = self.data_file.GetMetadata()
+            if self.data_file.GetRasterBand(1)!= None:
+                LOGGER.info("Getting properties projection, geotransform, data_shape and footprint of raster %s" % self.data_file)
+                self._extract_raster_properties()
         else:
             LOGGER.error("Image %s does not provide metadata" % self.data_file)
-        if self.data_file.GetRasterBand(1)!= None:
-            LOGGER.info("Getting properties projection, geotransform, data_shape and footprint of raster %s" % self.data_file)
-            self._extract_raster_properties()
         self.data_array = None
     def _open_file(self, mode=gdalconst.GA_ReadOnly):
         '''
         Open the raster image file with gdal.
         '''
         try:
-            LOGGER.debug('Open raster file: %s', self.image_path)
             LOGGER.info('Open raster file: %s' % self.image_path)
             return gdal.Open(self.image_path, mode)
         except RuntimeError:
@@ -75,7 +73,7 @@ class Data(BaseData):
         '''
         self.metadata['properties'] ={'projection': None, 'geotransform': None, 'data_shape': None, 'footprint': None}
         put_in_dictionary(self.metadata, PROJECTION, self.data_file.GetProjection())
-        put_in_dictionary(self.metadata, GEO_TRANSFORM, self.data_file.GetGeoTransform())
+        put_in_dictionary(self.metadata, GEOTRANSFORM, self.data_file.GetGeoTransform())
         put_in_dictionary(self.metadata, DATA_SHAPE, (self.data_file.RasterXSize, self.data_file.RasterYSize, self.data_file.RasterCount))
         put_in_dictionary(self.metadata, FOOTPRINT, self._get_footprint())
     def _get_footprint(self):
@@ -84,7 +82,7 @@ class Data(BaseData):
         '''
         try:
             ring = ogr.Geometry(ogr.wkbLinearRing)
-            geotransform = self.get_attribute(GEO_TRANSFORM)
+            geotransform = self.get_attribute(GEOTRANSFORM)
             data_shape = self.get_attribute(DATA_SHAPE)
             ring.AddPoint_2D(geotransform[0], geotransform[3])
             ring.AddPoint_2D(geotransform[0] + geotransform[1] * data_shape[0], geotransform[3])
@@ -130,10 +128,10 @@ class Data(BaseData):
         Gcps to geotransform using gdal
         '''
         return gdal.GCPsToGeoTransform(self.gcps()) 
-    def create_from_reference(self, outname, width_raster, height_raster, number_of_bands, type_format, geotransform, projection, options = []):
+    def create_from_reference(self, outname, width_raster, height_raster, number_of_bands, geotransform, projection, type_format = gdal.GDT_Float32):
         format_create = 'GTiff'
         driver = gdal.GetDriverByName(format_create)
-        options = ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND']
+        options = ['COMPRESS=LZW']
         data = driver.Create(outname, width_raster, height_raster, number_of_bands, type_format, options)
         data.SetGeoTransform(geotransform)
         data.SetProjection(projection)

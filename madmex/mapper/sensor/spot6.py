@@ -78,7 +78,6 @@ RED_CHANNEL = ['Dimap_Document', 'Raster_Data', 'Raster_Display', 'Band_Display_
 GREEN_CHANNEL = ['Dimap_Document', 'Raster_Data', 'Raster_Display', 'Band_Display_Order', 'GREEN_CHANNEL']
 BLUE_CHANNEL = ['Dimap_Document', 'Raster_Data', 'Raster_Display', 'Band_Display_Order', 'BLUE_CHANNEL']
 ALPHA_CHANNEL = ['Dimap_Document', 'Raster_Data', 'Raster_Display', 'Band_Display_Order', 'ALPHA_CHANNEL']
-SOLAR_IRRADIANCE = ['SOLAR_IRRADIANCE'] # soudani et al 2006
 BAND_DISPLAY_ORDER = ['Dimap_Document', 'Raster_Data', 'Raster_Display', 'Band_Display_Order']
 BAND_INDEX = ['Dimap_Document', 'Radiometric_Data', 'Dynamic_Adjustment', 'Band_Adjustment_List', 'Band_Adjustment', 'BAND_ID']
 class Sensor(BaseSensor):
@@ -112,4 +111,3 @@ class Sensor(BaseSensor):
             )
         self.parser.apply_format(ANGLE, lambda x: [float(y) for y in x])
         self.parser.apply_format(SUN_ELEVATION, lambda x: [float(y) for y in x])
-        self.parser.set_attribute(SOLAR_IRRADIANCE, [1843,1568,1052,233])

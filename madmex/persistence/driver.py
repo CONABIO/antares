@@ -45,7 +45,7 @@ def persist_bundle(bundle):
 
         def do_result(action):
             '''
-            Lamdbda function to perform an action and return the result.
+            Lambda function to perform an action and return the result.
             '''
             action.act()
             return action.success

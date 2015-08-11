@@ -17,9 +17,20 @@ from madmex.util import create_directory_path
 import os
 
 class Bundle(Bundle_spot6):
+    '''            
+    classdocs
+    '''
+
     def __init__(self, path):
+        '''
+        Constructor
+        '''
         super(Bundle, self).__init__(path)
     def preprocessing(self):
+        '''
+        Calculates top of atmosphere for the given image, and the persists the
+        result into a file.
+        '''
         LOGGER.info('folder correctly identified')
         LOGGER.info("Starting DN to TOA")
         LOGGER.info("Start folder: %s" % self.path)
@@ -31,10 +42,19 @@ class Bundle(Bundle_spot6):
         LOGGER.info('finished export')
         LOGGER.info('finished DN to TOA') 
     def get_raster(self):
+        '''
+        Returns the raster of the underlying bundle.
+        '''
         return Bundle_spot6.get_raster(self)
     def get_sensor(self):
+        '''
+        Returns the sensor of the underlying bundle.
+        '''
         return Bundle_spot6.get_sensor(self)
     def calculate_toa(self):
+        '''
+        Calculates the top of atmosphere for the image that is object represents.
+        '''
         self.number_of_bands = self.get_raster().get_attribute(raster.DATA_SHAPE)[2]
         metadata_band_order = self.get_sensor().get_attribute(spot6.BAND_DISPLAY_ORDER)
         image_band_order = self.get_sensor().get_attribute(spot6.BAND_INDEX)
@@ -58,6 +78,9 @@ class Bundle(Bundle_spot6):
         imaging_date = datetime.date(self.sensor.get_attribute(spot6.ACQUISITION_DATE))
         self.toa = calculate_rad_toa_spot6(data_array, gain, offset, imaging_date, sun_elevation, band_solar_irradiance, self.number_of_bands)
     def export(self):
+        '''
+        Persists the processed image into a file.
+        '''
         outname = re.sub(r'.JP2', '', self.file_dictionary[self.IMAGE]) + '_TOA.TIF'
         LOGGER.info('Results of folder %s is %s' % (self.path, outname))
         data_file = self.get_raster().create_from_reference(outname, self.toa.shape[2], self.toa.shape[1], self.toa.shape[0], self.get_raster().get_attribute(raster.GEOTRANSFORM), self.get_raster().get_attribute(raster.PROJECTION))

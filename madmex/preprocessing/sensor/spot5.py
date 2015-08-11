@@ -3,7 +3,7 @@ Created on 15/07/2015
 
 @author: erickpalacios
 '''
-#from __future__ import unicode_literals
+from __future__ import unicode_literals
 
 from datetime import datetime
 import os
@@ -17,7 +17,14 @@ from madmex.preprocessing.base import calculate_rad_toa_spot5
 from madmex.util import create_directory_path
 
 class Bundle(Bundle_spot5):
+    '''            
+    classdocs
+    '''
+
     def __init__(self, path):
+        '''
+        Constructor
+        '''
         super(Bundle, self).__init__(path)
         self.FORMAT = 'GTiff'
         self.IMAGE = r'IMAGERY.TIF$'
@@ -36,6 +43,10 @@ class Bundle(Bundle_spot5):
                            }
         self._look_for_files()
     def preprocessing(self):
+        '''
+        Calculates top of atmosphere for the given image, and the persists the
+        result into a file.
+        '''
         LOGGER.info('folder correctly identified')
         LOGGER.info("Starting DN to TOA")
         LOGGER.info("Start folder: %s" % self.path)
@@ -47,10 +58,19 @@ class Bundle(Bundle_spot5):
         LOGGER.info('finished export')
         LOGGER.info('finished DN to TOA')    
     def get_raster(self):
+        '''
+        Returns the raster of the underlying bundle.
+        '''
         return Bundle_spot5.get_raster(self)
     def get_sensor(self):
+        '''
+        Returns the sensor of the underlying bundle.
+        '''
         return Bundle_spot5.get_sensor(self)
     def calculate_toa(self):
+        '''
+        Calculates the top of atmosphere for the image that is object represents.
+        '''
         self.number_of_bands = self.get_raster().get_attribute(raster.DATA_SHAPE)[2]
         metadata_band_order = self.get_sensor().get_attribute(spot5.BAND_DESCRIPTION)
         image_band_order = self.get_raster().get_attribute(raster.METADATA_FILE)['TIFFTAG_IMAGEDESCRIPTION'].split(" ")[:self.number_of_bands]
@@ -71,6 +91,9 @@ class Bundle(Bundle_spot5):
         imaging_date = datetime.date(self.sensor.get_attribute(spot5.ACQUISITION_DATE))
         self.toa = calculate_rad_toa_spot5(data_array, gain, offset, imaging_date, sun_elevation, hrg, self.number_of_bands)   
     def export(self):
+        '''
+        Persists the processed image into a file.
+        '''
         outname = re.sub(r'.TIF', '', self.file_dictionary[self.IMAGE]) + '_TOA.tif'    
         LOGGER.info('Result of folder %s is %s' % (self.path, outname))
         data_file = self.get_raster().create_from_reference(outname, self.toa.shape[2], self.toa.shape[1], self.toa.shape[0], self.geotransform_from_gcps, self.projection.ExportToWkt())

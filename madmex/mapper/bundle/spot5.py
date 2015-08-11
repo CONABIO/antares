@@ -4,10 +4,10 @@ Created on 15/07/2015
 @author: erickpalacios
 '''
 
-#from __future__ import unicode_literals
+from __future__ import unicode_literals
 
 from madmex.mapper.base import BaseBundle
-from madmex.persistence.database.connection import RawProduct##mover esto para preprocesamiento
+from madmex.persistence.database.connection import RawProduct
 import madmex.mapper.sensor.spot5 as spot5
 import madmex.mapper.data.raster as raster
 from datetime import datetime
@@ -19,7 +19,6 @@ class Bundle(BaseBundle):
     '''            
     classdocs
     '''
-
 
     def __init__(self, path):
         '''
@@ -101,6 +100,3 @@ if __name__ == '__main__':
     print bundle.get_raster().get_attribute((raster.FOOTPRINT))
     print bundle.get_raster().get_attribute((raster.GEOTRANSFORM))
     print bundle.get_sensor()
-
-        
-

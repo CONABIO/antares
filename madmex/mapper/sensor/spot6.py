@@ -72,15 +72,75 @@ SUN_ELEVATION = [
     'Solar_Incidences',
     'SUN_ELEVATION'
     ]
-PHYSICAL_GAIN = ['Dimap_Document', 'Radiometric_Data', 'Radiometric_Calibration', 'Instrument_Calibration', 'Band_Measurement_List', 'Band_Radiance', 'GAIN']
-PHYSICAL_BIAS = ['Dimap_Document', 'Radiometric_Data', 'Radiometric_Calibration', 'Instrument_Calibration', 'Band_Measurement_List', 'Band_Radiance', 'BIAS']
-RED_CHANNEL = ['Dimap_Document', 'Raster_Data', 'Raster_Display', 'Band_Display_Order', 'RED_CHANNEL']
-GREEN_CHANNEL = ['Dimap_Document', 'Raster_Data', 'Raster_Display', 'Band_Display_Order', 'GREEN_CHANNEL']
-BLUE_CHANNEL = ['Dimap_Document', 'Raster_Data', 'Raster_Display', 'Band_Display_Order', 'BLUE_CHANNEL']
-ALPHA_CHANNEL = ['Dimap_Document', 'Raster_Data', 'Raster_Display', 'Band_Display_Order', 'ALPHA_CHANNEL']
-BAND_DISPLAY_ORDER = ['Dimap_Document', 'Raster_Data', 'Raster_Display', 'Band_Display_Order']
-BAND_INDEX = ['Dimap_Document', 'Radiometric_Data', 'Dynamic_Adjustment', 'Band_Adjustment_List', 'Band_Adjustment', 'BAND_ID']
-BAND_SOLAR_IRRADIANCE_VALUE = ['Dimap_Document', 'Radiometric_Data', 'Radiometric_Calibration', 'Instrument_Calibration', 'Band_Measurement_List', 'Band_Solar_Irradiance', 'VALUE']
+PHYSICAL_GAIN = [
+    'Dimap_Document',
+    'Radiometric_Data',
+    'Radiometric_Calibration',
+    'Instrument_Calibration',
+    'Band_Measurement_List',
+    'Band_Radiance',
+    'GAIN'
+    ]
+PHYSICAL_BIAS = [
+    'Dimap_Document',
+    'Radiometric_Data',
+    'Radiometric_Calibration',
+    'Instrument_Calibration',
+    'Band_Measurement_List',
+    'Band_Radiance',
+    'BIAS'
+    ]
+RED_CHANNEL = [
+    'Dimap_Document',
+    'Raster_Data',
+    'Raster_Display',
+    'Band_Display_Order',
+    'RED_CHANNEL'
+    ]
+GREEN_CHANNEL = [
+    'Dimap_Document',
+    'Raster_Data',
+    'Raster_Display',
+    'Band_Display_Order',
+    'GREEN_CHANNEL'
+    ]
+BLUE_CHANNEL = [
+    'Dimap_Document',
+    'Raster_Data',
+    'Raster_Display',
+    'Band_Display_Order',
+    'BLUE_CHANNEL'
+    ]
+ALPHA_CHANNEL = [
+    'Dimap_Document',
+    'Raster_Data',
+    'Raster_Display',
+    'Band_Display_Order',
+    'ALPHA_CHANNEL'
+    ]
+BAND_DISPLAY_ORDER = [
+    'Dimap_Document',
+    'Raster_Data',
+    'Raster_Display',
+    'Band_Display_Order'
+    ]
+BAND_INDEX = [
+    'Dimap_Document',
+    'Radiometric_Data',
+    'Dynamic_Adjustment',
+    'Band_Adjustment_List',
+    'Band_Adjustment',
+    'BAND_ID'
+    ]
+BAND_SOLAR_IRRADIANCE_VALUE = [
+    'Dimap_Document',
+    'Radiometric_Data',
+    'Radiometric_Calibration',
+    'Instrument_Calibration',
+    'Band_Measurement_List',
+    'Band_Solar_Irradiance',
+    'VALUE'
+    ]
 class Sensor(BaseSensor):
     '''
     This class represents a Spot Sensor object. It owns a Spot parser in charge
@@ -103,15 +163,13 @@ class Sensor(BaseSensor):
             PHYSICAL_BIAS,
             PHYSICAL_GAIN,
             BAND_DISPLAY_ORDER,
-            BAND_INDEX,
-            BAND_SOLAR_IRRADIANCE_VALUE
+            BAND_INDEX
             ])
         self.parser.parse()
         self.parser.apply_format(
             ACQUISITION_DATE,
-            lambda x: datetime.strptime(x, "%Y-%m-%d")
+            lambda x: datetime.strptime(x, '%Y-%m-%d')
             )
         self.parser.apply_format(ANGLE, lambda x: [float(y) for y in x])
         self.parser.apply_format(SUN_ELEVATION, lambda x: [float(y) for y in x])
         self.parser.apply_format(BAND_SOLAR_IRRADIANCE_VALUE, lambda x: [float(y) for y in x])
-

@@ -11,7 +11,8 @@ import madmex.mapper.parser.rapideye as rapideye
 
 SENSOR_NAME = ['sensor_name']
 METADATA_EXT = 'xml'
-PRODUCT_NAME = ['re:EarthObservation',
+PRODUCT_NAME = [
+    're:EarthObservation',
     'gml:metaDataProperty',
     're:EarthObservationMetaData',
     'eop:productType']
@@ -98,6 +99,9 @@ class Sensor(BaseSensor):
     classdocs
     '''
     def __init__(self, metadata_path):
+        '''
+        Constructor
+        '''
         super(Sensor, self).__init__()
         self.parser = rapideye.Parser(metadata_path)
         self.parser.parse()

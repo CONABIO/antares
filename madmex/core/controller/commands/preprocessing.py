@@ -56,6 +56,8 @@ class Command(BaseCommand):
         path_directory = options['path'][0]
         name = options['name'][0]
         for root, dirs, files in os.walk(path_directory):
+            if os.path.basename(root) in dirs:
+                dirs.remove(os.path.basename(root))
             if name in dirs:
                 path =  os.path.join(root, name)
                 bundle = get_bundle_from_path(path)
@@ -64,3 +66,6 @@ class Command(BaseCommand):
                     bundle.preprocessing()
                 else:
                     LOGGER.info('No bundle was able to identify the directory: %s.', path)
+
+                
+

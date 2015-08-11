@@ -31,12 +31,12 @@ def calculate_distance_Sun_Earth_spot5(datestr):
     day = datestr.timetuple().tm_yday
     sun_distance = 1/(1-0.016729*np.cos((.9856*(day-4))*np.pi/180))
     return sun_distance
-def calculate_toa_spot6(rad, sun_distance, sun_elevation, number_of_bands):
-    E = [1843,1568,1052,233]
+def calculate_toa_spot6(rad, sun_distance, sun_elevation, irradiance, number_of_bands):
+    E = irradiance
     BANDS = number_of_bands
     toa = rad
     for i in range(BANDS):
-        toa[i,:,:] = (np.pi*rad[i,:,:]*sun_distance)/(E[i]*np.cos(sun_elevation))
+        toa[i,:,:] = (np.pi*rad[i,:,:])/(sun_distance*E[i]*np.cos(sun_elevation))
     return toa
 def calculate_distance_Sun_Earth_spot6(datestr):
     """
@@ -55,10 +55,10 @@ def calculate_rad_toa_spot5(data, gain, offset, imaging_date, sun_elevation, hrg
     rad = calculate_rad_spot5(data.astype(np.float), gain, offset)
     sun_distance = calculate_distance_Sun_Earth_spot5(imaging_date)
     return calculate_toa_spot5(rad, sun_distance, sun_elevation, hrg, number_of_bands)
-def calculate_rad_toa_spot6(data, gain, offset, imaging_date, sun_elevation, number_of_bands):
+def calculate_rad_toa_spot6(data, gain, offset, imaging_date, sun_elevation, irradiance, number_of_bands):
     rad = calculate_rad_spot5(data.astype(np.float), gain, offset)
-    sun_distance = calculate_distance_Sun_Earth_spot6(str(imaging_date))
-    return calculate_toa_spot6(rad, sun_distance, sun_elevation, number_of_bands)
+    sun_distance = calculate_distance_Sun_Earth_spot5(imaging_date)
+    return calculate_toa_spot6(rad, sun_distance, sun_elevation,irradiance, number_of_bands)
 def calculate_rad_rapideye(data, radiometricScaleFactor=0.009999999776482582, radiometricOffsetValue=0.0):
     """
     Convert DN into RAD according to RE documentation

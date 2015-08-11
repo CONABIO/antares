@@ -7,7 +7,7 @@ Created on 15/07/2015
 #from __future__ import unicode_literals
 
 from madmex.mapper.base import BaseBundle
-from madmex.persistence.database.connection import RawProduct
+from madmex.persistence.database.connection import RawProduct##mover esto para preprocesamiento
 import madmex.mapper.sensor.spot5 as spot5
 import madmex.mapper.data.raster as raster
 from datetime import datetime

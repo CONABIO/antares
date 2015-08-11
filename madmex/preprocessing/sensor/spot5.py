@@ -8,7 +8,6 @@ Created on 15/07/2015
 from datetime import datetime
 import os
 import re
-import gdal
 import osr
 from madmex import LOGGER
 from madmex.mapper.bundle.spot5 import Bundle as Bundle_spot5
@@ -16,7 +15,6 @@ from madmex.mapper.data import raster
 import madmex.mapper.sensor.spot5 as spot5
 from madmex.preprocessing.base import calculate_rad_toa_spot5
 from madmex.util import create_directory_path
-import numpy as np
 
 class Bundle(Bundle_spot5):
     def __init__(self, path):
@@ -73,10 +71,7 @@ class Bundle(Bundle_spot5):
         imaging_date = datetime.date(self.sensor.get_attribute(spot5.ACQUISITION_DATE))
         self.toa = calculate_rad_toa_spot5(data_array, gain, offset, imaging_date, sun_elevation, hrg, self.number_of_bands)   
     def export(self):
-        outname = os.path.join(os.path.expanduser('~'), 'Documents/CONABIO/Tareas/Tarea11/spot/SinNubes/resultados2')
-        create_directory_path(outname)
-        outname+= '/toa_res.tif'
-        #outname = re.sub(r'.TIF', '', self.file_dictionary[self.IMAGE]) + '_TOA.tif'    
+        outname = re.sub(r'.TIF', '', self.file_dictionary[self.IMAGE]) + '_TOA.tif'    
         LOGGER.info('Result of folder %s is %s' % (self.path, outname))
         data_file = self.get_raster().create_from_reference(outname, self.toa.shape[2], self.toa.shape[1], self.toa.shape[0], self.geotransform_from_gcps, self.projection.ExportToWkt())
         self.get_raster().write_raster(self.number_of_bands, data_file, self.toa) 

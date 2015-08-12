@@ -5,7 +5,7 @@ Created on 10/06/2015
 
 @author: erickpalacios
 '''
-from __future__ import unicode_literals
+#from __future__ import unicode_literals
 
 import logging
 

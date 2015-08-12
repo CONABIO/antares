@@ -4,10 +4,9 @@ Created on 15/07/2015
 @author: erickpalacios
 '''
 
-#from __future__ import unicode_literals
+from __future__ import unicode_literals
 
 from madmex.mapper.base import BaseBundle
-from madmex.persistence.database.connection import RawProduct
 import madmex.mapper.sensor.spot5 as spot5
 import madmex.mapper.data.raster as raster
 from datetime import datetime
@@ -46,6 +45,7 @@ class Bundle(BaseBundle):
         '''
         Creates the database object that will be ingested for this bundle.
         '''
+        from madmex.persistence.database.connection import RawProduct
         return RawProduct(
                 uuid = self.get_sensor().uuid,
                 acquisition_date=self.get_sensor().get_attribute(spot5.ACQUISITION_DATE),

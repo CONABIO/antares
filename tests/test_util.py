@@ -136,7 +136,14 @@ class Test(unittest.TestCase):
         self.assertFalse(action.success)
         self.assertFalse(os.path.isfile(action.new_file))
         os.remove(name)
+    def get_raster_properties(self):
+        '''
+        Extract some properties of raster
+        '''
+        from madmex.mapper.data import raster
         
+            
+            
 class UtilTest(unittest.TestCase):
     def test_space_string(self):
         from madmex.util import space_string

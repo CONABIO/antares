@@ -5,7 +5,7 @@ Created on 10/06/2015
 
 @author: erickpalacios
 '''
-#from __future__ import unicode_literals
+from __future__ import unicode_literals
 
 import logging
 
@@ -42,6 +42,7 @@ class Data(BaseData):
         self.metadata ={}
         try:
             LOGGER.info("Extracting metadata of driver %s" % gdal_format)
+            gdal_format = str(gdal_format)
             self.driver = gdal.GetDriverByName(gdal_format)
             LOGGER.info('driver: %s' % self.driver)
             LOGGER.info('Extracting metadata of driver %s' % gdal_format)
@@ -129,7 +130,7 @@ class Data(BaseData):
         '''
         return gdal.GCPsToGeoTransform(self.gcps()) 
     def create_from_reference(self, outname, width_raster, height_raster, number_of_bands, geotransform, projection, type_format = gdal.GDT_Float32):
-        format_create = 'GTiff'
+        format_create = str('GTiff')
         driver = gdal.GetDriverByName(format_create)
         options = ['COMPRESS=LZW']
         data = driver.Create(outname, width_raster, height_raster, number_of_bands, type_format, options)

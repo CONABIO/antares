@@ -42,15 +42,12 @@ def calculate_distance_Sun_Earth_spot5(datestr):
     day = datestr.timetuple().tm_yday
     sun_distance = 1 / (1 - 0.016729 * np.cos((0.9856 * (day - 4)) * np.pi / 180))
     return sun_distance
-def calculate_toa_spot6(rad, sun_distance, sun_elevation, number_of_bands):
-    '''
-    Calculates the top of atmosphere for spot 6.
-    '''
-    E = [1843, 1568, 1052, 233]
+def calculate_toa_spot6(rad, sun_distance, sun_elevation, irradiance, number_of_bands):
+    E = irradiance
     BANDS = number_of_bands
     toa = rad
     for i in range(BANDS):
-        toa[i, :, :] = (np.pi * rad[i , :, :] * sun_distance) / (E[i] * np.cos(sun_elevation))
+        toa[i,:,:] = (np.pi*rad[i,:,:])/(sun_distance*E[i]*np.cos(sun_elevation))
     return toa
 def calculate_distance_Sun_Earth_spot6(datestr):
     '''

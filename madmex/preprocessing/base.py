@@ -5,10 +5,7 @@ Created on 16/07/2015
 '''
 
 from __future__ import unicode_literals
-
-import ephem
 import datetime
-
 import numpy as np
 
 def calculate_rad_spot5(data,gain,offset):
@@ -55,6 +52,7 @@ def calculate_distance_Sun_Earth_spot6(datestr):
     date. Date needs to be a string using format YYYY-MM-DD or datetime object
     from metadata.
     '''
+    import ephem
     sun = ephem.Sun()  # @UndefinedVariable
     if isinstance(datestr, str):
         sun.compute(datetime.datetime.strptime(datestr, '%Y-%m-%d').date())

@@ -163,7 +163,8 @@ class Sensor(BaseSensor):
             PHYSICAL_BIAS,
             PHYSICAL_GAIN,
             BAND_DISPLAY_ORDER,
-            BAND_INDEX
+            BAND_INDEX,
+            BAND_SOLAR_IRRADIANCE_VALUE
             ])
         self.parser.parse()
         self.parser.apply_format(

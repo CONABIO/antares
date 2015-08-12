@@ -9,6 +9,7 @@ from argparse import ArgumentParser
 import logging
 import os
 import sys
+import traceback
 
 from madmex import setup
 import madmex
@@ -190,6 +191,7 @@ class BaseCommand(object):
         try:
             self.handle(**options)
         except Exception:
+            traceback.print_exc()
             LOGGER.error("Error in command execution.")
         finally:
             pass

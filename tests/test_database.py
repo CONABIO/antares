@@ -21,12 +21,12 @@ ENGINE = create_engine(getattr(SETTINGS, 'ANTARES_TEST_DATABASE'))
 class DatabaseTest(unittest.TestCase):
 
     def setUp(self):
-        BASE.metadata.create_all(bind=ENGINE)
+        BASE.metadata.create_all(bind=ENGINE)  # @UndefinedVariable
         self.database = getattr(SETTINGS, 'ANTARES_TEST_DATABASE')
         self.session = None
 
     def tearDown(self):
-        BASE.metadata.drop_all(bind=ENGINE)
+        BASE.metadata.drop_all(bind=ENGINE)  # @UndefinedVariable
         
     def get_session(self):
         if self.session is None:

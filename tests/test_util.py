@@ -140,9 +140,7 @@ class Test(unittest.TestCase):
         '''
         Extract some properties of raster
         '''
-        from madmex.mapper.data import raster
-        
-            
+        from madmex.mapper.data import raster           
             
 class UtilTest(unittest.TestCase):
     def test_space_string(self):
@@ -151,10 +149,6 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(space_string(4, 'cd'), 'cdcdcdcd')
         self.assertEqual(space_string(-4, 'whatever'), '')
     
-
-    
-
-
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

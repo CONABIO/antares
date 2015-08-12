@@ -51,7 +51,7 @@ class Command(BaseCommand):
         parser.add_argument('--name', nargs='*')
     def handle(self, **options):
         '''
-        This is the code that does preprocessing.
+        This is the code that do preprocessing.
         '''
         path_directory = options['path'][0]
         name = options['name'][0]

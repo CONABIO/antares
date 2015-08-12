@@ -13,7 +13,6 @@ from datetime import datetime
 from madmex.configuration import SETTINGS
 from madmex.util import get_path_from_list
 
-
 class Bundle(BaseBundle):
     '''            
     classdocs

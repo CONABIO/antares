@@ -51,6 +51,10 @@ class Parser(BaseParser):
                     [value.firstChild.nodeValue for value in values]
                     )
     def persist(self, attribute, values):
+        '''
+        We keep only the values that are consistent with the parent
+        of the child defined in the metadata on mapper.sensor.spot6
+        '''
         node_name = values[0].nodeName
         parent_values = self.document.getElementsByTagName(attribute[-1])
         values_auxiliary = []
@@ -58,9 +62,14 @@ class Parser(BaseParser):
             values_auxiliary.append(elem.getElementsByTagName(node_name)[0])
         return values_auxiliary
     def get_element_node(self, child_nodes):
-        rc = []
+        '''
+        It's possible that with the name of the child defined in the metadata
+        on mapper.sensor.spot6, for example, SUN_ELEVATION, you get different values
+        so with this function we construct a list these values
+        '''
+        list_auxiliary = []
         for node in child_nodes:
             if node.nodeType == node.ELEMENT_NODE:
-                rc.append(node.firstChild.nodeValue)
-        return rc
+                list_auxiliary.append(node.firstChild.nodeValue)
+        return list_auxiliary
         

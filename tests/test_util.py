@@ -13,6 +13,8 @@ import unittest
 from madmex.configuration import SETTINGS
 from madmex.core import controller
 from madmex.mapper.base import _get_attribute
+from madmex.mapper.data.raster import Data, GEOTRANSFORM, FOOTPRINT,\
+    DRIVER_METADATA, METADATA_FILE, PROJECTION, DATA_SHAPE
 
 
 class Test(unittest.TestCase):
@@ -136,11 +138,34 @@ class Test(unittest.TestCase):
         self.assertFalse(action.success)
         self.assertFalse(os.path.isfile(action.new_file))
         os.remove(name)
-    def get_raster_properties(self):
+    def test_get_raster_properties(self):
         '''
         Extract some properties of raster
         '''
-        from madmex.mapper.data import raster           
+        from madmex.mapper.data import raster
+        folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea11/spot/SinNubes/E55582961409182J1A00001/SCENE01'
+        gdal_format = 'GTiff'
+        data_class = Data(folder, gdal_format)
+        data_class.get_attribute(GEOTRANSFORM)
+        data_class.get_attribute(FOOTPRINT)
+        data_class.get_attribute(DRIVER_METADATA)
+        data_class.get_attribute(METADATA_FILE)
+    def test_create_image_from_reference(self):
+        '''
+        With some data create a new image
+        '''
+        from madmex.mapper.data import raster
+        folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea11/spot7/E7613313150321_1556251K3A0U16N24L1254001/PROD_SPOT7_001/VOL_SPOT7_001_A/IMG_SPOT7_MS_001_A'
+        gdal_format = "JP2ECW"
+        data_class = Data(folder, gdal_format)
+        geotransform = data_class.get_attribute(GEOTRANSFORM)
+        projection = data_class.get_attribute(PROJECTION)
+        data_shape = data_class.get_attribute(DATA_SHAPE)
+        width = data_shape[0]
+        height = data_shape[1]
+        number_of_bands = data_shape[3]
+        outname = folder + 'result_.TIF'
+        out = data_class.create_from_reference(outname, width, height, number_of_bands, geotransform, projection)       
             
 class UtilTest(unittest.TestCase):
     def test_space_string(self):

@@ -26,7 +26,6 @@ class Bundle(BaseBundle):
         self.METADATA = r'DIM.*\.XML$'
         self.PREVIEW = r'PREVIEW.*\.JPG$'
         self.ICON = r'ICON.*\.JPG$'
-        #self.FORMAT = "JP2ECW"
         self.FORMAT = 'JP2OpenJPEG'
         self.file_dictionary = {
                         self.IMAGE:None,

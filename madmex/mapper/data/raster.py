@@ -112,7 +112,7 @@ class Data(BaseData):
         return self.data_array
     def gcps(self):
         '''
-        Get gcps from image
+        Get ground control points from image.
         '''
         if self.data_file != None:
             gcps = self.data_file.GetGCPs()
@@ -125,31 +125,34 @@ class Data(BaseData):
             return gcps
     def gcps_to_geotransform(self):
         '''
-        Gcps to geotransform using gdal
+        Transforms ground control points into geotransform using gdal.
         '''
         return gdal.GCPsToGeoTransform(self.gcps()) 
-    def create_from_reference(self, outname, width_raster, height_raster, number_of_bands, geotransform, projection, type_format = gdal.GDT_Float32):
+    def create_from_reference(self, output, width, height, bands, geotransform, projection, gdal_format = gdal.GDT_Float32):
+        '''
+        This method creates a gdal data file using the width, height and bands
+        specified.
+        '''
         format_create = 'GTiff'
         driver = gdal.GetDriverByName(str(format_create))
-        options = ['COMPRESS=LZW']
-        data = driver.Create(outname, width_raster, height_raster, number_of_bands, type_format, options)
+        data = driver.Create(output, width, height, bands, gdal_format, ['COMPRESS=LZW'])
         data.SetGeoTransform(geotransform)
         data.SetProjection(projection)
         return data
-    def write_raster(self, number_of_bands, data_file, data_to_write):
+    def write_raster(self, bands, data_file, data_to_write):
         '''
         data_file: data that will have the data in parameter data_to_write
         '''
-        for b in range(number_of_bands):
-            data_file.GetRasterBand(b+1).WriteArray(data_to_write[b,:,:])       
+        for band in range(bands):
+            data_file.GetRasterBand(band + 1).WriteArray(data_to_write[band, :, :])       
     def close(self):
         '''
-        Method for closing the gdal file
+        This method will close the dataset, this will recover resources allocated
+        for the file.
         '''
         self.data_file = None
     def get_attribute(self, path_to_attribute):
         '''
-        Returns the attribute that is found in the given path
+        Returns the attribute that is found in the given path.
         '''
         return _get_attribute(path_to_attribute, self.metadata)
-    

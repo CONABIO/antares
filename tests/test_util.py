@@ -138,7 +138,6 @@ class Test(unittest.TestCase):
         self.assertFalse(action.success)
         self.assertFalse(os.path.isfile(action.new_file))
         os.remove(name)
-        
     def test_get_raster_properties(self):
         '''
         Extract some properties of raster

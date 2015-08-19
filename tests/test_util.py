@@ -143,7 +143,7 @@ class Test(unittest.TestCase):
         Extract some properties of raster
         '''
         from madmex.mapper.data import raster
-        folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea11/spot/SinNubes/E55582961409182J1A00001/SCENE01'
+        folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea11/spot/SinNubes/E55582961409182J1A00001/SCENE01/IMAGERY.TIF'
         gdal_format = 'GTiff'
         data_class = Data(folder, gdal_format)
         data_class.get_attribute(GEOTRANSFORM)
@@ -155,8 +155,8 @@ class Test(unittest.TestCase):
         With some data create a new image
         '''
         from madmex.mapper.data import raster
-        folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea11/spot7/E7598317150212_1632431K3A0U15N23L1278002/PROD_SPOT7_001/VOL_SPOT7_001_A/IMG_SPOT7_MS_001_A/IMG_SPOT7_MS_201502121632424_ORT_SPOT7_20150213_0617221hbw03nqw0a5p_1_R1C1.JP2'
-        gdal_format = "JP2ECW"
+        folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea11/spot/SinNubes/E55582961409182J1A00001/SCENE01/IMAGERY.TIF'
+        gdal_format = "GTiff"
         data_class = Data(folder, gdal_format)
         geotransform = data_class.get_attribute(GEOTRANSFORM)
         projection = data_class.get_attribute(PROJECTION)

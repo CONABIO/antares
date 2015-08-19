@@ -144,7 +144,7 @@ class Test(unittest.TestCase):
         Extract some properties of raster
         '''
         from madmex.mapper.data import raster
-        folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea11/spot/SinNubes/E55582961409182J1A00001/SCENE01/IMAGERY.TIF'
+        folder = '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/1447720_2013-02-11_RE3_3A_182802.tif'
         gdal_format = 'GTiff'
         data_class = Data(folder, gdal_format)
         data_class.get_attribute(GEOTRANSFORM)
@@ -156,7 +156,7 @@ class Test(unittest.TestCase):
         With some data create a new image
         '''
         from madmex.mapper.data import raster
-        folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea11/spot/SinNubes/E55582961409182J1A00001/SCENE01/IMAGERY.TIF'
+        folder =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/1447720_2013-02-11_RE3_3A_182802.tif'
         gdal_format = "GTiff"
         data_class = Data(folder, gdal_format)
         geotransform = data_class.get_attribute(GEOTRANSFORM)

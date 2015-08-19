@@ -26,7 +26,6 @@ def calculate_toa_spot5(rad, sun_distance, sun_elevation, hrg, number_of_bands):
         E = [1858, 1575, 1047, 234]
     else:
         E = [1858, 1573, 1043, 236]
-    print E
     BANDS = number_of_bands
     toa = rad
     for i in range(BANDS):

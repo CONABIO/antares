@@ -155,7 +155,7 @@ class Test(unittest.TestCase):
         With some data create a new image
         '''
         from madmex.mapper.data import raster
-        folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea11/spot7/E7613313150321_1556251K3A0U16N24L1254001/PROD_SPOT7_001/VOL_SPOT7_001_A/IMG_SPOT7_MS_001_A'
+        folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/Tarea11/spot7/E7598317150212_1632431K3A0U15N23L1278002/PROD_SPOT7_001/VOL_SPOT7_001_A/IMG_SPOT7_MS_001_A/IMG_SPOT7_MS_201502121632424_ORT_SPOT7_20150213_0617221hbw03nqw0a5p_1_R1C1.JP2'
         gdal_format = "JP2ECW"
         data_class = Data(folder, gdal_format)
         geotransform = data_class.get_attribute(GEOTRANSFORM)
@@ -163,10 +163,12 @@ class Test(unittest.TestCase):
         data_shape = data_class.get_attribute(DATA_SHAPE)
         width = data_shape[0]
         height = data_shape[1]
-        number_of_bands = data_shape[3]
-        outname = folder + 'result_.TIF'
-        out = data_class.create_from_reference(outname, width, height, number_of_bands, geotransform, projection)       
-            
+        number_of_bands = data_shape[2]
+        outname = folder + 'result.TIF'
+        data_array = data_class.read_data_file_as_array()
+        data_file = data_class.create_from_reference(outname, width, height, number_of_bands, geotransform, projection)
+        data_class.write_raster(number_of_bands, data_file, data_array)
+        
 class UtilTest(unittest.TestCase):
     def test_space_string(self):
         from madmex.util import space_string

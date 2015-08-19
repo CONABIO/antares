@@ -52,7 +52,7 @@ class Data(BaseData):
         if self.data_file != None:
             LOGGER.info("Extracting metadata of file %s" % self.data_file)
             self.metadata[METADATA_FILE[0]] = self.data_file.GetMetadata()
-            if self.data_file.GetRasterBand(1)!= None:
+            if self.data_file.GetRasterBand(1) != None:
                 LOGGER.info("Getting properties projection, geotransform, data_shape and footprint of raster %s" % self.data_file)
                 self._extract_raster_properties()
         else:
@@ -128,14 +128,14 @@ class Data(BaseData):
         Transforms ground control points into geotransform using gdal.
         '''
         return gdal.GCPsToGeoTransform(self.gcps()) 
-    def create_from_reference(self, output, width, height, bands, geotransform, projection, gdal_format = gdal.GDT_Float32):
+    def create_from_reference(self, output, width, height, bands, geotransform, projection, gdal_format = gdal.GDT_Float32, options = []):
         '''
         This method creates a gdal data file using the width, height and bands
         specified.
         '''
         format_create = 'GTiff'
         driver = gdal.GetDriverByName(str(format_create))
-        data = driver.Create(output, width, height, bands, gdal_format, ['COMPRESS=LZW'])
+        data = driver.Create(output, width, height, bands, gdal_format, options)
         data.SetGeoTransform(geotransform)
         data.SetProjection(projection)
         return data

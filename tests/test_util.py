@@ -12,10 +12,7 @@ import unittest
 from madmex.configuration import SETTINGS
 from madmex.core import controller
 from madmex.mapper.base import _get_attribute
-from madmex.mapper.data.raster import Data, GEOTRANSFORM, FOOTPRINT, \
-    DRIVER_METADATA, METADATA_FILE, PROJECTION, DATA_SHAPE
 from madmex.util import get_last_package_from_name
-
 
 class Test(unittest.TestCase):
 
@@ -141,6 +138,53 @@ class Test(unittest.TestCase):
         self.assertFalse(action.success)
         self.assertFalse(os.path.isfile(action.new_file))
         os.remove(name)
+    def test_create_raster_in_memory(self):  
+        from madmex.mapper.data  import raster
+        folder=''
+        image = raster.Data(folder, '')
+        image.create_raster_in_memory()
+    def test_harmonize_pair_images(self):
+        '''
+        Harmonize pair images based on three criteria: geographical transformation, 
+        projection and the shape of the data
+        '''
+        from madmex.mapper.data import raster
+        import numpy
+        image1 = '/LUSTRE/MADMEX/eodata/rapideye/1147524/2012/2012-10-18/l3a/2012-10-18T191005_RE3_3A-NAC_11137283_149747.tif'
+        image2 = '/LUSTRE/MADMEX/eodata/rapideye/1147524/2013/2013-09-09/l3a/1147524_2013-09-09_RE5_3A_175826.tif'
+        image_pair_list = []
+        image_pair_list.append(image1)
+        image_pair_list.append(image2)
+        gdal_format = "GTiff"
+        image_class_list = []
+        for image_k in range(0, len(image_pair_list)):
+            image_class_list.append(raster.Data(image_pair_list[image_k], gdal_format))
+        proj_image1 = image_class_list[0].get_attribute(raster.PROJECTION)
+        if proj_image1 == image_class_list[1].get_attribute(raster.PROJECTION):
+            harmonized_extents = dict()
+            harmonized_extents["projection"] = proj_image1
+            geotransform_array = numpy.array([image_class_list[0].get_attribute(raster.GEOTRANSFORM), image_class_list[1].get_attribute(raster.GEOTRANSFORM)])
+            data_shape_array = numpy.array([image_class_list[0].get_attribute(raster.DATA_SHAPE), image_class_list[1].get_attribute(raster.DATA_SHAPE)])
+            # Intersect boundary coordinates
+            # Get upper left coordinates
+            ul_x = max(geotransform_array[:, 0])
+            ul_y = min(geotransform_array[:, 3])
+            # Calculate lower right coordinates
+            lr_x = min(geotransform_array[:, 0] + data_shape_array[:, 0] * geotransform_array[:, 1])
+            lr_y = max(geotransform_array[:, 3] + data_shape_array[:, 1] * geotransform_array[:, 5])
+            # Calculate range in x and y dimension in pixels
+            harmonized_extents["x_range"] = (lr_x - ul_x) / geotransform_array[0, 1]
+            harmonized_extents["y_range"] = (lr_y - ul_y) / geotransform_array[0, 5]
+            # Calculate offset values for each image
+            harmonized_extents["x_offset"] = (ul_x - geotransform_array[:, 0]) / geotransform_array[:, 1]
+            harmonized_extents["y_offset"] = (ul_y - geotransform_array[:, 3]) / geotransform_array[:, 5]
+            # Calculate unique geo transformation
+            harmonized_extents["geotransform"] = (ul_x, geotransform_array[0, 1], 0.0, ul_y, 0.0, geotransform_array[0, 5])
+            print harmonized_extents
+            return harmonized_extents
+        else:
+            print 'Skipping a dataset because of different projection'
+        
     def test_get_raster_properties(self):
         '''
         Extract some properties of raster
@@ -148,11 +192,11 @@ class Test(unittest.TestCase):
         from madmex.mapper.data import raster
         folder = '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/1447720_2013-02-11_RE3_3A_182802.tif'
         gdal_format = 'GTiff'
-        data_class = Data(folder, gdal_format)
-        data_class.get_attribute(GEOTRANSFORM)
-        data_class.get_attribute(FOOTPRINT)
-        data_class.get_attribute(DRIVER_METADATA)
-        data_class.get_attribute(METADATA_FILE)
+        data_class = raster.Data(folder, gdal_format)
+        data_class.get_attribute(raster.GEOTRANSFORM)
+        data_class.get_attribute(raster.FOOTPRINT)
+        data_class.get_attribute(raster.DRIVER_METADATA)
+        data_class.get_attribute(raster.METADATA_FILE)
     def test_create_image_from_reference(self):
         '''
         With some data create a new image
@@ -160,10 +204,10 @@ class Test(unittest.TestCase):
         from madmex.mapper.data import raster
         image =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/1447720_2013-02-11_RE3_3A_182802.tif'
         gdal_format = "GTiff"
-        data_class = Data(image, gdal_format)
-        geotransform = data_class.get_attribute(GEOTRANSFORM)
-        projection = data_class.get_attribute(PROJECTION)
-        data_shape = data_class.get_attribute(DATA_SHAPE)
+        data_class = raster.Data(image, gdal_format)
+        geotransform = data_class.get_attribute(raster.GEOTRANSFORM)
+        projection = data_class.get_attribute(raster.PROJECTION)
+        data_shape = data_class.get_attribute(raster.DATA_SHAPE)
         width = data_shape[0]
         height = data_shape[1]
         number_of_bands = data_shape[2]
@@ -171,14 +215,7 @@ class Test(unittest.TestCase):
         data_array = data_class.read_data_file_as_array()
         data_file = data_class.create_from_reference(outname, width, height, number_of_bands, geotransform, projection)
         data_class.write_raster(number_of_bands, data_file, data_array)
-    def test_harmonize_pair_images(self):
-        '''
-        Harmonize pair images based on three criteria: geographical transformation, 
-        projection and the shape of the data
-        '''
-      
-        
-        
+            
 class UtilTest(unittest.TestCase):
     def test_space_string(self):
         from madmex.util import space_string

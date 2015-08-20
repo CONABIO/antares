@@ -155,23 +155,27 @@ class Test(unittest.TestCase):
         With some data create a new image
         '''
         from madmex.mapper.data import raster
-        folder =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/1447720_2013-02-11_RE3_3A_182802.tif'
+        image =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/1447720_2013-02-11_RE3_3A_182802.tif'
         gdal_format = "GTiff"
-        data_class = Data(folder, gdal_format)
+        data_class = Data(image, gdal_format)
         geotransform = data_class.get_attribute(GEOTRANSFORM)
         projection = data_class.get_attribute(PROJECTION)
         data_shape = data_class.get_attribute(DATA_SHAPE)
         width = data_shape[0]
         height = data_shape[1]
         number_of_bands = data_shape[2]
-        outname = folder + 'result.TIF'
+        outname = image + 'result.TIF'
         data_array = data_class.read_data_file_as_array()
         data_file = data_class.create_from_reference(outname, width, height, number_of_bands, geotransform, projection)
         data_class.write_raster(number_of_bands, data_file, data_array)
     def test_harmonize_pair_images(self):
         '''
-        Harmonize pair images
-        '''          
+        Harmonize pair images based on three criteria: geographical transformation, 
+        projection and the shape of the data
+        '''
+      
+        
+        
 class UtilTest(unittest.TestCase):
     def test_space_string(self):
         from madmex.util import space_string

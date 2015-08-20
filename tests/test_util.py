@@ -168,7 +168,10 @@ class Test(unittest.TestCase):
         data_array = data_class.read_data_file_as_array()
         data_file = data_class.create_from_reference(outname, width, height, number_of_bands, geotransform, projection)
         data_class.write_raster(number_of_bands, data_file, data_array)
-        
+    def test_harmonize_pair_images(self):
+        '''
+        Harmonize pair images
+        '''          
 class UtilTest(unittest.TestCase):
     def test_space_string(self):
         from madmex.util import space_string

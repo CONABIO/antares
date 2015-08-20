@@ -96,6 +96,6 @@ class Bundle(Bundle_spot5):
         '''
         outname = re.sub(r'.TIF', '', self.file_dictionary[self.IMAGE]) + '_TOA.tif'    
         LOGGER.info('Result of folder %s is %s' % (self.path, outname))
-        data_file = self.get_raster().create_from_reference(outname, self.toa.shape[2], self.toa.shape[1], self.toa.shape[0], self.geotransform_from_gcps, self.projection.ExportToWkt(), options = ['COMPRESS=LZW'])
+        data_file = self.get_raster().create_from_reference(outname, self.toa.shape[2], self.toa.shape[1], self.toa.shape[0], self.geotransform_from_gcps, self.projection.ExportToWkt())
         self.get_raster().write_raster(self.number_of_bands, data_file, self.toa) 
         data_file = None

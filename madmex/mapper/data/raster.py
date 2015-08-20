@@ -44,19 +44,22 @@ class Data(BaseData):
             LOGGER.info("Extracting metadata of driver %s" % gdal_format)
             self.driver = gdal.GetDriverByName(str(gdal_format))
             LOGGER.info('driver: %s' % self.driver)
+        except AttributeError:
+            LOGGER.info('Cannot access driver for format %s' % gdal_format)
+        try:
             LOGGER.info('Extracting metadata of driver %s' % gdal_format)
             self.metadata[DRIVER_METADATA[0]] = self.driver.GetMetadata()
-        except AttributeError:
-            LOGGER.error('Cannot access driver for format %s' % gdal_format)
+        except:
+            LOGGER.info('Unable to extract metadata of driver of image %s' % image_path)
         self.data_file = self._open_file()
         if self.data_file != None:
-            LOGGER.info("Extracting metadata of file %s" % self.data_file)
+            LOGGER.info("Extracting metadata_file of file %s" % self.data_file)
             self.metadata[METADATA_FILE[0]] = self.data_file.GetMetadata()
             if self.data_file.GetRasterBand(1) != None:
                 LOGGER.info("Getting properties projection, geotransform, data_shape and footprint of raster %s" % self.data_file)
                 self._extract_raster_properties()
         else:
-            LOGGER.error("Image %s does not provide metadata" % self.data_file)
+            LOGGER.info("Image %s does not provide metadata_file" % self.data_file)
         self.data_array = None
     def _open_file(self, mode=gdalconst.GA_ReadOnly):
         '''
@@ -66,7 +69,7 @@ class Data(BaseData):
             LOGGER.info('Open raster file: %s' % self.image_path)
             return gdal.Open(self.image_path, mode)
         except RuntimeError:
-            LOGGER.error('Unable to open raster file %s', self.image_path)
+            LOGGER.info('Unable to open raster file %s', self.image_path)
     def _extract_raster_properties(self):
         '''
         Extract some raster info from the raster image file using gdal functions.
@@ -139,6 +142,14 @@ class Data(BaseData):
         data.SetGeoTransform(geotransform)
         data.SetProjection(projection)
         return data
+    def create_raster_in_memory(self):
+        '''
+        Creates a raster in memory
+        '''
+        format_create = 'MEM'
+        driver = gdal.GetDriverByName(str(format_create))
+        print 'driver for raster memory'
+        print driver
     def write_raster(self, bands, data_file, data_to_write):
         '''
         data_file: data that will have the data in parameter data_to_write

@@ -6,6 +6,7 @@ Created on Jul 14, 2015
 
 from __future__ import unicode_literals
 
+from madmex.configuration import SETTINGS
 from madmex.mapper.base import BaseBundle
 
 
@@ -18,7 +19,9 @@ class Bundle(BaseBundle):
         Constructor
         '''
         super(Bundle, self).__init__(params)
-        self.target = None
+        self.file_dictionary = {
+                           }
+        self.output_directory = None
     def can_identify(self):
         '''
         Test if the parsed path can be identified as a Spot bundle.
@@ -30,4 +33,11 @@ class Bundle(BaseBundle):
         '''
         return 'Spot'
     def get_output_directory(self):
-        return self.target
+        '''
+        Creates the output directory where the files in this bundle will be
+        persisted on the file system.
+        '''
+        if self.output_directory is None:
+            destination = getattr(SETTINGS, 'TEST_FOLDER')
+            self.output_directory = destination
+        return self.output_directory

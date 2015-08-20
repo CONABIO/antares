@@ -8,13 +8,15 @@ from __future__ import unicode_literals
 from datetime import datetime
 import os
 import re
+
 import osr
+import madmex.mapper.sensor.spot5 as spot5
+
 from madmex import LOGGER
 from madmex.mapper.bundle.spot5 import Bundle as Bundle_spot5
 from madmex.mapper.data import raster
-import madmex.mapper.sensor.spot5 as spot5
 from madmex.preprocessing.base import calculate_rad_toa_spot5
-from madmex.util import create_directory_path
+
 
 class Bundle(Bundle_spot5):
     '''            

@@ -11,6 +11,12 @@ from __future__ import unicode_literals
 import os
 from os.path import isdir
 
+def get_last_package_from_name(package):
+    '''
+    Returns the string after the last instance of a '.'.
+    '''
+    return package[package.rfind('.') + 1:]
+
 def format_string(string, spaces, size):
     '''
     This function creates a new string of the given size with the number of
@@ -105,3 +111,6 @@ def get_path_from_list(paths):
     for path in paths:
         my_path = os.path.join(my_path, path)
     return my_path
+
+if __name__ == '__main__':
+    print get_last_package_from_name('hello.my.name.is')

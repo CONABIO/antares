@@ -30,6 +30,7 @@ class Bundle(BaseBundle):
         Constructor
         '''
         self.path = path
+        self.FORMAT = 'GTiff'
         self.file_dictionary = {
                            r'^\d{7}_\d{4}-\d{2}-\d{2}_RE\d_3A_\d{6}\.tif$':None,
                            r'^\d{7}_\d{4}-\d{2}-\d{2}_RE\d_3A_\d{6}_browse\.tif$':None,
@@ -105,7 +106,7 @@ class Bundle(BaseBundle):
         if self.raster is None:
             self.raster = raster.Data(self.file_dictionary[
                 r'^\d{7}_\d{4}-\d{2}-\d{2}_RE\d_3A_\d{6}\.tif$'
-                ])
+                ], self.FORMAT)
         return self.raster
     def get_output_directory(self):
         '''

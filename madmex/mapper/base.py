@@ -118,6 +118,7 @@ class BaseBundle(object):
         '''
         self.path = path
         self.file_list = os.listdir(path)
+        self.file_dictionary = {}
         self.regex_dict = {}
     def scan(self):
         '''

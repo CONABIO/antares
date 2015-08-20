@@ -9,15 +9,18 @@ from __builtin__ import getattr
 import os
 import unittest
 
-
 from madmex.configuration import SETTINGS
 from madmex.core import controller
 from madmex.mapper.base import _get_attribute
-from madmex.mapper.data.raster import Data, GEOTRANSFORM, FOOTPRINT,\
+from madmex.mapper.data.raster import Data, GEOTRANSFORM, FOOTPRINT, \
     DRIVER_METADATA, METADATA_FILE, PROJECTION, DATA_SHAPE
+from madmex.util import get_last_package_from_name
 
 
 class Test(unittest.TestCase):
+
+    def test_get_last_package_from_name(self):
+        self.assertEqual(get_last_package_from_name('name.for.package'), 'package')
 
     def test_copyright(self):
         """

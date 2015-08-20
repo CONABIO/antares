@@ -6,10 +6,15 @@ Created on Jun 3, 2015
 
 from __future__ import unicode_literals
 
+import logging
+
 from madmex import _
 from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands import get_bundle_from_path
 
+
+LOGGER = logging.getLogger(__name__)
+BUNDLE_PACKAGE = 'madmex.mapper.bundle'
 
 def _get_bundle_from_path(path):
     '''
@@ -17,7 +22,8 @@ def _get_bundle_from_path(path):
     a bundle is able to identify the files present in the directory the instance
     of that bundle is returned to the caller.
     '''
-    return get_bundle_from_path(path, '../../../mapper')
+    return get_bundle_from_path(path, '../../../mapper', BUNDLE_PACKAGE)
+
 
 class Command(BaseCommand):
     '''

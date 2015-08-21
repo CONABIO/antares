@@ -146,45 +146,21 @@ class Test(unittest.TestCase):
     def test_harmonize_pair_images(self):
         '''
         Harmonize pair images based on three criteria: geographical transformation, 
-        projection and the shape of the data
+        projection and shape of the data
         '''
+        from madmex.mapper.data import harmonized
         from madmex.mapper.data import raster
-        import numpy
         image1 = '/LUSTRE/MADMEX/eodata/rapideye/1147524/2012/2012-10-18/l3a/2012-10-18T191005_RE3_3A-NAC_11137283_149747.tif'
         image2 = '/LUSTRE/MADMEX/eodata/rapideye/1147524/2013/2013-09-09/l3a/1147524_2013-09-09_RE5_3A_175826.tif'
         image_pair_list = []
         image_pair_list.append(image1)
         image_pair_list.append(image2)
         gdal_format = "GTiff"
-        image_class_list = []
-        for image_k in range(0, len(image_pair_list)):
-            image_class_list.append(raster.Data(image_pair_list[image_k], gdal_format))
-        proj_image1 = image_class_list[0].get_attribute(raster.PROJECTION)
-        if proj_image1 == image_class_list[1].get_attribute(raster.PROJECTION):
-            harmonized_extents = dict()
-            harmonized_extents["projection"] = proj_image1
-            geotransform_array = numpy.array([image_class_list[0].get_attribute(raster.GEOTRANSFORM), image_class_list[1].get_attribute(raster.GEOTRANSFORM)])
-            data_shape_array = numpy.array([image_class_list[0].get_attribute(raster.DATA_SHAPE), image_class_list[1].get_attribute(raster.DATA_SHAPE)])
-            # Intersect boundary coordinates
-            # Get upper left coordinates
-            ul_x = max(geotransform_array[:, 0])
-            ul_y = min(geotransform_array[:, 3])
-            # Calculate lower right coordinates
-            lr_x = min(geotransform_array[:, 0] + data_shape_array[:, 0] * geotransform_array[:, 1])
-            lr_y = max(geotransform_array[:, 3] + data_shape_array[:, 1] * geotransform_array[:, 5])
-            # Calculate range in x and y dimension in pixels
-            harmonized_extents["x_range"] = (lr_x - ul_x) / geotransform_array[0, 1]
-            harmonized_extents["y_range"] = (lr_y - ul_y) / geotransform_array[0, 5]
-            # Calculate offset values for each image
-            harmonized_extents["x_offset"] = (ul_x - geotransform_array[:, 0]) / geotransform_array[:, 1]
-            harmonized_extents["y_offset"] = (ul_y - geotransform_array[:, 3]) / geotransform_array[:, 5]
-            # Calculate unique geo transformation
-            harmonized_extents["geotransform"] = (ul_x, geotransform_array[0, 1], 0.0, ul_y, 0.0, geotransform_array[0, 5])
-            print harmonized_extents
-            return harmonized_extents
-        else:
-            print 'Skipping a dataset because of different projection'
-        
+        image1_data_class =raster.Data(image1, gdal_format)
+        image2_data_class = raster.Data(image2, gdal_format)
+        harmonized_class = harmonized.Data(image1_data_class, image2_data_class)
+        self.assertEqual(harmonized_class.get_attribute(harmonized.XRANGE), 5000)
+        self.assertEqual(harmonized_class.get_attribute(harmonized.GEOTRANSFORM), (715500.0, 5.0, 0.0, 2040500.0, 0.0, -5.0))
     def test_get_raster_properties(self):
         '''
         Extract some properties of raster

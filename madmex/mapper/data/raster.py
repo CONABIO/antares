@@ -150,6 +150,7 @@ class Data(BaseData):
         driver = gdal.GetDriverByName(str(format_create))
         print 'driver for raster memory'
         print driver
+
     def write_raster(self, bands, data_file, data_to_write):
         '''
         data_file: data that will have the data in parameter data_to_write

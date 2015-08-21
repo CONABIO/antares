@@ -163,7 +163,7 @@ class Test(unittest.TestCase):
         self.assertEqual(harmonized_class.get_attribute(harmonized.GEOTRANSFORM), (715500.0, 5.0, 0.0, 2040500.0, 0.0, -5.0))
     def test_get_raster_properties(self):
         '''
-        Extract some properties of raster
+        This method tests the extraction of raster properties.
         '''
         from madmex.mapper.data import raster
         folder = '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/1447720_2013-02-11_RE3_3A_182802.tif'
@@ -175,7 +175,7 @@ class Test(unittest.TestCase):
         data_class.get_attribute(raster.METADATA_FILE)
     def test_create_image_from_reference(self):
         '''
-        With some data create a new image
+        Test functionality on creating a raster using numerical data.
         '''
         from madmex.mapper.data import raster
         image =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/1447720_2013-02-11_RE3_3A_182802.tif'

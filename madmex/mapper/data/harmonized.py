@@ -20,22 +20,18 @@ XOFFSET = ['x_offset']
 YOFFSET = ['y_offset'] 
 
 
-def get_image_mask(x, y, width, height, data, threshold=0):
+def get_image_mask(data, threshold=0):
     '''
-    This method takes a 2x2 matrix, usually representing an image, and takes a
-    subset of the image using the offsets given by x and y, and the dimensions
-    given by width and height. The remaining argument, is used to create the values
+    The remaining argument, is used to create the values
     of the mask, if the values in the matrix fall under the threshold value, then
     the mask element in that position will be True; False otherwise.
     '''
     if len(data.shape) != 2:
         raise ValueError('Invalid data dimension, data should be 2 dimensional.')
-    subset = data[x:x + width,y:y + height]
-    mask = numpy.zeros((width, height))
-    numpy.putmask(mask, subset<=threshold, 1)
+    mask = numpy.zeros(data.shape)
+    numpy.putmask(mask, data<=threshold, 1)
     return mask
-
-def get_multiband_image_mask(x, y, width, height, data, threshold=0):
+def get_multiband_image_mask(data, threshold=0):
     '''
     This method takes as input a multiband image, it flattens the image by applying
     a minimum over the first axis, obtaining a 2x2 matrix. Then the process of
@@ -44,8 +40,87 @@ def get_multiband_image_mask(x, y, width, height, data, threshold=0):
     if len(data.shape) != 3:
         raise ValueError('Invalid data dimension, data should be 3 dimensional.')
     min_data = numpy.min(data, axis=0)
-    return get_image_mask(x, y, width, height, min_data, threshold)
+    return get_image_mask(min_data, threshold)
+def get_image_subset(x, y, width, height, data):
+    '''
+    This method takes a matrix, usually representing an image, and takes a
+    subset of the image using the offsets given by x and y, and the dimensions
+    given by width and height.
+    '''
+    if len(data.shape) != 2:
+        raise ValueError('Invalid data dimension, data should be 2 dimensional.')
+    subset = data[x:x + width,y:y + height]
+    return subset
+def get_multiband_image_subset(x, y, width, height, data):
+    '''
+    This method takes a matrix representing a multiband image,  and takes a
+    subset of the image using the offsets given by x and y, and the dimensions
+    given by width and height. All of the bands in the image will be taken into
+    account.
+    '''
+    if len(data.shape) != 3:
+        raise ValueError('Invalid data dimension, data should be 3 dimensional.')
+    subset = data[:,x:x + width,y:y + height]
+    return subset
+def get_mask_image_subset(x, y, width, height, data, threshold=0):
+    '''
+    This method is a helper method that calls the mask and subset methods one
+    after the other.
+    '''
+    return get_image_mask(get_image_subset(x,y,width,height,my_data),threshold)
+def get_mask_multiband_image_subset(x, y, width, height, data, threshold=0):
+    '''
+    This method is a helper method that calls the mask and subset methods one
+    after the other. In particular it handles the case for a multiband image.
+    '''
+    return get_multiband_image_mask(get_multiband_image_subset(x,y,width,height,my_data),threshold)
+def harmonize_images(images, projection):
+    '''
+    Harmonizes a list of images into the minimum common extent. If one of
+    the images is not in the specified projection, it will be ignored.
+    '''
+    import raster
+    extents = {}
+    geotransforms = []
+    projections = []
+    shapes = []
+    accepted_images = []
+    put_in_dictionary(extents, PROJECTION, projection)
+    for image in images:
+        if image and image.get_attribute(raster.PROJECTION) == projection:
+            geotransforms.append(image.get_attribute(raster.GEOTRANSFORM))
+            projections.append(image.get_attribute(raster.PROJECTION))
+            shapes.append(image.get_attribute(raster.DATA_SHAPE))
+            accepted_images.append(image)
+        else:
+            LOGGER.warn('Image not in the specified projection, will be ignored.')
+    geotransforms = numpy.array(geotransforms)
+    projections = numpy.array(projections)
+    shapes = numpy.array(shapes)
     
+    
+    # Intersect boundary coordinates
+    # Get upper left coordinates
+    ul_x = max(geotransforms[:, 0])
+    ul_y = min(geotransforms[:, 3])
+    # Calculate lower right coordinates
+    lr_x = min(geotransforms[:, 0] + shapes[:, 0] * geotransforms[:, 1])
+    lr_y = max(geotransforms[:, 3] + shapes[:, 1] * geotransforms[:, 5])
+    # Calculate range in x and y dimension in pixels
+    x_range = (lr_x - ul_x) / geotransforms[0, 1]
+    y_range = (lr_y - ul_y) / geotransforms[0, 5]
+    # Calculate offset values for each image
+    x_offset = (ul_x - geotransforms[:, 0]) / geotransforms[:, 1]
+    y_offset = (ul_y - geotransforms[:, 3]) / geotransforms[:, 5]
+    # Calculate unique geo transformation
+    geotransform = (ul_x, geotransforms[0, 1], 0.0, ul_y, 0.0, geotransforms[0, 5])
+    put_in_dictionary(extents, GEOTRANSFORM, geotransform)
+    put_in_dictionary(extents, XRANGE, x_range)
+    put_in_dictionary(extents, YRANGE, y_range)
+    put_in_dictionary(extents, XOFFSET, x_offset)
+    put_in_dictionary(extents, YOFFSET, y_offset)
+    return extents
+
 class Data(BaseData): #TODO: not useful the inheritance from BaseData, change this inheritance to another Base class
     '''
     classdocs
@@ -61,58 +136,15 @@ class Data(BaseData): #TODO: not useful the inheritance from BaseData, change th
         Given two images of class raster create a new image with no data, the same projection, 
         and uniform xrange, yrange, xoffset, yoffset
         '''
-        self.harmonize_images([image1_data_class, image2_data_class], image1_data_class.get_attribute(raster.PROJECTION))
-    def harmonize_images(self, images, projection):
-        '''
-        Harmonizes a list of images into the minimum common extent. If one of
-        the images is not in the specified projection, it will be ignored.
-        '''
-        import raster
-        geotransforms = []
-        projections = []
-        shapes = []
-        accepted_images = []
-        put_in_dictionary(self.harmonized_extents, PROJECTION, projection)
-        for image in images:
-            if image and image.get_attribute(raster.PROJECTION) == projection:
-                geotransforms.append(image.get_attribute(raster.GEOTRANSFORM))
-                projections.append(image.get_attribute(raster.PROJECTION))
-                shapes.append(image.get_attribute(raster.DATA_SHAPE))
-                accepted_images.append(image)
-            else:
-                LOGGER.warn('Image not in the specified projection, will be ignored.')
-        geotransforms = numpy.array(geotransforms)
-        projections = numpy.array(projections)
-        shapes = numpy.array(shapes)
-        
-        
-        # Intersect boundary coordinates
-        # Get upper left coordinates
-        ul_x = max(geotransforms[:, 0])
-        ul_y = min(geotransforms[:, 3])
-        # Calculate lower right coordinates
-        lr_x = min(geotransforms[:, 0] + shapes[:, 0] * geotransforms[:, 1])
-        lr_y = max(geotransforms[:, 3] + shapes[:, 1] * geotransforms[:, 5])
-        # Calculate range in x and y dimension in pixels
-        x_range = (lr_x - ul_x) / geotransforms[0, 1]
-        y_range = (lr_y - ul_y) / geotransforms[0, 5]
-        # Calculate offset values for each image
-        x_offset = (ul_x - geotransforms[:, 0]) / geotransforms[:, 1]
-        y_offset = (ul_y - geotransforms[:, 3]) / geotransforms[:, 5]
-        # Calculate unique geo transformation
-        geotransform = (ul_x, geotransforms[0, 1], 0.0, ul_y, 0.0, geotransforms[0, 5])
-        put_in_dictionary(self.harmonized_extents, GEOTRANSFORM, geotransform)
-        put_in_dictionary(self.harmonized_extents, XRANGE, x_range)
-        put_in_dictionary(self.harmonized_extents, YRANGE, y_range)
-        put_in_dictionary(self.harmonized_extents, XOFFSET, x_offset)
-        put_in_dictionary(self.harmonized_extents, YOFFSET, y_offset)
-        return self.harmonized_extents
+        self.inner_harmonize_images([image1_data_class, image2_data_class], image1_data_class.get_attribute(raster.PROJECTION))
+
     def get_attribute(self, path_to_attribute):
         '''
         Returns the attribute that is found in the given path.
         '''
         return _get_attribute(path_to_attribute, self.harmonized_extents)
-                             
+    def inner_harmonize_images(self, images, projection):
+        self.harmonized_extents = harmonize_images(images, projection)
 
 if __name__ == '__main__':
     import raster
@@ -189,31 +221,50 @@ if __name__ == '__main__':
     
     subset = my_data[x:x+width, y:y+height]
     
-    x_mask = get_image_mask(x,y,width,height,my_data,threshold)
+    x_mask = get_image_mask(my_data,threshold)
     
-    print subset
+    x_mask_subset = get_image_subset(x,y,width,height,x_mask)
+    
+    print my_data
     print x_mask
     
-    masked_data = ma.masked_array(subset, x_mask)
- 
-    print masked_data
+    x_mask_subset = get_image_mask(subset,threshold)
+                                    
+    subset_x_mask = get_image_subset(x,y,width,height,x_mask)
     
-    print masked_data[~masked_data.mask]
-    
-    
-    multi_data = numpy.random.rand(5, 10, 10)
-    
-    multi_mask = get_multiband_image_mask(x,y,width,height,multi_data,threshold)
-    
-    multi_subset = multi_data[:,x:x+width, y:y+height]
-    
-    
-    #masked_multi_data = ma.masked_array(multi_subset, multi_mask)
+    print '*************************'
+    print subset
+    print '*************************'
+    print x_mask_subset
+    print '*************************'
+    print subset_x_mask
+    print '*************************'
+    print get_mask_image_subset(x,y,width,height,my_data,threshold)
     
     
+    
+    print 'multiband'
+    
+    
+    my_data = numpy.random.rand(5,10,10)
+    x = 2
+    y = 2
+    width = 3
+    height = 4
+    threshold = .3
+    
+    multi_subset = get_multiband_image_subset(x, y, width, height, my_data)
+    multi_mask_subset = get_multiband_image_mask(multi_subset,threshold)
+    
+    
+    print '*************************'
     print multi_subset
+    print '*************************'
+    print multi_mask_subset
+    print '*************************'
+    print get_mask_multiband_image_subset(x, y, width, height, my_data, threshold)
     
-    print multi_mask
+    
     
     
     

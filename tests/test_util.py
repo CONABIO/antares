@@ -12,7 +12,7 @@ import unittest
 from madmex.configuration import SETTINGS
 from madmex.core import controller
 from madmex.mapper.base import _get_attribute
-from madmex.util import get_last_package_from_name
+from madmex.util import get_last_package_from_name, create_directory_path
 
 class Test(unittest.TestCase):
 
@@ -138,11 +138,39 @@ class Test(unittest.TestCase):
         self.assertFalse(action.success)
         self.assertFalse(os.path.isfile(action.new_file))
         os.remove(name)
-    def test_create_raster_in_memory(self):  
+    def test_create_raster_in_memory(self):
+        '''
+        Create a raster in memory
+        '''
         from madmex.mapper.data  import raster
         folder=''
         image = raster.Data(folder, '')
         image.create_raster_in_memory()
+    def test_imad_pair_images(self):
+        '''
+        Perform an imad transformation with two images
+        '''
+        from madmex.transformation import imad
+        from madmex.mapper.data import harmonized
+        from madmex.mapper.data import raster
+        image1 = '/LUSTRE/MADMEX/eodata/rapideye/1147524/2012/2012-10-18/l3a/2012-10-18T191005_RE3_3A-NAC_11137283_149747.tif'
+        image2 = '/LUSTRE/MADMEX/eodata/rapideye/1147524/2013/2013-09-09/l3a/1147524_2013-09-09_RE5_3A_175826.tif'
+        gdal_format = "GTiff"
+        image1_data_class =raster.Data(image1, gdal_format)
+        image2_data_class = raster.Data(image2, gdal_format)
+        harmonized_class = harmonized.Data(image1_data_class, image2_data_class)
+        if harmonized_class:
+            data_shape_harmonized = harmonized_class.get_attribute(harmonized.DATA_SHAPE)
+            width, height, bands = data_shape_harmonized
+            geotransform_harmonized = harmonized_class.get_attribute(harmonized.GEOTRANSFORM)
+            projection_harmonized = harmonized_class.get_attribute(harmonized.PROJECTION)
+            output = os.path.join(os.path.expanduser('~'),'test_imad_pair_images')
+            create_directory_path(output)
+            output+= 'result.tif' 
+            mad_image = harmonized_class.create_from_reference(output, width, height, bands, geotransform_harmonized, projection_harmonized)
+            val1, val2 = harmonized_class.harmonized_arrays(image1_data_class, image2_data_class)
+            imad_result = imad.Transformation(val1, val2)
+            # NEXT STEP: harmonized_class.write_raster(bands, mad_image, imad_result)
     def test_harmonize_pair_images(self):
         '''
         Harmonize pair images based on three criteria: geographical transformation, 
@@ -152,9 +180,6 @@ class Test(unittest.TestCase):
         from madmex.mapper.data import raster
         image1 = '/LUSTRE/MADMEX/eodata/rapideye/1147524/2012/2012-10-18/l3a/2012-10-18T191005_RE3_3A-NAC_11137283_149747.tif'
         image2 = '/LUSTRE/MADMEX/eodata/rapideye/1147524/2013/2013-09-09/l3a/1147524_2013-09-09_RE5_3A_175826.tif'
-        image_pair_list = []
-        image_pair_list.append(image1)
-        image_pair_list.append(image2)
         gdal_format = "GTiff"
         image1_data_class =raster.Data(image1, gdal_format)
         image2_data_class = raster.Data(image2, gdal_format)

@@ -35,11 +35,6 @@ class Transformation(BaseTransformation):
         index_sum = numpy.sum(index)
         return (image_bands_flattened, bands, rows, cols, index, index_sum, numpy.ones(int(index_sum)), 1.0, numpy.zeros(bands), 0, (bands+1)*(bands+1), True)
     def execute(self, image1_array, image2_array, MIN_DELTA = 0.02):
-        print 'interfaces correctly made'
-        print 'unique image1 array'
-        print numpy.unique(image1_array)
-        print 'unique image2 array'
-        print numpy.unique(image2_array)
         image_bands_flattened, bands, rows, cols, index, index_sum, wt, delta, oldrho, iteration, max_iterations, bandera = self.preprocessing(image1_array, image2_array)
         self.outcorrlist = []
         MIN_DELTA = 0.02

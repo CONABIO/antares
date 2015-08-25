@@ -166,11 +166,13 @@ class Test(unittest.TestCase):
             projection_harmonized = harmonized_class.get_attribute(harmonized.PROJECTION)
             output = os.path.join(os.path.expanduser('~'),'test_imad_pair_images')
             create_directory_path(output)
-            output+= 'result.tif' 
+            output+= '/result_change_detection.tif' 
             mad_image = harmonized_class.create_from_reference(output, width, height, bands, geotransform_harmonized, projection_harmonized)
-            val1, val2 = harmonized_class.harmonized_arrays(image1_data_class, image2_data_class)
-            imad_result = imad.Transformation(val1, val2)
-            # NEXT STEP: harmonized_class.write_raster(bands, mad_image, imad_result)
+            image1_data_array, image2_data_array = harmonized_class.harmonized_arrays(image1_data_class, image2_data_class)
+            imad_class = imad.Transformation(image1_data_array, image2_data_array)
+            harmonized_class.write_raster(bands, mad_image, imad_class.final_output)
+            print 'corrlist'
+            print imad_class.outcorrlist
     def test_harmonize_pair_images(self):
         '''
         Harmonize pair images based on three criteria: geographical transformation, 

@@ -7,9 +7,9 @@ Created on 21/08/2015
 from __future__ import unicode_literals
 from madmex.mapper.base import BaseData, _get_attribute, put_in_dictionary
 import numpy
-import numpy.ma as ma
+#import numpy.ma as ma
 import logging
-from Carbon.TextEdit import WIDTHHook
+#from Carbon.TextEdit import WIDTHHook
 
 LOGGER = logging.getLogger(__name__)
 PROJECTION = ['projection']

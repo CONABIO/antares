@@ -167,7 +167,7 @@ class BaseData(object):
     def __init__(self):
         '''
         Constructor
-        '''
+        '''       
     def _get_footprint(self):
         '''
         Returns the extent of the raster image.
@@ -189,6 +189,35 @@ class BaseData(object):
         footprint.Transform(coordinate_transformation)
         wkt = WKTElement(footprint.ExportToWkt(), srid=4326)
         return wkt
+    def create_from_reference(self, output, width, height, bands, geotransform, projection, options = []):
+        '''
+        This method creates a gdal data file using the width, height and bands
+        specified. options could be:
+        options = ['COMPRESS=LZW']
+        '''
+        import gdal
+        gdal_format = gdal.GDT_Float32
+        format_create = 'GTiff'
+        driver = gdal.GetDriverByName(str(format_create))
+        data = driver.Create(output, width, height, bands, gdal_format, options)
+        data.SetGeoTransform(geotransform)
+        data.SetProjection(projection)
+        return data
+    def create_raster_in_memory(self):
+        '''
+        Creates a raster in memory
+        '''
+        import gdal
+        format_create = 'MEM'
+        driver = gdal.GetDriverByName(str(format_create))
+        print 'driver for raster memory'
+        print driver
+    def write_raster(self, bands, data_file, data_to_write):
+        '''
+        data_file: data that will have the data in parameter data_to_write
+        '''
+        for band in range(bands):
+            data_file.GetRasterBand(band + 1).WriteArray(data_to_write[band, :, :])    
 
 class BaseSensor(object):
     '''

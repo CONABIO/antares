@@ -14,7 +14,6 @@ import ogr, osr
 
 from madmex.mapper.base import BaseData, _get_attribute, put_in_dictionary
 
-
 gdal.AllRegister()
 gdal.UseExceptions()
 
@@ -130,33 +129,7 @@ class Data(BaseData):
         '''
         Transforms ground control points into geotransform using gdal.
         '''
-        return gdal.GCPsToGeoTransform(self.gcps()) 
-    def create_from_reference(self, output, width, height, bands, geotransform, projection, gdal_format = gdal.GDT_Float32, options = []):
-        '''
-        This method creates a gdal data file using the width, height and bands
-        specified.
-        '''
-        format_create = 'GTiff'
-        driver = gdal.GetDriverByName(str(format_create))
-        data = driver.Create(output, width, height, bands, gdal_format, options)
-        data.SetGeoTransform(geotransform)
-        data.SetProjection(projection)
-        return data
-    def create_raster_in_memory(self):
-        '''
-        Creates a raster in memory
-        '''
-        format_create = 'MEM'
-        driver = gdal.GetDriverByName(str(format_create))
-        print 'driver for raster memory'
-        print driver
-
-    def write_raster(self, bands, data_file, data_to_write):
-        '''
-        data_file: data that will have the data in parameter data_to_write
-        '''
-        for band in range(bands):
-            data_file.GetRasterBand(band + 1).WriteArray(data_to_write[band, :, :])       
+        return gdal.GCPsToGeoTransform(self.gcps())
     def close(self):
         '''
         This method will close the dataset, this will recover resources allocated

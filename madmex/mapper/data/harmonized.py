@@ -13,6 +13,7 @@ from Carbon.TextEdit import WIDTHHook
 
 LOGGER = logging.getLogger(__name__)
 PROJECTION = ['projection']
+DATA_SHAPE = ['data_shape']
 GEOTRANSFORM = ['geotransform']
 XRANGE = ['x_range']
 YRANGE = ['y_range']
@@ -74,7 +75,7 @@ def get_mask_multiband_image_subset(x, y, width, height, data, threshold=0):
     after the other. In particular it handles the case for a multiband image.
     '''
     return get_multiband_image_mask(get_multiband_image_subset(x,y,width,height,my_data),threshold)
-def harmonize_images(images, projection):
+def harmonize_images(images, projection, shape):
     '''
     Harmonizes a list of images into the minimum common extent. If one of
     the images is not in the specified projection, it will be ignored.
@@ -86,19 +87,19 @@ def harmonize_images(images, projection):
     shapes = []
     accepted_images = []
     put_in_dictionary(extents, PROJECTION, projection)
+    put_in_dictionary(extents, DATA_SHAPE, shape)
     for image in images:
-        if image and image.get_attribute(raster.PROJECTION) == projection:
+        if image and image.get_attribute(raster.PROJECTION) == projection and image.get_attribute(raster.DATA_SHAPE)==shape:
             geotransforms.append(image.get_attribute(raster.GEOTRANSFORM))
             projections.append(image.get_attribute(raster.PROJECTION))
             shapes.append(image.get_attribute(raster.DATA_SHAPE))
             accepted_images.append(image)
         else:
-            LOGGER.warn('Image not in the specified projection, will be ignored.')
+            LOGGER.warn('Image not in the specified projection or data_shape, will be ignored.')
     geotransforms = numpy.array(geotransforms)
     projections = numpy.array(projections)
     shapes = numpy.array(shapes)
-    
-    
+
     # Intersect boundary coordinates
     # Get upper left coordinates
     ul_x = max(geotransforms[:, 0])
@@ -121,7 +122,7 @@ def harmonize_images(images, projection):
     put_in_dictionary(extents, YOFFSET, y_offset)
     return extents
 
-class Data(BaseData): #TODO: not useful the inheritance from BaseData, change this inheritance to another Base class
+class Data(BaseData):
     '''
     classdocs
     '''
@@ -129,6 +130,7 @@ class Data(BaseData): #TODO: not useful the inheritance from BaseData, change th
         '''
         Constructor
         '''
+        super(Data, self).__init__()
         self.harmonized_extents = {}
         self._harmonized_images(image1_data_class, image2_data_class)
     def _harmonized_images(self, image1_data_class, image2_data_class):
@@ -136,15 +138,28 @@ class Data(BaseData): #TODO: not useful the inheritance from BaseData, change th
         Given two images of class raster create a new image with no data, the same projection, 
         and uniform xrange, yrange, xoffset, yoffset
         '''
-        self.inner_harmonize_images([image1_data_class, image2_data_class], image1_data_class.get_attribute(raster.PROJECTION))
-
+        import raster
+        self.inner_harmonize_images([image1_data_class, image2_data_class], image1_data_class.get_attribute(raster.PROJECTION), image1_data_class.get_attribute(raster.DATA_SHAPE))
+    def inner_harmonize_images(self, images, projection, shape):
+        self.harmonized_extents = harmonize_images(images, projection, shape)
+    def harmonized_arrays(self, image1_data_class, image2_data_class):
+        '''
+        Given two images of class raster  returns two arrays with common harmonized properties        
+        '''
+        yoffset =  self.get_attribute(YOFFSET)
+        xoffset = self.get_attribute(XOFFSET)
+        x_range = self.get_attribute(XRANGE)  
+        y_range = self.get_attribute(YRANGE)
+        image1_data_array = image1_data_class.read_data_file_as_array()[:, int(yoffset[0]):int(yoffset[0]) + y_range, int(xoffset[0]):int(xoffset[0]) + x_range]
+        image2_data_array = image2_data_class.read_data_file_as_array()[:, int(yoffset[1]):int(yoffset[1]) + y_range, int(xoffset[1]):int(xoffset[1]) + x_range] 
+        return (image1_data_array, image2_data_array) 
+        
     def get_attribute(self, path_to_attribute):
         '''
         Returns the attribute that is found in the given path.
         '''
         return _get_attribute(path_to_attribute, self.harmonized_extents)
-    def inner_harmonize_images(self, images, projection):
-        self.harmonized_extents = harmonize_images(images, projection)
+
 
 if __name__ == '__main__':
     import raster

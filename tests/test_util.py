@@ -164,12 +164,14 @@ class Test(unittest.TestCase):
             width, height, bands = data_shape_harmonized
             geotransform_harmonized = harmonized_class.get_attribute(harmonized.GEOTRANSFORM)
             projection_harmonized = harmonized_class.get_attribute(harmonized.PROJECTION)
+            '''
             output = os.path.join(os.path.expanduser('~'),'test_imad_pair_images')
             create_directory_path(output)
             output+= 'result.tif' 
             mad_image = harmonized_class.create_from_reference(output, width, height, bands, geotransform_harmonized, projection_harmonized)
             val1, val2 = harmonized_class.harmonized_arrays(image1_data_class, image2_data_class)
             imad_result = imad.Transformation(val1, val2)
+            '''
             # NEXT STEP: harmonized_class.write_raster(bands, mad_image, imad_result)
     def test_harmonize_pair_images(self):
         '''

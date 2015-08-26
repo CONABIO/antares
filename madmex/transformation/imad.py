@@ -16,6 +16,7 @@ class Transformation(BaseTransformation):
         '''
         Constructor
         '''
+        self.output = None
         self.execute(image1_array, image2_array)
     def preprocessing(self, image1_array, image2_array):
         '''
@@ -38,11 +39,11 @@ class Transformation(BaseTransformation):
         '''
         The imad transformation of two images
         '''
-        image_bands_flattened, bands, rows, cols, index, index_sum, wt, delta, oldrho, iteration, max_iterations, bandera = self.preprocessing(image1_array, image2_array)
+        image_bands_flattened, bands, rows, cols, index, index_sum, wt, delta, oldrho, iteration, max_iterations, flag = self.preprocessing(image1_array, image2_array)
         self.outcorrlist = []
         MIN_DELTA = 0.02
         print("Starting iMAD iterations")  
-        while (delta > MIN_DELTA) and (iteration < max_iterations) and bandera:
+        while (delta > MIN_DELTA) and (iteration < max_iterations) and flag:
             try:
                 print("iMAD iteration: %d" % iteration)
                 sumw = numpy.sum(wt)
@@ -94,12 +95,13 @@ class Transformation(BaseTransformation):
                     print("Processing of iteration %d finished [%f] ..." % (iteration, numpy.max(delta)))  
                     iteration += 1
                 else:
-                    bandera=False
+                    flag=False
                     LOGGER.warning("Processing in iteration %d produced error. Taking last MAD of iteration %d" % (iteration,iteration-1))
             except Exception, error:
+                flag = False
+                #iteration = max_iterations  
                 print("iMAD transform failed with error: %s" % str(repr(error))) 
                 LOGGER.warning("Processing in iteration %d produced error. Taking last MAD of iteration %d" % (iteration,iteration-1))
-                iteration = max_iterations  
         self.postprocessing(rows, cols, bands, index, chisqr, MAD)
     def postprocessing(self, rows, cols, bands, index, chisqr, MAD): 
         '''
@@ -113,9 +115,9 @@ class Transformation(BaseTransformation):
         chisqr = None
         # return to multidimensional array structure (multispectral image)
         print("Reshaping structure of MAD components")
-        self.final_output = numpy.zeros((bands + 1, rows, cols))
+        self.output = numpy.zeros((bands + 1, rows, cols))
         for b in xrange(bands + 1):
-                self.final_output[b, :, :] = (numpy.resize(MADout[b, :], (rows, cols)))
+                self.output[b, :, :] = (numpy.resize(MADout[b, :], (rows, cols)))
         # close
         MADout = None
 

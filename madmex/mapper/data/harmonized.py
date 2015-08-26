@@ -86,8 +86,6 @@ def harmonize_images(images, projection, shape):
     projections = []
     shapes = []
     accepted_images = []
-    put_in_dictionary(extents, PROJECTION, projection)
-    put_in_dictionary(extents, DATA_SHAPE, shape)
     for image in images:
         if image and image.get_attribute(raster.PROJECTION) == projection and image.get_attribute(raster.DATA_SHAPE)==shape:
             geotransforms.append(image.get_attribute(raster.GEOTRANSFORM))
@@ -96,30 +94,33 @@ def harmonize_images(images, projection, shape):
             accepted_images.append(image)
         else:
             LOGGER.warn('Image not in the specified projection or data_shape, will be ignored.')
-    geotransforms = numpy.array(geotransforms)
-    projections = numpy.array(projections)
-    shapes = numpy.array(shapes)
-
-    # Intersect boundary coordinates
-    # Get upper left coordinates
-    ul_x = max(geotransforms[:, 0])
-    ul_y = min(geotransforms[:, 3])
-    # Calculate lower right coordinates
-    lr_x = min(geotransforms[:, 0] + shapes[:, 0] * geotransforms[:, 1])
-    lr_y = max(geotransforms[:, 3] + shapes[:, 1] * geotransforms[:, 5])
-    # Calculate range in x and y dimension in pixels
-    x_range = (lr_x - ul_x) / geotransforms[0, 1]
-    y_range = (lr_y - ul_y) / geotransforms[0, 5]
-    # Calculate offset values for each image
-    x_offset = (ul_x - geotransforms[:, 0]) / geotransforms[:, 1]
-    y_offset = (ul_y - geotransforms[:, 3]) / geotransforms[:, 5]
-    # Calculate unique geo transformation
-    geotransform = (ul_x, geotransforms[0, 1], 0.0, ul_y, 0.0, geotransforms[0, 5])
-    put_in_dictionary(extents, GEOTRANSFORM, geotransform)
-    put_in_dictionary(extents, XRANGE, x_range)
-    put_in_dictionary(extents, YRANGE, y_range)
-    put_in_dictionary(extents, XOFFSET, x_offset)
-    put_in_dictionary(extents, YOFFSET, y_offset)
+    if accepted_images:
+        put_in_dictionary(extents, PROJECTION, projection)
+        put_in_dictionary(extents, DATA_SHAPE, shape)
+        geotransforms = numpy.array(geotransforms)
+        projections = numpy.array(projections)
+        shapes = numpy.array(shapes)
+    
+        # Intersect boundary coordinates
+        # Get upper left coordinates
+        ul_x = max(geotransforms[:, 0])
+        ul_y = min(geotransforms[:, 3])
+        # Calculate lower right coordinates
+        lr_x = min(geotransforms[:, 0] + shapes[:, 0] * geotransforms[:, 1])
+        lr_y = max(geotransforms[:, 3] + shapes[:, 1] * geotransforms[:, 5])
+        # Calculate range in x and y dimension in pixels
+        x_range = (lr_x - ul_x) / geotransforms[0, 1]
+        y_range = (lr_y - ul_y) / geotransforms[0, 5]
+        # Calculate offset values for each image
+        x_offset = (ul_x - geotransforms[:, 0]) / geotransforms[:, 1]
+        y_offset = (ul_y - geotransforms[:, 3]) / geotransforms[:, 5]
+        # Calculate unique geo transformation
+        geotransform = (ul_x, geotransforms[0, 1], 0.0, ul_y, 0.0, geotransforms[0, 5])
+        put_in_dictionary(extents, GEOTRANSFORM, geotransform)
+        put_in_dictionary(extents, XRANGE, x_range)
+        put_in_dictionary(extents, YRANGE, y_range)
+        put_in_dictionary(extents, XOFFSET, x_offset)
+        put_in_dictionary(extents, YOFFSET, y_offset)
     return extents
 
 class Data(BaseData):
@@ -139,9 +140,10 @@ class Data(BaseData):
         and uniform xrange, yrange, xoffset, yoffset
         '''
         import raster
-        self.inner_harmonize_images([image1_data_class, image2_data_class], image1_data_class.get_attribute(raster.PROJECTION), image1_data_class.get_attribute(raster.DATA_SHAPE))
-    def inner_harmonize_images(self, images, projection, shape):
-        self.harmonized_extents = harmonize_images(images, projection, shape)
+        if not self.harmonized_extents:
+            self.harmonized_extents = harmonize_images([image1_data_class, image2_data_class], image1_data_class.get_attribute(raster.PROJECTION), image1_data_class.get_attribute(raster.DATA_SHAPE))
+            if not self.harmonized_extents:
+                print('No common extents for images')
     def harmonized_arrays(self, image1_data_class, image2_data_class):
         '''
         Given two images of class raster  returns two arrays with common harmonized properties        
@@ -150,10 +152,13 @@ class Data(BaseData):
         xoffset = self.get_attribute(XOFFSET)
         x_range = self.get_attribute(XRANGE)  
         y_range = self.get_attribute(YRANGE)
-        image1_data_array = image1_data_class.read_data_file_as_array()[:, int(yoffset[0]):int(yoffset[0]) + y_range, int(xoffset[0]):int(xoffset[0]) + x_range]
-        image2_data_array = image2_data_class.read_data_file_as_array()[:, int(yoffset[1]):int(yoffset[1]) + y_range, int(xoffset[1]):int(xoffset[1]) + x_range] 
-        return (image1_data_array, image2_data_array) 
-        
+        try:
+            image1_data_array = image1_data_class.read_data_file_as_array()[:, int(yoffset[0]):int(yoffset[0]) + y_range, int(xoffset[0]):int(xoffset[0]) + x_range]
+            image2_data_array = image2_data_class.read_data_file_as_array()[:, int(yoffset[1]):int(yoffset[1]) + y_range, int(xoffset[1]):int(xoffset[1]) + x_range]
+            return (image1_data_array, image2_data_array) 
+        except Exception:
+            LOGGER.error('Process of harmonize arrays failed, one image is %s', image1_data_class.image_path)
+            print('Process of harmonize arrays failed, one image is %s', image1_data_class.image_path)
     def get_attribute(self, path_to_attribute):
         '''
         Returns the attribute that is found in the given path.

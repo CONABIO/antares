@@ -6,6 +6,7 @@ Created on Jun 10, 2015
 from __future__ import unicode_literals
 
 import abc
+from datetime import datetime
 import logging
 import logging.config
 import os
@@ -16,8 +17,9 @@ from geoalchemy2.elements import WKTElement
 import ogr
 import osr
 
-import xml.dom.minidom as dom
+from madmex.persistence.database.connection import RawProduct
 from madmex.util import get_files_from_folder, create_file_name
+import xml.dom.minidom as dom
 
 
 METADATA = "metadata"
@@ -132,8 +134,8 @@ class BaseBundle(object):
         Subclasses must implement this method.
         '''
         raise NotImplementedError(
-            'subclasses of BaseBundle must provide a '
-            'is_consistent() method')
+            'Subclasses of BaseBundle must provide a '
+            'is_consistent() method.')
     def _look_for_files(self):
         '''
         This method will be called by the constructor to look for files in the
@@ -144,7 +146,28 @@ class BaseBundle(object):
             for name in get_files_from_folder(self.path):
                 if re.match(key, name):
                     self.file_dictionary[key] = create_file_name(self.path, name)
-
+    def get_database_object(self):
+        '''
+        Creates the database object that will be ingested for this bundle.
+        '''
+        return RawProduct(
+                uuid=str(uuid.uuid4()),
+                acquisition_date=self.get_aquisition_date(),
+                ingest_date=datetime.now(),
+                path=self.get_output_directory(),
+                legend=None,
+                geometry=self.get_raster().get_attribute('footprint'),
+                information=None,
+                product_type=None,
+                type='raw'
+                )
+    def get_aquisition_date(self):
+        '''
+        Subclasses must implement this method.
+        '''
+        raise NotImplementedError(
+            'Subclasses of BaseBundle must provide a '
+            'get_aquisition_date() method.')
     def can_identify(self):
         '''
         If all of the regular expressions got a matching file, then the directory

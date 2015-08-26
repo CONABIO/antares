@@ -18,6 +18,7 @@ from madmex.mapper.data import raster
 from madmex.preprocessing.base import calculate_rad_toa_spot5
 
 
+
 class Bundle(Bundle_spot5):
     '''            
     classdocs
@@ -69,6 +70,30 @@ class Bundle(Bundle_spot5):
         Returns the sensor of the underlying bundle.
         '''
         return Bundle_spot5.get_sensor(self)
+    
+    def get_spot_dictionary(self):
+        '''
+        Returns the dictionary of regular expressions and file names found in
+        the given path.
+        '''
+        return self.file_dictionary
+    def get_metadata_file(self):
+        '''
+        Returns the regular expression to identify the metadata file for Spot 5.
+        '''
+        return self.METADATA
+    def get_image_file(self):
+        '''
+        Returns the regular expression to identify the image file for Spot 5.
+        '''
+        return self.IMAGE
+    def get_format_file(self):
+        '''
+        Returns the format in which Spot 5 images are configured.
+        '''
+        return self.FORMAT
+    def get_sensor_module(self):
+        return spot5
     def calculate_toa(self):
         '''
         Calculates the top of atmosphere for the image that is object represents.

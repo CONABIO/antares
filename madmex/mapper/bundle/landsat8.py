@@ -15,7 +15,6 @@ class Bundle(BaseBundle):
     persisted.
     '''
 
-
     def __init__(self, path):
         '''
         Constructor

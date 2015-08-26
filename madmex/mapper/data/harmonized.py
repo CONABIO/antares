@@ -75,6 +75,9 @@ def get_mask_multiband_image_subset(x, y, width, height, data, threshold=0):
     after the other. In particular it handles the case for a multiband image.
     '''
     return get_multiband_image_mask(get_multiband_image_subset(x,y,width,height,my_data),threshold)
+def stack_images():
+    pass
+
 def harmonize_images(images, projection, shape):
     '''
     Harmonizes a list of images into the minimum common extent. If one of

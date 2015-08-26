@@ -5,11 +5,18 @@ Created on 24/08/2015
 '''
 
 from __future__ import unicode_literals
-from madmex.transformation.base import BaseTransformation
-from madmex import LOGGER
-import numpy
-from scipy import linalg, stats
+
+import logging
 import math
+from scipy import linalg, stats
+
+import numpy
+
+from madmex.transformation.base import BaseTransformation
+
+
+LOGGER = logging.getLogger(__name__)
+
 class Transformation(BaseTransformation):
     '''
     classdocs
@@ -44,10 +51,10 @@ class Transformation(BaseTransformation):
         image_bands_flattened, bands, rows, cols, index, index_sum, wt, delta, oldrho, iteration, max_iterations, flag = self.preprocessing(image1_array, image2_array)
         self.outcorrlist = []
         MIN_DELTA = 0.02
-        print("Starting iMAD iterations")  
+        LOGGER.info('Starting iMAD iterations.')  
         while (delta > MIN_DELTA) and (iteration < max_iterations) and flag:
             try:
-                print("iMAD iteration: %d" % iteration)
+                LOGGER.info("iMAD iteration: %d", iteration)
                 sumw = numpy.sum(wt)
                 means = numpy.average(image_bands_flattened, axis=1, weights=wt)
                 dmc = image_bands_flattened - means[:, numpy.newaxis]
@@ -94,15 +101,15 @@ class Transformation(BaseTransformation):
                     chisqr = numpy.sum(numpy.multiply(MAD, MAD) / var_mad, 0)
                     wt = numpy.squeeze(1 - numpy.array(stats.chi2._cdf(chisqr, bands))) 
                     oldrho = rho
-                    print("Processing of iteration %d finished [%f] ..." % (iteration, numpy.max(delta)))  
+                    LOGGER.info('Processing of iteration %d finished [%f] ...', iteration, numpy.max(delta))
                     iteration += 1
                 else:
                     flag=False
-                    LOGGER.warning("Processing in iteration %d produced error. Taking last MAD of iteration %d" % (iteration,iteration-1))
+                    LOGGER.warning("Processing in iteration %d produced error. Taking last MAD of iteration %d", iteration, (iteration - 1))
             except Exception, error:
                 flag = False
-                print("iMAD transform failed with error: %s" % str(repr(error))) 
-                LOGGER.warning("Processing in iteration %d produced error. Taking last MAD of iteration %d" % (iteration,iteration-1))
+                LOGGER.error("iMAD transform failed with error: %s", str(repr(error))) 
+                LOGGER.error("Processing in iteration %d produced error. Taking last MAD of iteration %d" % (iteration,iteration-1))
         self.postprocessing(rows, cols, bands, index, chisqr, MAD)
     def postprocessing(self, rows, cols, bands, index, chisqr, MAD): 
         '''
@@ -115,7 +122,7 @@ class Transformation(BaseTransformation):
         MAD = None
         chisqr = None
         # return to multidimensional array structure (multispectral image)
-        print("Reshaping structure of MAD components")
+        LOGGER.info('Reshaping structure of MAD components')
         self.output = numpy.zeros((bands + 1, rows, cols))
         for b in xrange(bands + 1):
                 self.output[b, :, :] = (numpy.resize(MADout[b, :], (rows, cols)))

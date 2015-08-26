@@ -184,7 +184,7 @@ class Test(unittest.TestCase):
         image1 = '/LUSTRE/MADMEX/eodata/rapideye/1147524/2012/2012-10-18/l3a/2012-10-18T191005_RE3_3A-NAC_11137283_149747.tif'
         image2 = '/LUSTRE/MADMEX/eodata/rapideye/1147524/2013/2013-09-09/l3a/1147524_2013-09-09_RE5_3A_175826.tif'
         gdal_format = "GTiff"
-        image1_data_class =raster.Data(image1, gdal_format)
+        image1_data_class = raster.Data(image1, gdal_format)
         image2_data_class = raster.Data(image2, gdal_format)
         harmonized_class = harmonized.Data(image1_data_class, image2_data_class)
         self.assertEqual(harmonized_class.get_attribute(harmonized.XRANGE), 5000)

@@ -112,5 +112,12 @@ def get_path_from_list(paths):
         my_path = os.path.join(my_path, path)
     return my_path
 
+def create_file_at_home(filename):
+    '''
+    Given a filename this method will create the path to that path using the home
+    directory as base.
+    '''
+    return os.path.join(os.path.expanduser('~'), filename)
+
 if __name__ == '__main__':
     print get_last_package_from_name('hello.my.name.is')

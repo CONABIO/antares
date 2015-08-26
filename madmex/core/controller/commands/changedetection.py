@@ -15,8 +15,7 @@ from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands import get_bundle_from_path
 from madmex.mapper.data import raster, harmonized
 from madmex.transformation import imad
-from madmex.util import create_directory_path, create_file_at_home, \
-    create_file_name
+from madmex.util import create_file_name
 
 
 LOGGER = logging.getLogger(__name__)
@@ -29,7 +28,6 @@ def _get_bundle_from_path(path):
     of that bundle is returned to the caller.
     '''
     return get_bundle_from_path(path, '../../../mapper', BUNDLE_PACKAGE)
-
 
 class Command(BaseCommand):
     '''
@@ -74,4 +72,3 @@ class Command(BaseCommand):
             imad_class = imad.Transformation(image_a_data_array, image_b_data_array)
             harmonized_class.write_raster(bands, mad_image, imad_class.output)
             print 'Output written in: %s' % output
-

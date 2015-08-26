@@ -101,7 +101,6 @@ class Transformation(BaseTransformation):
                     LOGGER.warning("Processing in iteration %d produced error. Taking last MAD of iteration %d" % (iteration,iteration-1))
             except Exception, error:
                 flag = False
-                #iteration = max_iterations  
                 print("iMAD transform failed with error: %s" % str(repr(error))) 
                 LOGGER.warning("Processing in iteration %d produced error. Taking last MAD of iteration %d" % (iteration,iteration-1))
         self.postprocessing(rows, cols, bands, index, chisqr, MAD)

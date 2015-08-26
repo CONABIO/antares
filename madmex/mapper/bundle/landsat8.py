@@ -1,5 +1,5 @@
 '''
-Created on Jul 22, 2015
+Created on Aug 26, 2015
 
 @author: agutierrez
 '''
@@ -33,7 +33,7 @@ class Bundle(BaseBundle):
         '''
         Returns the name of the bundle.
         '''
-        return 'Landsat Enhanced Thematic Mapper Plus'
+        return 'Landsat 8'
     
     def get_output_directory(self):
         '''

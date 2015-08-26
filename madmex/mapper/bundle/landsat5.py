@@ -11,7 +11,9 @@ from madmex.mapper.base import BaseBundle
 
 class Bundle(BaseBundle):
     '''
-    classdocs
+    A class to create a memory representation of a Landsat 5 image including its
+    metadata files. It is also responsible of creating a database object to be
+    persisted.
     '''
 
 
@@ -37,8 +39,8 @@ class Bundle(BaseBundle):
         '''
         Returns the name of the bundle.
         '''
-        return 'Landsat Thematic Mapper'
-
+        return 'Landsat 5'
+    
     def get_output_directory(self):
         '''
         Creates the output directory where the files in this bundle will be

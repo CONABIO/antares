@@ -3,11 +3,10 @@ Created on Aug 26, 2015
 
 @author: agutierrez
 '''
-
 from __future__ import unicode_literals
 
-from madmex.mapper.base import BaseBundle
 from madmex.configuration import SETTINGS
+from madmex.mapper.base import BaseBundle
 
 class Bundle(BaseBundle):
     '''
@@ -17,24 +16,20 @@ class Bundle(BaseBundle):
     '''
 
 
-    def __init__(self, params):
+    def __init__(self, path):
         '''
         Constructor
         '''
+        self.path = path
         self.file_dictionary = {
-                           }
+                                
+                                }
         self.output_directory = None
-    def can_identify(self):
-        '''
-        Test if the parsed path can be identified as a Modis bundle.
-        '''
-        return False
     def get_name(self):
         '''
         Returns the name of the bundle.
         '''
         return 'Landsat 8'
-    
     def get_output_directory(self):
         '''
         Creates the output directory where the files in this bundle will be

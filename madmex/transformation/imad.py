@@ -3,6 +3,8 @@ Created on 24/08/2015
 
 @author: erickpalacios
 '''
+
+from __future__ import unicode_literals
 from madmex.transformation.base import BaseTransformation
 from madmex import LOGGER
 import numpy

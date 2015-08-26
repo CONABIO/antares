@@ -1,7 +1,7 @@
 '''
-Created on 15/07/2015
+Created on Jul 14, 2015
 
-@author: erickpalacios
+@author: agutierrez
 '''
 
 from __future__ import unicode_literals

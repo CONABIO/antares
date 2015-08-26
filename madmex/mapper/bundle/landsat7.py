@@ -1,37 +1,40 @@
 '''
-Created on Jul 14, 2015
+Created on Jul 22, 2015
 
 @author: agutierrez
 '''
 
 from __future__ import unicode_literals
 
-from madmex.configuration import SETTINGS
 from madmex.mapper.base import BaseBundle
-
+from madmex.configuration import SETTINGS
 
 class Bundle(BaseBundle):
     '''
-    classdocs
+    A class to create a memory representation of a Landsat 7 image including its
+    metadata files. It is also responsible of creating a database object to be
+    persisted.
     '''
+
+
     def __init__(self, params):
         '''
         Constructor
         '''
-        super(Bundle, self).__init__(params)
         self.file_dictionary = {
                            }
         self.output_directory = None
     def can_identify(self):
         '''
-        Test if the parsed path can be identified as a Spot bundle.
+        Test if the parsed path can be identified as a Modis bundle.
         '''
         return False
     def get_name(self):
         '''
         Returns the name of the bundle.
         '''
-        return 'Spot'
+        return 'Landsat 7'
+    
     def get_output_directory(self):
         '''
         Creates the output directory where the files in this bundle will be

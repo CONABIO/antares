@@ -155,6 +155,7 @@ class Test(unittest.TestCase):
         from madmex.mapper.data import raster
         image1 = '/LUSTRE/MADMEX/eodata/rapideye/1147524/2012/2012-10-18/l3a/2012-10-18T191005_RE3_3A-NAC_11137283_149747.tif'
         image2 = '/LUSTRE/MADMEX/eodata/rapideye/1147524/2013/2013-09-09/l3a/1147524_2013-09-09_RE5_3A_175826.tif'
+        #image2 = '/LUSTRE/MADMEX/eodata/spot/556297/2010/2010-01-26/1a/556_297_260110_SP5.img'
         gdal_format = "GTiff"
         image1_data_class =raster.Data(image1, gdal_format)
         image2_data_class = raster.Data(image2, gdal_format)
@@ -164,12 +165,12 @@ class Test(unittest.TestCase):
             width, height, bands = data_shape_harmonized
             geotransform_harmonized = harmonized_class.get_attribute(harmonized.GEOTRANSFORM)
             projection_harmonized = harmonized_class.get_attribute(harmonized.PROJECTION)
+            image1_data_array, image2_data_array = harmonized_class.harmonized_arrays(image1_data_class, image2_data_class)
+            imad_class = imad.Transformation(image1_data_array, image2_data_array)
             output = os.path.join(os.path.expanduser('~'),'test_imad_pair_images')
             create_directory_path(output)
             output+= '/result_change_detection.tif' 
             mad_image = harmonized_class.create_from_reference(output, width, height, bands, geotransform_harmonized, projection_harmonized)
-            image1_data_array, image2_data_array = harmonized_class.harmonized_arrays(image1_data_class, image2_data_class)
-            imad_class = imad.Transformation(image1_data_array, image2_data_array)
             harmonized_class.write_raster(bands, mad_image, imad_class.final_output)
             print 'corrlist'
             print imad_class.outcorrlist

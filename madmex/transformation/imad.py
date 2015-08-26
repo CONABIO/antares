@@ -19,7 +19,7 @@ class Transformation(BaseTransformation):
         self.execute(image1_array, image2_array)
     def preprocessing(self, image1_array, image2_array):
         '''
-        Function to extract valid pixels and paremeters to imad transformation
+        Function to extract valid pixels and paremeters for imad transformation
         '''
         bands, rows, cols = image1_array.shape
         image_bands_flattened = numpy.zeros((2*bands, cols*rows))
@@ -35,6 +35,9 @@ class Transformation(BaseTransformation):
         index_sum = numpy.sum(index)
         return (image_bands_flattened, bands, rows, cols, index, index_sum, numpy.ones(int(index_sum)), 1.0, numpy.zeros(bands), 0, (bands+1)*(bands+1), True)
     def execute(self, image1_array, image2_array, MIN_DELTA = 0.02):
+        '''
+        The imad transformation of two images
+        '''
         image_bands_flattened, bands, rows, cols, index, index_sum, wt, delta, oldrho, iteration, max_iterations, bandera = self.preprocessing(image1_array, image2_array)
         self.outcorrlist = []
         MIN_DELTA = 0.02
@@ -99,7 +102,9 @@ class Transformation(BaseTransformation):
                 iteration = max_iterations  
         self.postprocessing(rows, cols, bands, index, chisqr, MAD)
     def postprocessing(self, rows, cols, bands, index, chisqr, MAD): 
-        # reshape to original image size, by including nodata pixels    
+        '''
+        Reshape to original image size, by including nodata pixels    
+        '''
         MADout = numpy.zeros((int(bands + 1), cols * rows))
         MADout[0:bands, index] = MAD
         MADout[bands:(bands + 1), index] = chisqr
@@ -107,7 +112,7 @@ class Transformation(BaseTransformation):
         MAD = None
         chisqr = None
         # return to multidimensional array structure (multispectral image)
-        LOGGER.debug("Reshaping structure of MAD components")
+        print("Reshaping structure of MAD components")
         self.final_output = numpy.zeros((bands + 1, rows, cols))
         for b in xrange(bands + 1):
                 self.final_output[b, :, :] = (numpy.resize(MADout[b, :], (rows, cols)))

@@ -171,7 +171,7 @@ class Test(unittest.TestCase):
             create_directory_path(output)
             output+= '/result_change_detection.tif' 
             mad_image = harmonized_class.create_from_reference(output, width, height, bands, geotransform_harmonized, projection_harmonized)
-            harmonized_class.write_raster(bands, mad_image, imad_class.final_output)
+            harmonized_class.write_raster(bands, mad_image, imad_class.output)
             print 'corrlist'
             print imad_class.outcorrlist
     def test_harmonize_pair_images(self):

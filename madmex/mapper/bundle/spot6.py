@@ -12,6 +12,13 @@ from datetime import datetime
 from madmex.configuration import SETTINGS
 from madmex.util import get_path_from_list
 
+_IMAGE = r'IMG.*\.JP2$'
+_METADATA = r'DIM.*\.XML$'
+_PREVIEW = r'PREVIEW.*\.JPG$'
+_ICON = r'ICON.*\.JPG$'
+_FORMAT = 'JP2OpenJPEG'
+
+
 class Bundle(BaseBundle):
     '''            
     classdocs
@@ -22,16 +29,12 @@ class Bundle(BaseBundle):
         Constructor
         '''
         self.path = path
-        self.IMAGE = r'IMG.*\.JP2$'
-        self.METADATA = r'DIM.*\.XML$'
-        self.PREVIEW = r'PREVIEW.*\.JPG$'
-        self.ICON = r'ICON.*\.JPG$'
-        self.FORMAT = 'JP2OpenJPEG'
+
         self.file_dictionary = {
-                        self.IMAGE:None,
-                        self.METADATA:None,
-                        self.PREVIEW:None,
-                        self.ICON:None
+                        _IMAGE:None,
+                        _METADATA:None,
+                        _PREVIEW:None,
+                        _ICON:None
                            }
         self._look_for_files()
         self.sensor = None
@@ -64,14 +67,14 @@ class Bundle(BaseBundle):
         Lazily creates and returns a sensor object for this bundle.
         '''
         if not self.sensor:
-            self.sensor = spot6.Sensor(self.file_dictionary[self.METADATA])
+            self.sensor = spot6.Sensor(self.file_dictionary[_METADATA])
         return self.sensor
     def get_raster(self):
         '''
         Lazily creates and returns a raster object for this bundle.
         '''
         if self.raster is None:
-            self.raster = raster.Data(self.file_dictionary[self.IMAGE], self.FORMAT)
+            self.raster = raster.Data(self.file_dictionary[_IMAGE], _FORMAT)
         return self.raster
     def get_output_directory(self):
         '''
@@ -81,7 +84,6 @@ class Bundle(BaseBundle):
         if self.output_directory is None:
             destination = getattr(SETTINGS, 'TEST_FOLDER')
             sensor_name = self.get_sensor().get_attribute(spot6.SENSOR)+self.get_sensor().get_attribute(spot6.PLATFORM)
-            #grid_id = unicode(self.get_sensor().get_attribute(spot6.GRID_REFERENCE))
             grid_id = '0' #grid_reference in spot6?
             year = self.get_sensor().get_attribute(spot6.ACQUISITION_DATE).strftime('%Y')
             date = self.get_sensor().get_attribute(spot6.ACQUISITION_DATE).strftime('%Y-%m-%d')

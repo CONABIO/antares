@@ -13,6 +13,10 @@ from datetime import datetime
 from madmex.configuration import SETTINGS
 from madmex.util import get_path_from_list
 
+_IMAGE = r'.*.img$'
+_METADATA = r'.*.dim$'
+_FORMAT = 'HFA'
+
 class Bundle(BaseBundle):
     '''            
     classdocs
@@ -23,13 +27,10 @@ class Bundle(BaseBundle):
         Constructor
         '''
         self.path = path
-        self.IMAGE = r'.*.img$'
-        self.METADATA = r'.*.dim$'
-        self.FORMAT = 'HFA'
 
         self.file_dictionary = {
-                        self.IMAGE:None,
-                        self.METADATA:None,
+                        _IMAGE:None,
+                        _METADATA:None,
                            }
         self._look_for_files()
         self.sensor = None
@@ -61,14 +62,14 @@ class Bundle(BaseBundle):
         Lazily creates and returns a sensor object for this bundle.
         '''
         if not self.sensor:
-            self.sensor = spot5.Sensor(self.file_dictionary[self.METADATA])
+            self.sensor = spot5.Sensor(self.file_dictionary[_METADATA])
         return self.sensor
     def get_raster(self):
         '''
         Lazily creates and returns a raster object for this bundle.
         '''
         if self.raster is None:
-            self.raster = raster.Data(self.file_dictionary[self.IMAGE], self.FORMAT)
+            self.raster = raster.Data(self.file_dictionary[_IMAGE], _FORMAT)
         return self.raster
     def get_output_directory(self):
         '''

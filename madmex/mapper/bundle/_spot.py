@@ -16,10 +16,6 @@ class SpotBaseBundle(BaseBundle):
     def init(self):        
         self.raster = None
     
-    def get_sensor_module(self):
-        raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_sensor_module() method.')
-    
-    
     def get_aquisition_date(self):
         return self.get_sensor().get_attribute(self.get_sensor_module().ACQUISITION_DATE)
     
@@ -28,31 +24,16 @@ class SpotBaseBundle(BaseBundle):
         Lazily creates and returns a sensor object for this bundle.
         '''
         if not self.sensor:
-            print self.get_metadata_file()
-            print 'dictionary ', self.get_spot_dictionary()
-            print self.get_spot_dictionary()[self.get_metadata_file()]
             self.sensor = self.get_sensor_module().Sensor(self.file_dictionary[self.get_metadata_file()])
         return self.sensor
-    
     def get_spot_dictionary(self):
+        '''
+        This method prepares the dictonary that holds the regular expressions
+        to identify the files that this bundle represent.
+        '''
         raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_spot_dictionary() method.')
-    def get_metadata_file(self):
-        raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_metadata_file() method.')
-
     def get_image_file(self):
         raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_image_file() method.')
-
-    def get_format_file(self):
-        raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_format_file() method.')
-
-    def get_raster(self):
-        '''
-        Lazily creates and returns a raster object for this bundle.
-        '''
-        if self.raster is None:
-            self.raster = raster.Data(self.file_dictionary[self.get_image_file()], self.get_format_file())
-        return self.raster
-    
     def get_output_directory(self):
         '''
         Creates the output directory where the files in this bundle will be
@@ -74,3 +55,10 @@ class SpotBaseBundle(BaseBundle):
                 product_name
                 ])
         return self.output_directory
+    def get_raster(self):
+        '''
+        Lazily creates and returns a raster object for this bundle.
+        '''
+        if self.raster is None:
+            self.raster = raster.Data(self.file_dictionary[self.get_image_file()], self.get_format_file())
+        return self.raster

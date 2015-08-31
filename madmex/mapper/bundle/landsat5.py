@@ -24,16 +24,10 @@ class Bundle(LandsatBaseBundle):
         Constructor
         '''
         super(Bundle, self).__init__(path)
-
     def get_format_file(self):
-        FORMAT
-
-
+        return FORMAT
     def get_sensor_module(self):
         return tm
-
-
-
     def get_mission(self):
         '''
         Returns the mission for this particular implementation of the landsat
@@ -45,7 +39,6 @@ class Bundle(LandsatBaseBundle):
         Returns the name of the bundle.
         '''
         return _NAME
-
 if __name__ == '__main__':
 
     bundle = Bundle('/LUSTRE/MADMEX/eodata/tm/10052/2000/2000-08-20/l1g')

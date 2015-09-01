@@ -122,14 +122,14 @@ class BaseBundle(object):
         self.file_list = os.listdir(path)
         self.file_dictionary = {}
         self.regex_dict = {}
-    def scan(self):
+    def scan(self): #TODO : Remove this function because is not used
         '''
         This method will traverse through the list of files in the given
         directory using the given regex dictionary, creating a map for the
         founded files.
         '''
         raise NotImplementedError('subclasses of BaseBundle must provide a scan() method')
-    def is_consistent(self):
+    def is_consistent(self):#TODO : Remove this function because is not used
         '''
         Subclasses must implement this method.
         '''

@@ -16,8 +16,6 @@ class BaseTransformation(object):
         '''
         Constructor
         '''
-        print params
-        
     def execute(self):
         '''
         Execute will call inner processes to complete the implementation of this

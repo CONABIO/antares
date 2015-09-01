@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 '''
 Created on 15/07/2015
 
@@ -17,7 +19,13 @@ from madmex.mapper.bundle.spot5 import Bundle as Bundle_spot5
 from madmex.mapper.data import raster
 from madmex.preprocessing.base import calculate_rad_toa_spot5
 
-
+_IMAGE = r'IMAGERY.TIF$'
+_METADATA = r'METADATA.DIM$'
+_PREVIEW = r'PREVIEW.JPG'
+_ICON = r'ICON.JPG'
+_STYLE = r'STYLE.XSL'
+_OTHER = r'TN_01.TIF'
+_FORMAT = 'GTiff'
 
 class Bundle(Bundle_spot5):
     '''            
@@ -29,20 +37,13 @@ class Bundle(Bundle_spot5):
         Constructor
         '''
         super(Bundle, self).__init__(path)
-        self.FORMAT = 'GTiff'
-        self.IMAGE = r'IMAGERY.TIF$'
-        self.METADATA = r'METADATA.DIM$'
-        self.PREVIEW = r'PREVIEW.JPG'
-        self.ICON = r'ICON.JPG'
-        self.STYLE = r'STYLE.XSL'
-        self.OTHER = r'TN_01.TIF'
         self.file_dictionary = {
-                        self.IMAGE:None,
-                        self.METADATA:None,
-                        self.PREVIEW:None,
-                        self.ICON:None,
-                        self.STYLE:None,
-                        self.OTHER:None, 
+                        _IMAGE:None,
+                        _METADATA:None,
+                        _PREVIEW:None,
+                        _ICON:None,
+                        _STYLE:None,
+                        _OTHER:None, 
                            }
         self._look_for_files()
     def preprocessing(self):
@@ -81,17 +82,17 @@ class Bundle(Bundle_spot5):
         '''
         Returns the regular expression to identify the metadata file for Spot 5.
         '''
-        return self.METADATA
+        return _METADATA
     def get_image_file(self):
         '''
         Returns the regular expression to identify the image file for Spot 5.
         '''
-        return self.IMAGE
+        return _IMAGE
     def get_format_file(self):
         '''
         Returns the format in which Spot 5 images are configured.
         '''
-        return self.FORMAT
+        return _FORMAT
     def get_sensor_module(self):
         return spot5
     def calculate_toa(self):
@@ -121,8 +122,14 @@ class Bundle(Bundle_spot5):
         '''
         Persists the processed image into a file.
         '''
-        outname = re.sub(r'.TIF', '', self.file_dictionary[self.IMAGE]) + '_TOA.tif'    
+        outname = re.sub(r'.TIF', '', self.file_dictionary[self.get_image_file()]) + '_TOA.tif'    
         LOGGER.info('Result of folder %s is %s' % (self.path, outname))
         data_file = self.get_raster().create_from_reference(outname, self.toa.shape[2], self.toa.shape[1], self.toa.shape[0], self.geotransform_from_gcps, self.projection.ExportToWkt())
         self.get_raster().write_raster(self.number_of_bands, data_file, self.toa) 
         data_file = None
+
+if __name__ == '__main__':
+    folder ='/Users/erickpalacios/Documents/CONABIO/Tareas/4_RediseñoMadmex/2_Preprocesamiento/Tarea11/spot/SinNubes/E55582961409182J1A00001/SCENE01'
+    bundle = Bundle(folder)
+    bundle.preprocessing()
+    

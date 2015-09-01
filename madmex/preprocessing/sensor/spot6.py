@@ -81,7 +81,7 @@ class Bundle(Bundle_spot6):
         '''
         Persists the processed image into a file.
         '''
-        outname = re.sub(r'.JP2', '', self.file_dictionary[self.IMAGE]) + '_TOA.TIF'
+        outname = re.sub(r'.JP2', '', self.file_dictionary[self.get_image_file()]) + '_TOA.TIF'
         LOGGER.info('Results of folder %s is %s' % (self.path, outname))
         data_file = self.get_raster().create_from_reference(outname, self.toa.shape[2], self.toa.shape[1], self.toa.shape[0], self.get_raster().get_attribute(raster.GEOTRANSFORM), self.get_raster().get_attribute(raster.PROJECTION))
         self.get_raster().write_raster(self.number_of_bands, data_file, self.toa) 

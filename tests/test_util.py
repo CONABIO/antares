@@ -167,6 +167,7 @@ class Test(unittest.TestCase):
             projection_harmonized = harmonized_class.get_attribute(harmonized.PROJECTION)
             image1_data_array, image2_data_array = harmonized_class.harmonized_arrays(image1_data_class, image2_data_class)
             imad_class = imad.Transformation(image1_data_array, image2_data_array)
+            imad_class.execute()
             output = os.path.join(os.path.expanduser('~'),'test_imad_pair_images')
             create_directory_path(output)
             output+= '/result_change_detection.tif' 

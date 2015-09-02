@@ -16,7 +16,7 @@ from madmex.util import get_path_from_list
 
 _IMAGE = r'[0-9]{3}_[0-9]{3}_[0-9]{6}_SP5.(IMG|img)$' #TODO: SP5 is going to be in the standard? if not, change this reg exp
 _METADATA = r'[0-9]{3}_[0-9]{3}_[0-9]{6}_SP5.(DIM|dim)$'#TODO: SP5 is going to be in the standard? if not, change this reg exp
-_FORMAT = 'HFA'
+FORMAT = 'HFA'
 _NAME = 'Spot5'
 
 class Bundle(SpotBaseBundle):
@@ -54,7 +54,7 @@ class Bundle(SpotBaseBundle):
         '''
         Returns the format in which Spot 5 images are configured.
         '''
-        return _FORMAT
+        return FORMAT
     def get_name(self):
         '''
         Returns the name of this bundle.

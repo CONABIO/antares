@@ -20,6 +20,7 @@ _PREVIEW = r'PREVIEW.JPG'
 _ICON = r'ICON.JPG'
 _STYLE = r'STYLE.XSL'
 _OTHER = r'TN_01.TIF'
+_NAME = "Spot5manglares"
 FORMAT = 'GTiff'
 
 class Bundle(SpotBaseBundle):
@@ -65,6 +66,11 @@ class Bundle(SpotBaseBundle):
         return FORMAT
     def get_sensor_module(self):
         return spot5
+    def get_name(self):
+        '''
+        Returns the name of this bundle.
+        '''
+        return _NAME
     def preprocessing(self):
         '''
         Calculates the top of atmosphere for the image that is object represents.

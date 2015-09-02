@@ -44,6 +44,7 @@ if __name__ == '__main__':
     bundle = Bundle('/LUSTRE/MADMEX/eodata/tm/10052/2000/2000-08-20/l1g')
     print bundle.get_files()
     print bundle.can_identify()
-    
+    from madmex.mapper.data import raster
+    print bundle.get_raster().get_attribute(raster.FOOTPRINT)
     
     

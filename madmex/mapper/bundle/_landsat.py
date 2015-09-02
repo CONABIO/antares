@@ -75,6 +75,7 @@ class LandsatBaseBundle(BaseBundle):
                                         }
             if mission == '8':
                 self.file_dictionary = {
+                                        band_1:None
                                         }
     def get_mission(self):
         '''

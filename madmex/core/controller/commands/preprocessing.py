@@ -16,6 +16,7 @@ from madmex.util import relative_path
 
 LOGGER = logging.getLogger(__name__)
 PREPROCESSING_PACKAGE = 'madmex.preprocessing.sensor'
+PREPROCESSING_PACKAGE = 'madmex.mapper.bundle'
 
 def _get_bundle_from_path(path):
     '''
@@ -23,7 +24,10 @@ def _get_bundle_from_path(path):
     a bundle is able to identify the files present in the directory the instance
     of that bundle is returned to the caller.
     '''
-    return get_bundle_from_path(path, '../../../preprocessing', PREPROCESSING_PACKAGE)
+    #return get_bundle_from_path(path, '../../../preprocessing', PREPROCESSING_PACKAGE)
+
+    return get_bundle_from_path(path, '../../../mapper', PREPROCESSING_PACKAGE)
+
 
 class Command(BaseCommand):
     '''

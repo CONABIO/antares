@@ -13,12 +13,13 @@ from madmex.util import get_path_from_list
 
 class SpotBaseBundle(BaseBundle):
 
-    def init(self):        
+    def __init__(self, path):
+        self.path = path
+        self.sensor = None
         self.raster = None
-    
+        self.output_directory = None
     def get_aquisition_date(self):
         return self.get_sensor().get_attribute(self.get_sensor_module().ACQUISITION_DATE)
-    
     def get_sensor(self):
         '''
         Lazily creates and returns a sensor object for this bundle.

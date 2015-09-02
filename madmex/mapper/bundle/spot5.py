@@ -10,7 +10,6 @@ from datetime import datetime
 
 from madmex.configuration import SETTINGS
 from madmex.mapper.bundle._spot import SpotBaseBundle
-import madmex.mapper.data.raster as raster
 import madmex.mapper.sensor.spot5 as spot5
 from madmex.util import get_path_from_list
 
@@ -29,16 +28,12 @@ class Bundle(SpotBaseBundle):
         '''
         Constructor
         '''
-        self.path = path
-
+        super(Bundle, self).__init__(path)
         self.file_dictionary = {
                         _IMAGE:None,
                         _METADATA:None,
                            }
         self._look_for_files()
-        self.sensor = None
-        self.raster = None
-        self.output_directory = None
     def get_spot_dictionary(self):
         '''
         Returns the dictionary of regular expressions and file names found in
@@ -72,7 +67,7 @@ if __name__ == '__main__':
     folder = '/Volumes/Imagenes_originales/Algoritmo_cambios/612_311_040310'
     bundle = Bundle(folder)
     print 'files ', bundle.file_dictionary 
-    
+    import madmex.mapper.data.raster as raster
     print bundle.can_identify()
     print bundle.get_raster().metadata
     print bundle.get_raster().get_attribute((raster.FOOTPRINT))

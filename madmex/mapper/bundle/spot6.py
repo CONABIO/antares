@@ -30,19 +30,14 @@ class Bundle(SpotBaseBundle):
         '''
         Constructor
         '''
-        self.path = path
-
+        super(Bundle, self).__init__(path)
         self.file_dictionary = {
                         _IMAGE:None,
                         _METADATA:None,
                         _PREVIEW:None,
                         _ICON:None
                            }
-        self._look_for_files()
-        self.sensor = None
-        self.raster = None
-        self.output_directory = None
-        
+        self._look_for_files()        
     def get_spot_dictionary(self):
         '''
         Returns the dictionary of regular expressions and file names found in
@@ -71,5 +66,5 @@ if __name__ == '__main__':
     print bundle.can_identify()
     print bundle.get_output_directory()
     print bundle.get_sensor_module().SENSOR
-    
     print bundle.get_output_directory()
+    print bundle.get_raster().get_attribute(raster.FOOTPRINT)

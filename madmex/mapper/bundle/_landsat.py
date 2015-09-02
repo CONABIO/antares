@@ -74,7 +74,8 @@ class LandsatBaseBundle(BaseBundle):
                                         metadata:None
                                         }
             if mission == '8':
-                self.file_dictionary = {}
+                self.file_dictionary = {
+                                        }
     def get_mission(self):
         '''
         Implementers should override this method to provide access to the mission
@@ -101,7 +102,7 @@ class LandsatBaseBundle(BaseBundle):
     
     def get_metadata_file(self):
         '''
-        This methos is a getter for the file that contains metadata for this image.
+        This method is a getter for the file that contains metadata for this image.
         '''
         return self.file_dictionary[_BASE % (self.get_mission(),'MTL.txt')]
     def get_raster(self):

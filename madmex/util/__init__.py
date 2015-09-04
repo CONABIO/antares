@@ -112,6 +112,23 @@ def get_path_from_list(paths):
         my_path = os.path.join(my_path, path)
     return my_path
 
+def get_base_name(filename):
+    '''
+    Get base name of a file without its suffix. 
+    '''
+    return os.path.splitext(os.path.basename(filename))[0]
+
+def get_extension(filename):
+    '''
+    Get the extension for a file. 
+    '''
+    return os.path.splitext(os.path.basename(filename))[1]
+
+def get_parent(filename):
+    '''
+    This method returns the parent folder for the file or directory given.
+    '''
+    return os.path.abspath(os.path.join(filename, os.pardir))
 def create_file_at_home(filename):
     '''
     Given a filename this method will create the path to that path using the home
@@ -120,4 +137,8 @@ def create_file_at_home(filename):
     return os.path.join(os.path.expanduser('~'), filename)
 
 if __name__ == '__main__':
-    print get_last_package_from_name('hello.my.name.is')
+    print get_base_name('/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/myawesomefile.ext.json')
+    print get_extension('/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/myawesomefile.ext.json')
+    print get_parent('/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/myawesomefile.ext.json')
+    print get_parent('/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/')
+    print get_parent('/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a')

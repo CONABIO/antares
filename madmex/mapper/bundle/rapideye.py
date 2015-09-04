@@ -5,21 +5,26 @@ Created on Jun 10, 2015
 '''
 from __future__ import unicode_literals
 
+import logging
+
 from madmex.configuration import SETTINGS
 from madmex.mapper.base import BaseBundle
 import madmex.mapper.data.raster as raster
 import madmex.mapper.sensor.rapideye as rapideye
-from madmex.util import get_path_from_list
+from madmex.preprocessing.base import calculate_distance_Sun_Earth_spot5, \
+    calculate_rad_rapideye, calculate_toa_rapideye
+from madmex.util import get_path_from_list, create_file_name, \
+    create_directory_path, get_base_name, get_parent
 
 
 FORMAT = 'GTiff'
-_IMAGE = r'^\d{7}_\d{4}-\d{2}-\d{2}_RE\d_3A_\d{6}\.tif$'
-_BROWSE = r'^\d{7}_\d{4}-\d{2}-\d{2}_RE\d_3A_\d{6}_browse\.tif$'
-_LICENSE = r'^\d{7}_\d{4}-\d{2}-\d{2}_RE\d_3A_\d{6}_license\.txt$'
-_METADATA = r'^\d{7}_\d{4}-\d{2}-\d{2}_RE\d_3A_\d{6}_metadata\.xml$'
-_README = r'^\d{7}_\d{4}-\d{2}-\d{2}_RE\d_3A_\d{6}_readme\.txt$'
-_UDM = r'^\d{7}_\d{4}-\d{2}-\d{2}_RE\d_3A_\d{6}_udm\.tif$'
-
+_IMAGE = r'^(\d{4}-\d{2}-\d{2}T1)?\d{5}(\d{2})?(_\d{4}-\d{2}-\d{2})?_RE\d_3A(-NAC)?(_\d{8})?_\d{6}\.tif$'
+_BROWSE = r'^(\d{4}-\d{2}-\d{2}T1)?\d{5}(\d{2})?(_\d{4}-\d{2}-\d{2})?_RE\d_3A(-NAC)?(_\d{8})?_\d{6}_browse\.tif$'
+_LICENSE = r'^(\d{4}-\d{2}-\d{2}T1)?\d{5}(\d{2})?(_\d{4}-\d{2}-\d{2})?_RE\d_3A(-NAC)?(_\d{8})?_\d{6}_license\.txt$'
+_METADATA = r'^(\d{4}-\d{2}-\d{2}T1)?\d{5}(\d{2})?(_\d{4}-\d{2}-\d{2})?_RE\d_3A(-NAC)?(_\d{8})?_\d{6}_metadata\.xml$'
+_README = r'^(\d{4}-\d{2}-\d{2}T1)?\d{5}(\d{2})?(_\d{4}-\d{2}-\d{2})?_RE\d_3A(-NAC)?(_\d{8})?_\d{6}_readme\.txt$'
+_UDM = r'^(\d{4}-\d{2}-\d{2}T1)?\d{5}(\d{2})?(_\d{4}-\d{2}-\d{2})?_RE\d_3A(-NAC)?(_\d{8})?_\d{6}_udm\.tif$'
+LOGGER = logging.getLogger(__name__)
 class Bundle(BaseBundle):
     '''
     classdocs
@@ -94,3 +99,33 @@ class Bundle(BaseBundle):
                 product_name
                 ])
         return self.output_directory
+    def calculate_top_of_atmosphere_rapideye(self):
+        '''
+        This method calculates the top of atmosphere for the rapideye images.
+        '''
+        self.get_raster()
+        solar_zenith = self.get_sensor().get_attribute(rapideye.SOLAR_ZENITH)
+        data_aquisition_date = self.get_sensor().get_attribute(rapideye.ACQUISITION_DATE)
+        sun_earth_distance  = calculate_distance_Sun_Earth_spot5(data_aquisition_date)
+        top_of_atmosphere_data = calculate_toa_rapideye(calculate_rad_rapideye(self.get_raster().read_data_file_as_array()), sun_earth_distance, solar_zenith)
+        top_of_atmosphere_directory = create_file_name(get_parent(self.path), 'toa')
+        create_directory_path(top_of_atmosphere_directory)
+        output = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[0]) + '.toa.tif')
+        LOGGER.info('Top of atmosphere file will be written in: %s', output)
+        projection = self.get_raster().get_attribute(raster.PROJECTION) 
+        LOGGER.debug('Projection: %s', projection)
+        geotransform_from_gcps = self.get_raster().get_geotransform()
+        data_file = self.get_raster().create_from_reference(output, top_of_atmosphere_data.shape[2], top_of_atmosphere_data.shape[1], top_of_atmosphere_data.shape[0], geotransform_from_gcps, projection)
+        self.get_raster().write_raster(top_of_atmosphere_data.shape[0], data_file, top_of_atmosphere_data) 
+        data_file = None
+    def preprocess(self):
+        self.calculate_top_of_atmosphere_rapideye()
+if __name__ == '__main__':    
+    print 'Rapideye test'
+    path =  '/Users/agutierrez/Documents/rapideye/acopilco/1448013/2011/2011-03-20/l3a'
+    #path =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/'
+    bundle = Bundle(path)
+    print bundle.get_files()
+    print bundle.can_identify()
+    bundle.preprocess()
+    print 'Done'

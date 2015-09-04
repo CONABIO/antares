@@ -122,8 +122,8 @@ class Bundle(BaseBundle):
         self.calculate_top_of_atmosphere_rapideye()
 if __name__ == '__main__':    
     print 'Rapideye test'
-    path =  '/Users/agutierrez/Documents/rapideye/acopilco/1448013/2011/2011-03-20/l3a'
-    #path =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/'
+    #path =  '/Users/agutierrez/Documents/rapideye/acopilco/1448013/2011/2011-03-20/l3a'
+    path =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/'
     bundle = Bundle(path)
     print bundle.get_files()
     print bundle.can_identify()

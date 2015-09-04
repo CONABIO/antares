@@ -70,5 +70,7 @@ class Command(BaseCommand):
             mad_image = harmonized_class.create_from_reference(output, width, height, bands, geotransform_harmonized, projection_harmonized)
             image_a_data_array, image_b_data_array = harmonized_class.harmonized_arrays(image_a_data_class, image_b_data_class)            
             imad_class = imad.Transformation(image_a_data_array, image_b_data_array)
+            imad_class.execute()
             harmonized_class.write_raster(bands, mad_image, imad_class.output)
             print 'Output written in: %s' % output
+            print 'Shape is ', imad_class.output.shape

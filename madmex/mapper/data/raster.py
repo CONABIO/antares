@@ -125,10 +125,18 @@ class Data(BaseData):
             gcps = self.data_file.GetGCPs()
             self.close()
             return gcps
+    def get_geotransform(self):
+        '''
+        Returns the geotransform data array from the current image.
+        '''
+        if self.data_file == None:
+            self.data_file = self._open_file()
+        return self.data_file.GetGeoTransform()
     def gcps_to_geotransform(self):
         '''
         Transforms ground control points into geotransform using gdal.
         '''
+        print self.gcps()
         return gdal.GCPsToGeoTransform(self.gcps())
     def close(self):
         '''

@@ -181,7 +181,15 @@ class BaseBundle(object):
         represents.
         '''
         return [file_path for file_path in self.file_dictionary.itervalues() if file_path]
-    
+
+    def get_metadata_file(self):
+        raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_metadata_file() method.')
+    def get_format_file(self):
+        raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_format_file() method.')
+    def get_sensor_module(self):
+        raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_sensor_module() method.')
+    def preprocess(self):
+        raise NotImplementedError('Subclasses of SpotBaseBundle must provide a preprocess() method.')
 class BaseData(object):
     '''
     Implementers of this class will represent a Data object from the outside
@@ -241,6 +249,7 @@ class BaseData(object):
         '''
         for band in range(bands):
             data_file.GetRasterBand(band + 1).WriteArray(data_to_write[band, :, :])    
+
 
 class BaseSensor(object):
     '''

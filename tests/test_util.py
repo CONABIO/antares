@@ -12,7 +12,8 @@ import unittest
 from madmex.configuration import SETTINGS
 from madmex.core import controller
 from madmex.mapper.base import _get_attribute
-from madmex.util import get_last_package_from_name, create_directory_path
+from madmex.util import get_last_package_from_name, create_directory_path,\
+    get_parent
 
 class Test(unittest.TestCase):
 
@@ -146,6 +147,29 @@ class Test(unittest.TestCase):
         folder=''
         image = raster.Data(folder, '')
         image.create_raster_in_memory()
+    def test_maf_image(self):
+        '''
+        Perform a maf transformation with the result of imad transformation
+        '''
+        from madmex.mapper.data import raster
+        from madmex.transformation import maf
+        gdal_format = "GTiff"
+        image_imad = '/Users/erickpalacios/test_imad_pair_images/result_change_detection_2.tif'
+        #image_imad = '/Users/erickpalacios/Documents/CONABIO/Tareas/1_DeteccionCambiosSpot/2_AdapterParaDeteccionDeCambios/Tarea2/res12CambiosMadTransfJulian/593_318_031210_SP5_593_318_021114_SP5_mad.tif'
+        image_imad_class = raster.Data(image_imad, gdal_format)
+        width, height , bands = image_imad_class.get_attribute(raster.DATA_SHAPE)
+        print 'bands:'
+        print bands
+        geotransform = image_imad_class.get_attribute(raster.GEOTRANSFORM) 
+        projection = image_imad_class.get_attribute(raster.PROJECTION)
+        maf_class = maf.Transformation(image_imad_class.read_data_file_as_array())
+        maf_class.execute()
+        output = get_parent(image_imad) 
+        output+= '/result_maf.tif' 
+        print output
+        maf_image = image_imad_class.create_from_reference(output, width, height, bands-1, geotransform, projection)
+        print 'write'
+        image_imad_class.write_raster(maf_image, maf_class.output)
     def test_imad_pair_images(self):
         '''
         Perform an imad transformation with two images
@@ -171,8 +195,8 @@ class Test(unittest.TestCase):
             output = os.path.join(os.path.expanduser('~'),'test_imad_pair_images')
             create_directory_path(output)
             output+= '/result_change_detection.tif' 
-            mad_image = harmonized_class.create_from_reference(output, width, height, bands, geotransform_harmonized, projection_harmonized)
-            harmonized_class.write_raster(bands, mad_image, imad_class.output)
+            mad_image = harmonized_class.create_from_reference(output, width, height, (bands+1), geotransform_harmonized, projection_harmonized)
+            harmonized_class.write_raster(mad_image, imad_class.output)
             print 'corrlist'
             print imad_class.outcorrlist
     def test_harmonize_pair_images(self):

@@ -46,7 +46,7 @@ class Transformation(BaseTransformation):
         for k in xrange(self.bands):
             image_bands_flattened[k, :] = numpy.ravel(self.image1_array[k, :, :])
             image_bands_flattened[self.bands + k, :] = numpy.ravel(self.image2_array[k, :, :])
-        no_data_value = 0 # TODO: every image needs to have nodata value set to 0
+        no_data_value = 0 # TODO: every image needs to have nodata "NA" value set to 0 <-----Discuss if 0 is an appropiate value for NA values
         index1_no_data = image_bands_flattened[0, :] == no_data_value
         index2_no_data = image_bands_flattened[self.bands, :] == no_data_value
         index_no_data = index1_no_data | index2_no_data
@@ -112,7 +112,7 @@ class Transformation(BaseTransformation):
                     #canonical and MAD variates
                     U = numpy.dot(a.T, (self.image_bands_flattened[0:self.bands, :] - means[0:self.bands, numpy.newaxis]))    
                     V = numpy.dot(b.T, (self.image_bands_flattened[self.bands:, :] - means[self.bands:, numpy.newaxis]))          
-                    self.MAD = U - V  
+                    self.MAD = U - V  # TODO: is this operation stable?
                     #new weights        
                     var_mad = numpy.tile(numpy.mat(2 * (1 - rho)).T, (1, self.index_sum))    
                     self.chi_squared = numpy.sum(numpy.multiply(self.MAD, self.MAD) / var_mad, 0)
@@ -131,7 +131,7 @@ class Transformation(BaseTransformation):
         '''
         Reshape to original image size, by including nodata pixels.   
         '''
-        print 'The number of bands is: %s' % self.bands
+        LOGGER.info('The number of bands is: %s' % self.bands)
         mad_output = numpy.zeros((int(self.bands + 1), self.columns * self.rows))
         mad_output[0:self.bands, self.index] = self.MAD
         mad_output[self.bands:(self.bands + 1), self.index] = self.chi_squared

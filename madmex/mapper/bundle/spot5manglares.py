@@ -100,10 +100,10 @@ class Bundle(SpotBaseBundle):
         self.toa = calculate_rad_toa_spot5(data_array, gain, offset, imaging_date, sun_elevation, hrg, self.number_of_bands)   
         LOGGER.info('finished TOA')
         LOGGER.info('exporting to tif')       
-        outname = re.sub(r'.TIF', '', self.file_dictionary[self.get_image_file()]) + '_TOA.tif'    
+        outname = re.sub(r'.TIF', '', self.file_dictionary[self.get_image_file()]) + '_TOA_prueba_consistencia.tif'    
         LOGGER.info('Result of folder %s is %s' % (self.path, outname))
         data_file = self.get_raster().create_from_reference(outname, self.toa.shape[2], self.toa.shape[1], self.toa.shape[0], self.geotransform_from_gcps, self.projection.ExportToWkt())
-        self.get_raster().write_raster(self.number_of_bands, data_file, self.toa) 
+        self.get_raster().write_raster(data_file, self.toa) 
         data_file = None
         LOGGER.info('finished export')
         LOGGER.info('finished DN to TOA')

@@ -20,6 +20,7 @@ import osr
 from madmex.persistence.database.connection import RawProduct
 from madmex.util import get_files_from_folder, create_file_name
 import xml.dom.minidom as dom
+import gdal
 
 
 METADATA = "metadata"
@@ -220,17 +221,15 @@ class BaseData(object):
         footprint.Transform(coordinate_transformation)
         wkt = WKTElement(footprint.ExportToWkt(), srid=4326)
         return wkt
-    def create_from_reference(self, output, width, height, bands, geotransform, projection, options = []):
+    def create_from_reference(self, output, width, height, bands, geotransform, projection, data_type = gdal.GDT_Float32, options = []):
         '''
         This method creates a gdal data file using the width, height and bands
         specified. options could be:
         options = ['COMPRESS=LZW']
         '''
-        import gdal
-        gdal_format = gdal.GDT_Float32
         format_create = 'GTiff'
         driver = gdal.GetDriverByName(str(format_create))
-        data = driver.Create(output, width, height, bands, gdal_format, options)
+        data = driver.Create(output, width, height, bands, data_type, options)
         data.SetGeoTransform(geotransform)
         data.SetProjection(projection)
         return data
@@ -238,7 +237,6 @@ class BaseData(object):
         '''
         Creates a raster in memory
         '''
-        import gdal
         format_create = 'MEM'
         driver = gdal.GetDriverByName(str(format_create))
         print 'driver for raster memory'
@@ -250,7 +248,8 @@ class BaseData(object):
         bands, width, height = data_to_write.shape
         for band in range(bands):
             data_file.GetRasterBand(band + 1).WriteArray(data_to_write[band, :, :])    
-
+    def write_array(self, data_file, data_to_write):
+        data_file.GetRasterBand(1).WriteArray(data_to_write)
 
 class BaseSensor(object):
     '''

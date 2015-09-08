@@ -136,7 +136,6 @@ class Data(BaseData):
         '''
         Transforms ground control points into geotransform using gdal.
         '''
-        print self.gcps()
         return gdal.GCPsToGeoTransform(self.gcps())
     def close(self):
         '''

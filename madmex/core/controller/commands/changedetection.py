@@ -67,10 +67,10 @@ class Command(BaseCommand):
             geotransform_harmonized = harmonized_class.get_attribute(harmonized.GEOTRANSFORM)
             projection_harmonized = harmonized_class.get_attribute(harmonized.PROJECTION)    
             output = create_file_name(getattr(SETTINGS, 'TEST_FOLDER'), 'result_change_detection.tif') 
-            mad_image = harmonized_class.create_from_reference(output, width, height, bands, geotransform_harmonized, projection_harmonized)
+            mad_image = harmonized_class.create_from_reference(output, width, height, (bands+1), geotransform_harmonized, projection_harmonized)
             image_a_data_array, image_b_data_array = harmonized_class.harmonized_arrays(image_a_data_class, image_b_data_class)            
             imad_class = imad.Transformation(image_a_data_array, image_b_data_array)
             imad_class.execute()
-            harmonized_class.write_raster(bands, mad_image, imad_class.output)
+            harmonized_class.write_raster(mad_image, imad_class.output)
             print 'Output written in: %s' % output
             print 'Shape is ', imad_class.output.shape

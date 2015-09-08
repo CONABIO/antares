@@ -158,6 +158,8 @@ class Test(unittest.TestCase):
         from madmex.basefunctions.mafclassification import recode_classesGrid
         from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode
         gdal_format = "GTiff"
+        #image_imad = '/Users/erickpalacios/test_imad_pair_images/result_change_detection_2.tif'
+        #image_imad = '/Users/erickpalacios/Documents/CONABIO/Tareas/1_DeteccionCambiosSpot/2_AdapterParaDeteccionDeCambios/Tarea2/res12CambiosMadTransfJulian/593_318_031210_SP5_593_318_021114_SP5_mad.tif'
         image_imad = '/LUSTRE/MADMEX/staging/antares_test/test_imad_pair_images/result_change_detection.tif'
         image_imad_class = raster.Data(image_imad, gdal_format)
         width, height , bands = image_imad_class.get_attribute(raster.DATA_SHAPE)
@@ -266,7 +268,7 @@ class Test(unittest.TestCase):
         outname = image + 'result.TIF'
         data_array = data_class.read_data_file_as_array()
         data_file = data_class.create_from_reference(outname, width, height, number_of_bands, geotransform, projection)
-        data_class.write_raster(number_of_bands, data_file, data_array)
+        data_class.write_raster(data_file, data_array)
             
 class UtilTest(unittest.TestCase):
     def test_space_string(self):

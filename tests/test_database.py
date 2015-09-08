@@ -129,7 +129,7 @@ class DatabaseBundleInsertionTest(DatabaseTest):
         folder = '/LUSTRE/MADMEX/staging/madmex_antares/test_ingest/556_297_041114_dim_img_spot'
         from sqlalchemy import create_engine
         from sqlalchemy.orm.session import sessionmaker
-        from madmex.mapper.bundle.spot import Bundle
+        from madmex.mapper.bundle.spot5 import Bundle
         #from madmex.configuration import SETTINGS
 
         dummy = Bundle(folder)

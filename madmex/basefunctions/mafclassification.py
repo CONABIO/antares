@@ -134,20 +134,17 @@ def extract_min_max(contour):
             y_path = np.concatenate((y_path, v[:, 1]))
         limit[i] = (np.min(x_path), np.max(x_path), np.min(y_path), np.max(y_path))
     return limit
-
-
-def recode_classesGrid(data, thresholds, tiles=10, NODATA=-999, mode=GLOBAL_MODE):
+def recode_classes_grid(data, thresholds, tiles=10, NODATA=-999, mode=GLOBAL_MODE):
     """
     Recode data matrix to class thresholds
     """
-    
     bands, y_max, x_max = data.shape
     LOGGER.info("PDF classification mode: %s grid" % mode)
  
     result = np.zeros((y_max, x_max)).astype(np.int16) + NODATA
 
     if mode == GLOBAL_MODE:
-        class_list = classSplit(thresholds)
+        class_list = class_split(thresholds)
         print class_list
         for class_label in class_list.keys():
             mode, band_no, thres_value = class_list[class_label]
@@ -175,7 +172,7 @@ def recode_classesGrid(data, thresholds, tiles=10, NODATA=-999, mode=GLOBAL_MODE
                 else:
                     x_range = x + x_step_no
                     
-                class_list = classSplit(thresholds, counter)
+                class_list = class_split(thresholds, counter)
                 
     
                 for class_label in class_list.keys():
@@ -190,12 +187,10 @@ def recode_classesGrid(data, thresholds, tiles=10, NODATA=-999, mode=GLOBAL_MODE
                     
                 counter += 1
     return result
-
-def classSplit(thresholds, index=None):
+def class_split(thresholds, index=None):
     """
     Generate class list based on thresholds for further class recoding
     """
-    
     mode = (THRESHOLD_LE, THRESHOLD_GE)
     bands = tuple(sorted(USED_COMPONENTS * len(mode)))
 
@@ -223,15 +218,11 @@ def get_local_thres(thresholds, idx):
         t = thresholds[idx]
         for sigma in range(len(boundaries)):
             yield t[sigma]
-              
-
 
 def get_global_thres(thresholds):
     """
     Get global thresholds based on local PDF using 5/95 quantiles
     """
-
-    
     for sigma in range(len(boundaries)):
         glob = list()
 

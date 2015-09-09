@@ -147,6 +147,35 @@ class Test(unittest.TestCase):
         folder=''
         image = raster.Data(folder, '')
         image.create_raster_in_memory()
+    def test_maf_classification(self):
+        '''
+        Perform classification of maf result
+        '''
+        import numpy
+        from madmex.mapper.data import raster
+        from madmex.basefunctions.mafclassification import calc_threshold_grid
+        from madmex.basefunctions.mafclassification import recode_classes_grid
+        from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode
+        image_maf = '/Users/erickpalacios/test_imad_pair_images/result_maf_1.tif'
+        #image_maf = '/LUSTRE/MADMEX/staging/antares_test/test_imad_pair_images/result_maf.tif'
+        gdal_format = 'GTiff'
+        image_maf_class = raster.Data(image_maf, gdal_format)
+        
+        pdf_file = get_parent(image_maf) + '/result_maf_pdf.png'
+
+        thresholds, pdf_image = calc_threshold_grid(image_maf_class.read_data_file_as_array(), pdf_file)
+        
+        result = recode_classes_grid(image_maf_class.read_data_file_as_array(), thresholds)
+        
+        image_maf_class_output = get_parent(image_maf) + '/result_maf_class.tif'
+        
+        width, height, bands = image_maf_class.get_attribute(raster.DATA_SHAPE)
+        geotransform = image_maf_class.get_attribute(raster.GEOTRANSFORM)
+        projection = image_maf_class.get_attribute(raster.PROJECTION)
+        
+        image_maf_class_result = image_maf_class.create_from_reference(image_maf_class_output, width , height , 1, geotransform, projection, data_type = NumericTypeCodeToGDALTypeCode(numpy.int16))
+        
+        image_maf_class.write_array(image_maf_class_result, result)    
     def test_maf_image(self):
         '''
         Perform a maf transformation with the result of imad transformation
@@ -155,7 +184,7 @@ class Test(unittest.TestCase):
         from madmex.transformation import maf
         import numpy
         from madmex.basefunctions.mafclassification import calc_threshold_grid
-        from madmex.basefunctions.mafclassification import recode_classesGrid
+        from madmex.basefunctions.mafclassification import recode_classes_grid
         from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode
         gdal_format = "GTiff"
         #image_imad = '/Users/erickpalacios/test_imad_pair_images/result_change_detection_2.tif'
@@ -177,24 +206,6 @@ class Test(unittest.TestCase):
         image_imad_class.write_raster(image_maf, maf_class.output)
         
         image_maf = output
-        
-        image_maf_class = raster.Data(image_maf, gdal_format)
-        
-        pdf_file = get_parent(image_maf) + '/result_pdf.png'
-
-        thresholds, pdf_image = calc_threshold_grid(image_maf_class.read_data_file_as_array(), pdf_file)
-        
-        result = recode_classesGrid(image_maf_class.read_data_file_as_array(), thresholds)
-        
-        image_maf_class_output = get_parent(image_maf) + '/result_maf_class.tif'
-        
-        width, height, bands = image_maf_class.get_attribute(raster.DATA_SHAPE)
-        geotransform = image_maf_class.get_attribute(raster.GEOTRANSFORM)
-        projection = image_maf_class.get_attribute(raster.PROJECTION)
-        
-        image_maf_class_result = image_maf_class.create_from_reference(image_maf_class_output, width , height , 1, geotransform, projection, data_type = NumericTypeCodeToGDALTypeCode(numpy.int16))
-        
-        image_maf_class.write_array(image_maf_class_result, result)
     def test_imad_pair_images(self):
         '''
         Perform an imad transformation with two images

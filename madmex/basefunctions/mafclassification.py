@@ -68,7 +68,7 @@ def calc_threshold_grid(image_array, pdf_image, tiles = 10, bins = 55):
         if pdf_image != None:
             plt.savefig(pdf_image, dpi = DPI, transparent=True, bbox_inches='tight')
             
-    return res, pdf_image
+    return res
 def density_contour(xdata, ydata, nbins_x, nbins_y, labeltext=None, ax=None, pdf_image=None, **contour_kwargs):
     """ Create a density contour plot.
  

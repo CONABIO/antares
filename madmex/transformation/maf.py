@@ -46,10 +46,13 @@ class Transformation(BaseTransformation):
         # band_data = None
         # label data considered as NA
         nodataidx = variates_stack[:, :] == self.no_data_value
-        #variates_stack = numpy.ma.array(variates_stack, mask=self.no_data_value) #TODO: is this correct?
-        #variates_stack = numpy.ma.masked_values(variates_stack, self.no_data_value)
+        print nodataidx.shape
+        print variates_stack.shape
         self.gooddataidx = nodataidx[:, 0] == False
-        self.variates_stack = numpy.array(variates_stack.data[self.gooddataidx, :]) 
+        self.variates_stack = numpy.array(variates_stack[self.gooddataidx, :])
+        #variates_stack = numpy.ma.array(variates_stack, mask=self.no_data_value) #TODO: is this correct?
+        #variates_stack = numpy.ma.masked_values(variates_stack, self.no_data_value) #If this line is executed, the next line (variates_stack.data) erases this execution
+        #self.variates_stack = numpy.array(variates_stack.data[self.gooddataidx, :]) 
     def processing(self):
         '''
         Perform the maf transformation

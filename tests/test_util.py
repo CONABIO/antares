@@ -153,8 +153,8 @@ class Test(unittest.TestCase):
         '''
         import numpy
         from madmex.mapper.data import raster
-        from madmex.basefunctions.mafclassification import calc_threshold_grid
-        from madmex.basefunctions.mafclassification import recode_classes_grid
+        from madmex.transformation.mafclassification import calc_threshold_grid
+        from madmex.transformation.mafclassification import recode_classes_grid
         from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode
         #image_maf = '/Users/erickpalacios/test_imad_pair_images/result_maf.tif'
         image_maf = '/LUSTRE/MADMEX/staging/antares_test/test_imad_pair_images/result_maf_prueba.tif'

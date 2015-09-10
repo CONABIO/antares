@@ -46,8 +46,6 @@ class Transformation(BaseTransformation):
         # band_data = None
         # label data considered as NA
         nodataidx = variates_stack[:, :] == self.no_data_value
-        print nodataidx.shape
-        print variates_stack.shape
         self.gooddataidx = nodataidx[:, 0] == False
         self.variates_stack = numpy.array(variates_stack[self.gooddataidx, :])
         #variates_stack = numpy.ma.array(variates_stack, mask=self.no_data_value) #TODO: is this correct?
@@ -63,15 +61,17 @@ class Transformation(BaseTransformation):
         sigmadh = numpy.ma.cov(self.H.T, allow_masked=True)
         sigmadv = numpy.ma.cov(self.V.T, allow_masked=True)
         
-        sigma = numpy.ma.cov(self.variates_stack.T)
+        sigma = numpy.cov(self.variates_stack.T)
         # covariance for horizontal and vertical shifts
-        sigmadh = numpy.ma.cov(self.H.T)
-        sigmadv = numpy.ma.cov(self.V.T)      
+        sigmadh = numpy.cov(self.H.T)
+        sigmadv = numpy.cov(self.V.T)      
         
         # simple pooling of shifts
         sigmad = 0.5 * (numpy.array(sigmadh) + numpy.array(sigmadv))
         #evalues, vec1 = scipy.linalg.eig(sigmad, sigma)
+        print 'no'
         evalues, vec1 = linalg.eig(sigmad, sigma)
+        print 'si'
 
         # Sort eigen values from smallest to largest and apply this order to
         # eigen vector matrix

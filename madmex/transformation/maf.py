@@ -58,10 +58,16 @@ class Transformation(BaseTransformation):
         Perform the maf transformation
         '''
         # covariance of original bands
-        sigma = numpy.ma.cov(self.variates_stack.T, allow_masked=False)
+        sigma = numpy.ma.cov(self.variates_stack.T, allow_masked=True)
         # covariance for horizontal and vertical shifts
-        sigmadh = numpy.ma.cov(self.H.T, allow_masked=False)
-        sigmadv = numpy.ma.cov(self.V.T, allow_masked=False)
+        sigmadh = numpy.ma.cov(self.H.T, allow_masked=True)
+        sigmadv = numpy.ma.cov(self.V.T, allow_masked=True)
+        
+        sigma = numpy.ma.cov(self.variates_stack.T)
+        # covariance for horizontal and vertical shifts
+        sigmadh = numpy.ma.cov(self.H.T)
+        sigmadv = numpy.ma.cov(self.V.T)      
+        
         # simple pooling of shifts
         sigmad = 0.5 * (numpy.array(sigmadh) + numpy.array(sigmadv))
         #evalues, vec1 = scipy.linalg.eig(sigmad, sigma)

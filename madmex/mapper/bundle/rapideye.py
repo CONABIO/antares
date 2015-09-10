@@ -113,7 +113,7 @@ class Bundle(BaseBundle):
         LOGGER.info('Top of atmosphere file will be written in: %s', output)
         projection = self.get_raster().get_attribute(raster.PROJECTION) 
         LOGGER.debug('Projection: %s', projection)
-        geotransform_from_gcps = self.get_raster().get_geotransform()
+        geotransform_from_gcps = self.get_raster().get_attribute(raster.GEOTRANSFORM)
         data_file = self.get_raster().create_from_reference(output, top_of_atmosphere_data.shape[2], top_of_atmosphere_data.shape[1], top_of_atmosphere_data.shape[0], geotransform_from_gcps, projection)
         self.get_raster().write_raster(data_file, top_of_atmosphere_data) 
         data_file = None

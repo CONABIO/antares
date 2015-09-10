@@ -45,7 +45,7 @@ def calculate_toa_spot6(rad, sun_distance, sun_elevation, irradiance, number_of_
     for i in range(BANDS):
         toa[i,:,:] = (np.pi*rad[i,:,:])/(sun_distance*E[i]*np.cos(sun_elevation))
     return toa
-def calculate_distance_Sun_Earth_spot6(datestr):
+def calculate_distance_sun_earth(datestr):
     '''
     Calculates distance between sun and earth in astronomical unints for a given
     date. Date needs to be a string using format YYYY-MM-DD or datetime object

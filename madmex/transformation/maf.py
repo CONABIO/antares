@@ -56,7 +56,7 @@ class Transformation(BaseTransformation):
         Perform the maf transformation
         '''
         # covariance of original bands
-        sigma = numpy.ma.cov(self.variates_stack.T, allow_masked=True)
+        sigma = numpy.ma.cov(self.variates_stack.T, allow_masked=True) #TODO: Jenkins can't run this lines with allow_masked =True, whyyyy??
         # covariance for horizontal and vertical shifts
         sigmadh = numpy.ma.cov(self.H.T, allow_masked=True)
         sigmadv = numpy.ma.cov(self.V.T, allow_masked=True)

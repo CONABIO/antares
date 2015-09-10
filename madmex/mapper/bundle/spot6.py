@@ -59,7 +59,7 @@ class Bundle(SpotBaseBundle):
         return 'Spot6'
     def get_sensor_module(self):
         return spot6
-    def preprocessing(self):
+    def calculate_top_of_atmosphere_spot6(self):
         '''
         Calculates the top of atmosphere for the image that is object represents.
         '''
@@ -98,6 +98,8 @@ class Bundle(SpotBaseBundle):
         data_file = None
         LOGGER.info('finished export')
         LOGGER.info('finished DN to TOA') 
+    def preprocess(self):
+        self.calculate_top_of_atmosphere_spot6()
         
 
 if __name__ == '__main__':

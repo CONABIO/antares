@@ -156,14 +156,14 @@ class Test(unittest.TestCase):
         from madmex.basefunctions.mafclassification import calc_threshold_grid
         from madmex.basefunctions.mafclassification import recode_classes_grid
         from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode
-        #image_maf = '/Users/erickpalacios/test_imad_pair_images/result_maf_1.tif'
-        image_maf = '/LUSTRE/MADMEX/staging/antares_test/test_imad_pair_images/result_maf.tif'
+        #image_maf = '/Users/erickpalacios/test_imad_pair_images/result_maf.tif'
+        image_maf = '/LUSTRE/MADMEX/staging/antares_test/test_imad_pair_images/result_maf_prueba.tif'
         gdal_format = 'GTiff'
         image_maf_class = raster.Data(image_maf, gdal_format)
         
         pdf_file = get_parent(image_maf) + '/result_maf_pdf.png'
 
-        thresholds, pdf_image = calc_threshold_grid(image_maf_class.read_data_file_as_array(), pdf_file)
+        thresholds = calc_threshold_grid(image_maf_class.read_data_file_as_array(), pdf_file)
         
         result = recode_classes_grid(image_maf_class.read_data_file_as_array(), thresholds)
         
@@ -182,14 +182,10 @@ class Test(unittest.TestCase):
         '''
         from madmex.mapper.data import raster
         from madmex.transformation import maf
-        import numpy
-        from madmex.basefunctions.mafclassification import calc_threshold_grid
-        from madmex.basefunctions.mafclassification import recode_classes_grid
-        from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode
         gdal_format = "GTiff"
-        #image_imad = '/Users/erickpalacios/test_imad_pair_images/result_change_detection_2.tif'
+        #image_imad = '/Users/erickpalacios/test_imad_pair_images/result_change_detection.tif'
         #image_imad = '/Users/erickpalacios/Documents/CONABIO/Tareas/1_DeteccionCambiosSpot/2_AdapterParaDeteccionDeCambios/Tarea2/res12CambiosMadTransfJulian/593_318_031210_SP5_593_318_021114_SP5_mad.tif'
-        image_imad = '/LUSTRE/MADMEX/staging/antares_test/test_imad_pair_images/result_change_detection.tif'
+        image_imad = '/LUSTRE/MADMEX/staging/antares_test/test_imad_pair_images/result_change_detection_prueba.tif'
         image_imad_class = raster.Data(image_imad, gdal_format)
         width, height , bands = image_imad_class.get_attribute(raster.DATA_SHAPE)
         print 'bands:'
@@ -204,8 +200,6 @@ class Test(unittest.TestCase):
         image_maf = image_imad_class.create_from_reference(output, width, height, bands-1, geotransform, projection)
         print 'write'
         image_imad_class.write_raster(image_maf, maf_class.output)
-        
-        image_maf = output
     def test_imad_pair_images(self):
         '''
         Perform an imad transformation with two images

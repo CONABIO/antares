@@ -51,7 +51,7 @@ class Command(BaseCommand):
                 bundle = _get_bundle_from_path(path)
                 if bundle:
                     LOGGER.info('Directory %s is a %s bundle.', path, bundle.get_name())
-                    bundle.preprocessing()
+                    bundle.preprocess()
                 else:
                     LOGGER.info('No bundle was able to identify the directory: %s.', path)
 

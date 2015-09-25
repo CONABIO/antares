@@ -190,9 +190,10 @@ class BaseCommand(object):
         '''
         try:
             self.handle(**options)
+            LOGGER.info('Command execution is done.')
         except Exception:
             traceback.print_exc()
-            LOGGER.error("Error in command execution.")
+            LOGGER.error('Error in command execution.')
         finally:
             pass
     def handle(self, **options):

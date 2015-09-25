@@ -242,6 +242,29 @@ class ProcessedProduct(Product):
         'polymorphic_identity':'processed'
     }
     processing_date = Column(DateTime())
+class Host(BASE):
+    '''
+    This table has information about the different host in which jobs can be
+    remotely executed.
+    '''
+    __tablename__ = 'host'
+    pk_id = Column(Integer, primary_key=True)
+    hostname = Column(String, unique=True)
+    alias = Column(String)
+    user = Column(String)
+    password = Column(String)
+    port = Column(Integer)
+    configuration = Column(String)
+class Command(BASE):
+    '''
+    This table holds information on which command can be executed by each host.
+    '''
+    __tablename__ = 'command'
+    pk_id = Column(Integer, primary_key=True)
+    host_id = Column(Integer, ForeignKey('host.pk_id'))
+    command = Column(String, unique=True)
+    queue = Column(String)
+    host = relationship('Host')
 def create_database():
     '''
     This method creates the database model in the database engine.
@@ -1487,6 +1510,36 @@ def populate_database():
             'maximum_wavelength':0.9
         },
     ]
+    hosts_array = [
+        {
+            'hostname':'172.17.0.2',
+            'alias':'MADMEX_CONTAINER',
+            'user':'root',
+            'password':'madmex',
+            'port':'22',
+            'configuration':'CONABIO'
+        },
+        {
+            'hostname':'96.126.98.33',
+            'alias':'LINODE_CONTAINER',
+            'user':'root',
+            'password':'J*1n!d_$W0',
+            'port':'22',
+            'configuration':'LINODE'         
+        },
+    ]
+    commands_array = [
+         {
+            'hostname':'172.17.0.2',
+            'command':'ingest',
+            'queue':'workers.q'
+        },
+        {
+            'hostname':'96.126.98.33',
+            'command':'greet',
+            'queue':'workers.q'        
+        },             
+    ]
     units = [Unit(
         name=x['name'],
         unit=x['unit']) for x in units_array]
@@ -1526,12 +1579,29 @@ def populate_database():
         sensor=session.query(Sensor).filter(Sensor.name == x['sensor']).first(),
         unit=session.query(Unit).filter(Unit.name == x['unit']).first()) for x in bands_array]
     session.add_all(bands)
+    hosts = [Host(
+        hostname=x['hostname'],
+        alias=x['alias'],
+        user=x['user'],
+        password=x['password'],
+        port=x['port'],
+        configuration=x['configuration']) for x in hosts_array]
+    session.add_all(hosts)
+    commands = [Command(
+        host=session.query(Host).filter(Host.hostname == x['hostname']).first(),
+        command=x['command'],
+        queue=x['queue']) for x in commands_array]
+    session.add_all(commands)
     session.commit()
     session.close_all()
 
 if __name__ == '__main__':
-    create_database()
-    print 'database created'
-    populate_database()
-    print 'database populated'
-    
+    CREATE = 1
+    if CREATE:
+        create_database()
+        print 'database created'
+        populate_database()
+        print 'database populated'
+    else:
+        delete_database()
+        print 'database deleted'

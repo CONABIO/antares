@@ -18,7 +18,7 @@ from madmex.configuration import SETTINGS
 
 
 BASE = declarative_base()
-
+print getattr(SETTINGS, 'ANTARES_DATABASE')
 ENGINE = create_engine(getattr(SETTINGS, 'ANTARES_DATABASE'))
 
 SESSION_MAKER = sessionmaker(ENGINE)
@@ -1531,5 +1531,7 @@ def populate_database():
 
 if __name__ == '__main__':
     create_database()
-    #delete_database()
+    print 'database created'
     populate_database()
+    print 'database populated'
+    

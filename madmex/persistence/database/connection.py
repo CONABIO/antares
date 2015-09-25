@@ -18,7 +18,7 @@ from madmex.configuration import SETTINGS
 
 
 BASE = declarative_base()
-print getattr(SETTINGS, 'ANTARES_DATABASE')
+
 ENGINE = create_engine(getattr(SETTINGS, 'ANTARES_DATABASE'))
 
 SESSION_MAKER = sessionmaker(ENGINE)

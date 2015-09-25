@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 import logging
 import os
 import shutil
+import traceback
 
 from madmex.persistence.base import BaseAction
 
@@ -38,6 +39,7 @@ class InsertAction(BaseAction):
             shutil.copy(self.file_to_copy, self.destination)
             self.success = True
         except IOError:
+            traceback.print_exc()
             LOGGER.debug('Something went wrong during act action, probably the'
                 'file %s does not exists.' % self.file_to_copy)
             self.success = False
@@ -51,5 +53,6 @@ class InsertAction(BaseAction):
                 os.remove(self.new_file)
                 self.success = False
         except IOError:
+            traceback.print_exc()
             LOGGER.debug('Something went wrong during undo action.')
             self.success = True

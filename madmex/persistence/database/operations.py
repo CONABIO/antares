@@ -6,6 +6,7 @@ Created on Jul 7, 2015
 from __future__ import unicode_literals
 
 import logging
+import traceback
 
 from sqlalchemy.exc import IntegrityError
 
@@ -38,9 +39,11 @@ class InsertAction(BaseAction):
             self.session.commit()
             self.success = True
         except IntegrityError:
+            traceback.print_exc()
             LOGGER.debug('Duplicate key value violates unique constraint.')
             self.success = False
         except Exception:
+            traceback.print_exc()
             LOGGER.debug('Error during database insertion.')
             self.success = False
     def undo(self):

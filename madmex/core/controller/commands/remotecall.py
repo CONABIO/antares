@@ -33,8 +33,8 @@ class Command(BaseCommand):
         In this example command, the values that come from the user input are
         added up and the result is printed in the screen.
         '''
-        
-        command = options['commandpath'][0]
+              
+        command = ' '.join(options['commandpath'])
         host = options['host'][0]
         
         session = SESSION_MAKER()

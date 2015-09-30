@@ -6,7 +6,6 @@ Created on Jun 10, 2015
 from __future__ import unicode_literals
 
 import logging
-
 from madmex.configuration import SETTINGS
 from madmex.mapper.base import BaseBundle
 import madmex.mapper.data.raster as raster
@@ -33,6 +32,7 @@ class Bundle(BaseBundle):
         '''
         Constructor
         '''
+        super(Bundle, self).__init__(path)
         self.path = path
         self.FORMAT = 'GTiff'
         self.file_dictionary = {
@@ -125,6 +125,7 @@ if __name__ == '__main__':
     #path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
     path =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/'
     bundle = Bundle(path)
+    print bundle.get_raster().get_attribute(raster.FOOTPRINT)
     print bundle.get_files()
     print bundle.can_identify()
     bundle.preprocess()

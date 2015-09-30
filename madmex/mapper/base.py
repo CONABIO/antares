@@ -16,7 +16,6 @@ import uuid
 from geoalchemy2.elements import WKTElement
 import ogr
 import osr
-
 from madmex.persistence.database.connection import RawProduct
 from madmex.util import get_files_from_folder, create_file_name
 import xml.dom.minidom as dom
@@ -151,13 +150,14 @@ class BaseBundle(object):
         '''
         Creates the database object that will be ingested for this bundle.
         '''
+        from madmex.mapper.data.raster import FOOTPRINT
         return RawProduct(
                 uuid=str(uuid.uuid4()),
                 acquisition_date=self.get_aquisition_date(),
                 ingest_date=datetime.now(),
                 path=self.get_output_directory(),
                 legend=None,
-                geometry=self.get_raster().get_attribute('footprint'),
+                geometry=self.get_raster().get_attribute(FOOTPRINT),
                 information=None,
                 product_type=None,
                 type='raw'

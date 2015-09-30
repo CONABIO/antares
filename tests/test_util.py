@@ -185,7 +185,7 @@ class Test(unittest.TestCase):
         gdal_format = "GTiff"
         #image_imad = '/Users/erickpalacios/test_imad_pair_images/result_change_detection.tif'
         #image_imad = '/Users/erickpalacios/Documents/CONABIO/Tareas/1_DeteccionCambiosSpot/2_AdapterParaDeteccionDeCambios/Tarea2/res12CambiosMadTransfJulian/593_318_031210_SP5_593_318_021114_SP5_mad.tif'
-        image_imad = '/LUSTRE/MADMEX/staging/antares_test/test_imad_pair_images/result_change_detection_prueba.tif'
+        image_imad = '/LUSTRE/MADMEX/staging/antares_test/test_imad_pair_images/result_mad_prueba.tif'
         image_imad_class = raster.Data(image_imad, gdal_format)
         width, height , bands = image_imad_class.get_attribute(raster.DATA_SHAPE)
         print 'bands:'
@@ -224,7 +224,7 @@ class Test(unittest.TestCase):
             imad_class.execute()
             output = os.path.join(os.path.expanduser('~'),'test_imad_pair_images')
             create_directory_path(output)
-            output+= '/result_change_detection.tif' 
+            output+= '/result_mad.tif' 
             mad_image = harmonized_class.create_from_reference(output, width, height, (bands+1), geotransform_harmonized, projection_harmonized)
             harmonized_class.write_raster(mad_image, imad_class.output)
             print 'corrlist'

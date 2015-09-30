@@ -9,6 +9,7 @@ from __future__ import  unicode_literals
 import logging
 
 from paramiko import SSHClient
+from paramiko.client import AutoAddPolicy
 
 from madmex.util.colors import Colors
 
@@ -36,8 +37,12 @@ class RemoteProcessLauncher():
         This method calls the given shell command in the remote host and prints
         out the response from the host.
         '''
+        self._get_ssh_client().set_missing_host_key_policy(AutoAddPolicy())
         self._get_ssh_client().load_system_host_keys()
-        self._get_ssh_client().connect(self.host.hostname, username=self.host.user, password=self.host.password)
+        self._get_ssh_client().connect(
+            self.host.hostname,
+            username=self.host.user,password=self.host.password
+            )
         
         
         LOGGER.info('Command to be executed: %s', shell_string)
@@ -46,6 +51,7 @@ class RemoteProcessLauncher():
         stdin.close()
         LOGGER.info('stdout:')
         print Colors.OKGREEN + stdout.read() + Colors.ENDC
+        self._get_ssh_client().close()
         
     def _get_ssh_client(self):
         '''

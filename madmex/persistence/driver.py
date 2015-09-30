@@ -8,10 +8,11 @@ from __future__ import unicode_literals
 import logging
 import sys
 import traceback
+from unittest import result
 
 from madmex import _
-from madmex.persistence.database.connection import SESSION_MAKER, Bundle,\
-    Product
+from madmex.persistence.database.connection import SESSION_MAKER, Bundle, \
+    Product, Host, Command
 import madmex.persistence.database.operations as database
 import madmex.persistence.filesystem.operations as filesystem
 from madmex.util import create_directory_path
@@ -65,3 +66,44 @@ def persist_bundle(bundle):
         raise
     finally:
         session.close()
+def persist_host(host):
+    session = SESSION_MAKER()
+    try:
+        session.add(host)
+        session.commit()
+    except Exception:
+        LOGGER.error('Not expected error in host insertion.')
+        raise
+    finally:
+        session.close()
+def persist_command(command):
+    session = SESSION_MAKER()
+    try:
+        session.add(command)
+        session.commit()
+    except Exception:
+        LOGGER.error('Not expected error in host insertion.')
+        raise
+    finally:
+        session.close()
+def query_host_configurations():
+    session = SESSION_MAKER()
+    try:
+        result_set = session.query(Host.pk_id, Host.hostname, Host.configuration).distinct(Host.configuration).all()
+    except Exception:
+        LOGGER.error('Not expected error in host insertion.')
+        raise
+    finally:
+        session.close()
+    return [{'pk_id':result.pk_id, 'hostname':result.hostname, 'configuration':result.configuration} for result in result_set]
+def get_host_from_command(command):
+    session = SESSION_MAKER()
+    try:
+        result_set = session.query(Command).join(Host).filter(Command.command == command).all()
+        hosts = [result.host for result in result_set]
+    except Exception:
+        LOGGER.error('Not expected error in host insertion.')
+        raise
+    finally:
+        session.close()
+    return hosts 

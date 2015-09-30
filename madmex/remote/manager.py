@@ -12,15 +12,17 @@ from madmex.persistence.driver import persist_host, persist_command
 
 class CommandManager(object):
     '''
-    classdocs
+    This class is a controller for the commands, it works calls the database to
+    query, insert and delete command related objects from it.
     '''
-
-
     def __init__(self):
         '''
         Constructor
         '''
     def register_hostname(self, hostname, alias, user, password, port, configuration):
+        '''
+        This method adds an entry to the database in the host table.
+        '''
         host = Host(
             hostname=hostname,
             alias=alias,
@@ -31,6 +33,9 @@ class CommandManager(object):
         persist_host(host)
         
     def register_command(self, host_id, command, queue):
+        '''
+        This method adds an entry to the database in the command table.
+        '''
         command = Command(
             host_id=host_id,
             command=command,

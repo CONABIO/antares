@@ -16,7 +16,7 @@ import uuid
 from geoalchemy2.elements import WKTElement
 import ogr
 import osr
-from madmex.persistence.database.connection import RawProduct
+from madmex.persistence.database.connection import RawProduct, Information
 from madmex.util import get_files_from_folder, create_file_name
 import xml.dom.minidom as dom
 import gdal
@@ -151,6 +151,7 @@ class BaseBundle(object):
         Creates the database object that will be ingested for this bundle.
         '''
         from madmex.mapper.data.raster import FOOTPRINT
+        information_object = self.get_information_object()
         return RawProduct(
                 uuid=str(uuid.uuid4()),
                 acquisition_date=self.get_aquisition_date(),
@@ -158,10 +159,18 @@ class BaseBundle(object):
                 path=self.get_output_directory(),
                 legend=None,
                 geometry=self.get_raster().get_attribute(FOOTPRINT),
-                information=None,
+                information=information_object,
                 product_type=None,
                 type='raw'
                 )
+    def get_information_object(self):
+        '''
+        Subclasses must implement a method to create the information object
+        that will be persisted in the database.
+        '''
+        raise NotImplementedError(
+            'Subclasses must implement a method to create the information object'
+            'that will be persisted in the database.')
     def get_aquisition_date(self):
         '''
         Subclasses must implement this method.

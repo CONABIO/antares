@@ -6,10 +6,12 @@ Created on Jun 10, 2015
 from __future__ import unicode_literals
 
 import logging
+
 from madmex.configuration import SETTINGS
 from madmex.mapper.base import BaseBundle
 import madmex.mapper.data.raster as raster
 import madmex.mapper.sensor.rapideye as rapideye
+from madmex.persistence.database.connection import Information
 from madmex.preprocessing.base import calculate_rad_rapideye, calculate_toa_rapideye, calculate_distance_sun_earth
 from madmex.util import get_path_from_list, create_file_name, \
     create_directory_path, get_base_name, get_parent
@@ -47,6 +49,15 @@ class Bundle(BaseBundle):
         self.sensor = None
         self.raster = None
         self.output_directory = None
+    def get_information_object(self):
+        information = Information(
+                    grid_id=self.get_sensor().get_attribute(rapideye.TILE_ID),
+                    projection='the projection',
+                    cloud_percentage=self.get_sensor().get_attribute(rapideye.CLOUDS),
+                    elevation_angle=self.get_sensor().get_attribute(rapideye.AZIMUTH_ANGLE),
+                    resolution=1.0
+                    )
+        return information
     def get_name(self):
         '''
         Returns the name of this bundle.

@@ -180,6 +180,7 @@ class Information(BASE):
     cloud_percentage = Column(Float)
     elevation_angle = Column(Float)
     resolution = Column(Float)
+    product = relationship('Product')
 class ProductType(BASE):
     '''
     This table has information about the different types of product that the
@@ -208,7 +209,8 @@ class Product(BASE):
     path = Column(String, unique=True)
     legend = Column(Integer, ForeignKey('legend.pk_id'))
     geometry = Column(Geometry('POLYGON'))
-    information = Column(Integer, ForeignKey('information.pk_id'))
+    information_id = Column(Integer, ForeignKey('information.pk_id'))
+    information = relationship('Information')
     product_type = Column(Integer, ForeignKey('product_type.pk_id'))
     can_train = relationship(
         'Algorithm',

@@ -15,6 +15,7 @@ from madmex.persistence.database.connection import Information
 from madmex.preprocessing.base import calculate_rad_rapideye, calculate_toa_rapideye, calculate_distance_sun_earth
 from madmex.util import get_path_from_list, create_file_name, \
     create_directory_path, get_base_name, get_parent
+from madmex.preprocessing import clouddetection
 
 
 FORMAT = 'GTiff'
@@ -128,16 +129,19 @@ class Bundle(BaseBundle):
         data_file = self.get_raster().create_from_reference(output, top_of_atmosphere_data.shape[2], top_of_atmosphere_data.shape[1], top_of_atmosphere_data.shape[0], geotransform_from_gcps, projection)
         self.get_raster().write_raster(data_file, top_of_atmosphere_data) 
         data_file = None
+    def masking_clouds(self):
+        clouddetection.masking(self)
     def preprocess(self):
         self.calculate_top_of_atmosphere_rapideye()
 if __name__ == '__main__':    
     print 'Rapideye test'
     #path =  '/Users/agutierrez/Documents/rapideye/acopilco/1448013/2011/2011-03-20/l3a'
-    #path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
-    path =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/'
+    path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
+    #path =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/'
     bundle = Bundle(path)
     print bundle.get_raster().get_attribute(raster.FOOTPRINT)
     print bundle.get_files()
     print bundle.can_identify()
+    print bundle.masking_clouds()
     bundle.preprocess()
     print 'Done'

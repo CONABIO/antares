@@ -7,6 +7,7 @@ Created on 16/07/2015
 from __future__ import unicode_literals
 import datetime
 import numpy as np
+from scipy import ndimage
 
 def calculate_rad_spot5(data,gain,offset):
     '''
@@ -93,3 +94,24 @@ def calculate_toa_rapideye(rad, sun_distance, sun_elevation):
     for i in range(BANDS):
         toa[i, :, :] = rad[i, :, :] * (np.pi * (sun_distance * sun_distance)) / (EAI[i] * np.cos(np.pi * solar_zenit / 180)) 
     return toa
+def filter_median(input_image_raster, filter_size):
+    '''
+    Median filtering of raster
+    '''    
+    return ndimage.median_filter(input_image_raster, filter_size)
+
+def morph_dilation(input_image_raster, filter_size):
+    '''
+    Morphological dilation of raster
+    '''
+    ndim = 3
+    if input_image_raster.ndim == 2:
+        input_image_raster = np.expand_dims(input_image_raster, axis=0)
+        ndim = 2
+    if input_image_raster.ndim != 3:
+        raise Exception("Input array has to be 3D")
+    if ndim == 3:
+        return ndimage.grey_dilation(input_image_raster, (1, filter_size, filter_size))
+    else:
+        return ndimage.grey_dilation(input_image_raster, (1, filter_size, filter_size))[0]
+

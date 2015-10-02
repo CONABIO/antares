@@ -139,6 +139,17 @@ class Test(unittest.TestCase):
         self.assertFalse(action.success)
         self.assertFalse(os.path.isfile(action.new_file))
         os.remove(name)
+    def test_some_sqlalchemy_functions(self):
+        from madmex.persistence.database.connection import SESSION_MAKER, RawProduct, Information
+        from sqlalchemy import tuple_
+        from datetime import datetime
+        session = SESSION_MAKER()
+        start_date = datetime.strptime('2000-01-01', '%Y-%m-%d')
+        end_date = datetime.strptime('2020-01-01', '%Y-%m-%d')
+        print session.query(RawProduct.path, Information.resolution).join(RawProduct.information).one()
+        print session.query(RawProduct.path, Information.resolution).join(RawProduct.information).all()
+        session.query(RawProduct.ingest_date, Information.resolution).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , RawProduct.pk_id == 1).all()
+        session.close()
     def test_create_raster_in_memory(self):
         '''
         Create a raster in memory

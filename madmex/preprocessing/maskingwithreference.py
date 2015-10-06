@@ -4,14 +4,12 @@ Created on 16/07/2015
 @author: erickpalacios
 '''
 from madmex.mapper.sensor import rapideye
-from madmex.persistence.database.connection import SESSION_MAKER, RawProduct,\
-    Information
-from sqlalchemy import tuple_
 from datetime import datetime
 from madmex import LOGGER
 import numpy
 from madmex.mapper.data import raster
 from madmex.preprocessing.base import filter_median, morph_dilation, calculate_cloud_shadow, morphing
+from madmex.persistence.driver import find_datasets
 
 GENERALIZE = False
 MORPHING_SIZE = 10
@@ -37,16 +35,6 @@ def reference_for_tile(folder, tile_id, image_array):
     LOGGER.info("Number of acquired images: %d" % len(images_references_paths))
     print("Number of acquired images: %d" % len(images_references_paths))
     return get_image_array_difference(folder, images_references_paths, image_array)
-def find_datasets(start_date, end_date, sensor_id, product_id, cloud_cover, tile_id):
-    '''
-    Given the parameters of the function find_datasets perform a sqlalchemy orm-query:
-    Get the rows in DB that fulfill the condition in the orm-query 
-    '''
-    session = SESSION_MAKER()
-    images_references_paths = session.query(RawProduct.path).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , Information.cloud_percentage <= cloud_cover).all()
-    #images_references_paths = session.query(RawProduct.path, Information.sensor).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , RawProduct.product_type == product_id, Information.sensor == sensor_id, Information.cloud_percentage <= cloud_cover).all()
-    session.close()
-    return [tuples[0] for tuples in images_references_paths]
 def get_image_array_difference(folder, images_references_paths, image_array):
     data_shape, geotransform, projection, band_1_list, band_2_list, band_3_list, band_4_list, band_5_list = get_arrays(images_references_paths)
     band_1_stack = stack_images_per_band(band_1_list, len(band_1_list), data_shape)

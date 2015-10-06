@@ -139,7 +139,7 @@ class Bundle(BaseBundle):
         top_of_atmosphere_directory = create_file_name(get_parent(self.path), 'toa')
         create_directory_path(top_of_atmosphere_directory)
         geotransform_from_gcps = self.get_raster().get_attribute(raster.GEOTRANSFORM)
-        output = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[2]) + '.toa_nueva_creacion.tif') 
+        output = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[2]) + '.toa.tif') 
         create_raster_tiff_from_reference(self, output, top_of_atmosphere_data, 'not one', data_type = NumericTypeCodeToGDALTypeCode(numpy.float32))
         solar_azimuth = self.get_sensor().get_attribute(rapideye.SOLAR_AZIMUTH)
         self.masking(top_of_atmosphere_data, top_of_atmosphere_directory, solar_zenith, solar_azimuth, geotransform_from_gcps)

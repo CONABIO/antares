@@ -25,7 +25,7 @@ def masking(re_object):
     data_shape_reference, geotransform_reference, projection_reference, image_array_difference = reference_for_tile(folder, tile_id, image_array)
     solar_zenith = re_object.get_sensor().get_attribute(rapideye.SOLAR_ZENITH)
     solar_azimuth = re_object.get_sensor().get_attribute(rapideye.SOLAR_AZIMUTH)
-    image_mask_path = mask_clouds(image_array, image_array_difference, data_shape_reference, solar_zenith, solar_azimuth, folder, geotransform_reference, projection_reference)
+    image_mask_path = mask_clouds_and_shadows(image_array, image_array_difference, data_shape_reference, solar_zenith, solar_azimuth, folder, geotransform_reference, projection_reference)
     return image_mask_path
 def reference_for_tile(folder, tile_id, image_array):
     cloud_cover = 100
@@ -111,7 +111,7 @@ def stack_images_per_band(band_list, length, data_shape):
     for b in range(0, length):
         band[b, :, :] = band_list[b]
     return band
-def mask_clouds(image_array, image_array_difference, data_shape_reference, solar_zenith, solar_azimuth, folder, geotransform, projection):
+def mask_clouds_and_shadows(image_array, image_array_difference, data_shape_reference, solar_zenith, solar_azimuth, folder, geotransform, projection):
     clouds =  filter_median((numpy.sum(image_array_difference, axis=0) > 30000).astype(numpy.int), 13)
     shadows = filter_median((numpy.sum(image_array_difference[3:, :, :], axis=0) < -5500).astype(numpy.int), 13)
     if GENERALIZE:

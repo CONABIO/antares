@@ -98,7 +98,6 @@ class Test(unittest.TestCase):
         self.assertEqual(sensor.get_attribute(spot.ANGLE), float('-8.792839'))
         self.assertEqual(sensor.get_attribute(spot.SENSOR), 'SPOT')
         self.assertEqual(sensor.get_attribute(spot.PLATFORM), '5')
-        
     def test_rapideye_sensor(self):
         '''
         Test an instance of the rapideye sensor class to check if it parses its
@@ -119,7 +118,6 @@ class Test(unittest.TestCase):
         self.assertEqual(sensor.get_attribute(rapideye.SOLAR_AZIMUTH), 162.0359)
         self.assertEqual(sensor.get_attribute(rapideye.SOLAR_ZENITH), 56.02738)
         self.assertEqual(sensor.get_attribute(rapideye.TILE_ID), 1447720)
-
     def test_filesystem_insert_action(self):
         '''
         Creates several dummy files and then persists them into the filesystem.
@@ -146,10 +144,22 @@ class Test(unittest.TestCase):
         session = SESSION_MAKER()
         start_date = datetime.strptime('2000-01-01', '%Y-%m-%d')
         end_date = datetime.strptime('2020-01-01', '%Y-%m-%d')
-        print session.query(RawProduct.path, Information.resolution).join(RawProduct.information).one()
         print session.query(RawProduct.path, Information.resolution).join(RawProduct.information).all()
-        session.query(RawProduct.ingest_date, Information.resolution).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , RawProduct.pk_id == 1).all()
+        print session.query(RawProduct.path, Information.resolution).join(RawProduct.information).all()
+        print session.query(RawProduct.ingest_date, Information.resolution).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , RawProduct.pk_id == 1).all()
         session.close()
+    def test_create_raster_offset(self):
+        from madmex.mapper.data  import raster
+        import gdal
+        print 'create_raster_offset'
+        image_folder = '/LUSTRE/MADMEX/eodata/rapideye/1147524/2012/2012-10-18/l3a/2012-10-18T191005_RE3_3A-NAC_11137283_149747.tif'
+        image_class = raster.Data(image_folder, 'GTiff')
+        width, height , bands = image_class.get_attribute(raster.DATA_SHAPE)
+        geotransform = image_class.get_attribute(raster.GEOTRANSFORM) 
+        projection = image_class.get_attribute(raster.PROJECTION)
+        output = '/LUSTRE/MADMEX/eodata/rapideye/1147524/2012/2012-10-18/l3a/create_raster_offset.tif'
+        options = ['xoff = 0', 'yoff = 0']
+        image_class.create_from_reference(output, width, height, bands, geotransform, projection, gdal.GDT_Float32, options)
     def test_create_raster_in_memory(self):
         '''
         Create a raster in memory

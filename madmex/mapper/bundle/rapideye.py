@@ -17,6 +17,7 @@ from madmex.preprocessing.base import calculate_rad_rapideye, calculate_toa_rapi
 from madmex.util import get_path_from_list, create_file_name, \
     create_directory_path, get_base_name, get_parent
 from madmex.preprocessing import maskingwithreference
+from madmex.mapper.data.raster import create_raster_tiff_from_reference
 
 
 FORMAT = 'GTiff'
@@ -124,25 +125,17 @@ class Bundle(BaseBundle):
         top_of_atmosphere_data = calculate_toa_rapideye(calculate_rad_rapideye(self.get_raster().read_data_file_as_array()), sun_earth_distance, solar_zenith)
         top_of_atmosphere_directory = create_file_name(get_parent(self.path), 'toa')
         create_directory_path(top_of_atmosphere_directory)
-        output = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[2]) + '.toa.tif') #TODO: remove the [2] in self.get_files()
-        LOGGER.info('Top of atmosphere file will be written in: %s', output)
-        projection = self.get_raster().get_attribute(raster.PROJECTION) 
-        LOGGER.debug('Projection: %s', projection)
         geotransform_from_gcps = self.get_raster().get_attribute(raster.GEOTRANSFORM)
-        data_file = self.get_raster().create_from_reference(output, top_of_atmosphere_data.shape[2], top_of_atmosphere_data.shape[1], top_of_atmosphere_data.shape[0], geotransform_from_gcps, projection, NumericTypeCodeToGDALTypeCode(numpy.float32))
-        self.get_raster().write_raster(data_file, top_of_atmosphere_data) 
+        output = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[2]) + '.toa_nueva_creacion.tif') 
+        create_raster_tiff_from_reference(self, output, top_of_atmosphere_data, 'not one', data_type = NumericTypeCodeToGDALTypeCode(numpy.float32))
         solar_azimuth = self.get_sensor().get_attribute(rapideye.SOLAR_AZIMUTH)
-        self.masking(top_of_atmosphere_data, top_of_atmosphere_directory, solar_zenith, solar_azimuth, geotransform_from_gcps, projection)
-        data_file = None
-    def masking(self, top_of_atmosphere_data, top_of_atmosphere_directory, solar_zenith, solar_azimuth, geotransform, projection):
+        self.masking(top_of_atmosphere_data, top_of_atmosphere_directory, solar_zenith, solar_azimuth, geotransform_from_gcps)
+    def masking(self, top_of_atmosphere_data, top_of_atmosphere_directory, solar_zenith, solar_azimuth, geotransform):
         import numpy
         from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode
-        output = top_of_atmosphere_directory + '/image_clouds_masked.tif'
+        output = top_of_atmosphere_directory + '/image_masked.tif'
         image_masked = base_masking(top_of_atmosphere_data, output, solar_zenith, solar_azimuth, geotransform)
-        image_raster_class = raster.Data('', '')
-        height, width = image_masked.shape
-        image_mask_result = image_raster_class.create_from_reference(output, width, height, 1, geotransform, projection, NumericTypeCodeToGDALTypeCode(numpy.uint8))
-        image_raster_class.write_array(image_mask_result, image_masked)
+        create_raster_tiff_from_reference(self, output, image_masked, 'one', data_type = NumericTypeCodeToGDALTypeCode(numpy.uint8))
     def masking_with_time_series(self):
         image_masked_path = maskingwithreference.masking(self)
         LOGGER.info('Image for masking clouds is: %s', image_masked_path)

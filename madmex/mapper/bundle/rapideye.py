@@ -9,14 +9,16 @@ import logging
 
 from madmex.configuration import SETTINGS
 from madmex.mapper.base import BaseBundle
+from madmex.mapper.data.raster import FOOTPRINT
 import madmex.mapper.data.raster as raster
 import madmex.mapper.sensor.rapideye as rapideye
+from madmex.persistence import driver
 from madmex.persistence.database.connection import Information
-from madmex.preprocessing.base import calculate_rad_rapideye, calculate_toa_rapideye, calculate_distance_sun_earth,\
+from madmex.preprocessing import maskingwithreference
+from madmex.preprocessing.base import calculate_rad_rapideye, calculate_toa_rapideye, calculate_distance_sun_earth, \
     base_masking
 from madmex.util import get_path_from_list, create_file_name, \
     create_directory_path, get_base_name, get_parent
-from madmex.preprocessing import maskingwithreference
 from madmex.mapper.data.raster import create_raster_tiff_from_reference
 
 
@@ -57,6 +59,7 @@ class Bundle(BaseBundle):
                     grid_id=self.get_sensor().get_attribute(rapideye.TILE_ID),
                     projection= self.get_raster().get_attribute(raster.PROJECTION),
                     cloud_percentage=self.get_sensor().get_attribute(rapideye.CLOUDS),
+                    geometry=self.get_raster().get_attribute(FOOTPRINT),       
                     elevation_angle=self.get_sensor().get_attribute(rapideye.AZIMUTH_ANGLE),
                     resolution=1.0
                     )
@@ -84,6 +87,16 @@ class Bundle(BaseBundle):
         Returns the data in which this image was aquired.
         '''
         return self.get_sensor().get_attribute(rapideye.ACQUISITION_DATE)
+    def get_sensor_name(self):
+        '''
+        Returns the data in which this image was aquired.
+        '''
+        return self.get_sensor().get_attribute(rapideye.SENSOR_NAME)
+    def get_sensor_object(self):
+        '''
+        Returns the database object that represents this sensor.
+        '''
+        return driver.get_sensor_object(self.get_sensor_name())
     def get_raster(self):
         '''
         Lazily creates and returns a raster object for this bundle.

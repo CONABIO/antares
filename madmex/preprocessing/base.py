@@ -126,7 +126,8 @@ def morph_dilation(input_image_raster, filter_size):
         return ndimage.grey_dilation(input_image_raster, (1, filter_size, filter_size))
     else:
         return ndimage.grey_dilation(input_image_raster, (1, filter_size, filter_size))[0]
-def morphing(image_mask_array, inbetween, clouds):
+def morphing(image_mask_array, image_array, inbetween, clouds):
+    np.putmask(image_mask_array, image_array[0, :, :] == 0, FMASK_OUTSIDE)
     m = len(MORPHING_SIZES)
     for MORPHING_SIZE in MORPHING_SIZES:
         np.putmask(image_mask_array, morph_dilation(clouds, MORPHING_SIZE) == 1, FMASK_CLOUD*10+m)

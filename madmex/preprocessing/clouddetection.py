@@ -11,9 +11,7 @@ from datetime import datetime
 from madmex import LOGGER
 import numpy
 from madmex.mapper.data import raster
-from madmex.preprocessing.base import filter_median, morph_dilation, FMASK_CLOUD,\
-    FMASK_CLOUD_SHADOW, FMASK_OUTSIDE, calculate_cloud_shadow, morphing
-# FMASK constants
+from madmex.preprocessing.base import filter_median, morph_dilation, calculate_cloud_shadow, morphing
 
 GENERALIZE = False
 MORPHING_SIZE = 10
@@ -25,11 +23,9 @@ def masking(re_object):
     folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
     folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/CloudMasking/RE_1649125/1649125_2014-01-23_RE4_3A_301519'
     data_shape_reference, geotransform_reference, projection_reference, image_array_difference = reference_for_tile(folder, tile_id, image_array)
-    image_mask_array = numpy.zeros([data_shape_reference[1], data_shape_reference[0]])
-    numpy.putmask(image_mask_array, image_array[0, :, :] == 0, FMASK_OUTSIDE)
     solar_zenith = re_object.get_sensor().get_attribute(rapideye.SOLAR_ZENITH)
     solar_azimuth = re_object.get_sensor().get_attribute(rapideye.SOLAR_AZIMUTH)
-    image_mask_path = mask_clouds(image_mask_array, image_array_difference, solar_zenith, solar_azimuth, folder, geotransform_reference, projection_reference)
+    image_mask_path = mask_clouds(image_array, image_array_difference, data_shape_reference, solar_zenith, solar_azimuth, folder, geotransform_reference, projection_reference)
     return image_mask_path
 def reference_for_tile(folder, tile_id, image_array):
     cloud_cover = 100
@@ -115,7 +111,7 @@ def stack_images_per_band(band_list, length, data_shape):
     for b in range(0, length):
         band[b, :, :] = band_list[b]
     return band
-def mask_clouds(image_mask_array, image_array_difference, solar_zenith, solar_azimuth, folder, geotransform, projection):
+def mask_clouds(image_array, image_array_difference, data_shape_reference, solar_zenith, solar_azimuth, folder, geotransform, projection):
     clouds =  filter_median((numpy.sum(image_array_difference, axis=0) > 30000).astype(numpy.int), 13)
     shadows = filter_median((numpy.sum(image_array_difference[3:, :, :], axis=0) < -5500).astype(numpy.int), 13)
     if GENERALIZE:
@@ -124,7 +120,8 @@ def mask_clouds(image_mask_array, image_array_difference, solar_zenith, solar_az
     image_array_difference = None
     resolution = geotransform[1]
     inbetween = calculate_cloud_shadow(clouds, shadows, solar_zenith, solar_azimuth, resolution)
-    image_mask_array = morphing(image_mask_array, inbetween, clouds)
+    image_mask_array = numpy.zeros([data_shape_reference[1], data_shape_reference[0]])
+    image_mask_array = morphing(image_mask_array, image_array, inbetween, clouds)
     image_mask_path = folder + '/mask.tif'
     image_raster_class = raster.Data('', '')
     height, width = image_mask_array.shape

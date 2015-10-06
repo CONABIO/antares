@@ -13,6 +13,7 @@ import gdal, gdalconst
 import ogr, osr
 
 from madmex.mapper.base import BaseData, _get_attribute, put_in_dictionary
+from numpy import array
 
 gdal.AllRegister()
 gdal.UseExceptions()
@@ -26,6 +27,24 @@ GEOTRANSFORM = ['properties', 'geotransform']
 DATA_SHAPE = ['properties', 'data_shape']
 FOOTPRINT = ['properties', 'footprint']
 
+def create_raster_tiff_from_reference(reference_object, output_file, array, number_of_bands, data_type = gdal.GDT_Float32, options = []):
+    format_create = 'GTiff'
+    driver = gdal.GetDriverByName(str(format_create))
+    geotransform = reference_object.get_raster().get_attribute(GEOTRANSFORM)
+    projection = reference_object.get_raster().get_attribute(PROJECTION)
+    width, height, bands = reference_object.get_raster().get_attribute(DATA_SHAPE)
+    if number_of_bands != 'one':
+        data = driver.Create(output_file, width, height, bands, data_type, options)
+        data.SetGeoTransform(geotransform)
+        data.SetProjection(projection)
+        for band in range(bands):
+            data.GetRasterBand(band + 1).WriteArray(array[band, :, :])
+    else:
+        data = driver.Create(output_file, width, height, 1, data_type, options)
+        data.SetGeoTransform(geotransform)
+        data.SetProjection(projection)
+        data.GetRasterBand(1).WriteArray(array)
+    print('Created raster in %s' % output_file)
 class Data(BaseData):
     '''
     This is a class to handle raster data. It might be convenient to use

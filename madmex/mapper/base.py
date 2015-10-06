@@ -150,16 +150,14 @@ class BaseBundle(object):
         '''
         Creates the database object that will be ingested for this bundle.
         '''
-        from madmex.mapper.data.raster import FOOTPRINT
         information_object = self.get_information_object()
         return RawProduct(
-                uuid=str(uuid.uuid4()),
                 acquisition_date=self.get_aquisition_date(),
                 ingest_date=datetime.now(),
                 path=self.get_output_directory(),
                 legend=None,
-                geometry=self.get_raster().get_attribute(FOOTPRINT),
                 information=information_object,
+                sensor=self.get_sensor_object(),
                 product_type=None,
                 type='raw'
                 )
@@ -198,6 +196,10 @@ class BaseBundle(object):
         raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_format_file() method.')
     def get_sensor_module(self):
         raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_sensor_module() method.')
+    def get_sensor_name(self):
+        raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_sensor_name() method.')
+    def get_sensor_object(self):
+        raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_sensor_object() method.')
     def preprocess(self):
         raise NotImplementedError('Subclasses of SpotBaseBundle must provide a preprocess() method.')
 class BaseData(object):

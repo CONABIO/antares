@@ -11,8 +11,10 @@ import traceback
 from unittest import result
 from sqlalchemy import tuple_
 from madmex import _
-from madmex.persistence.database.connection import SESSION_MAKER, Bundle, \
+from madmex.persistence.database.connection import SESSION_MAKER, \
     Product, Host, Command, RawProduct, Information
+from madmex.persistence.database.connection import SESSION_MAKER, Product, Host, Command, \
+    Sensor
 import madmex.persistence.database.operations as database
 import madmex.persistence.filesystem.operations as filesystem
 from madmex.util import create_directory_path
@@ -117,3 +119,13 @@ def find_datasets(start_date, end_date, sensor_id, product_id, cloud_cover, tile
     #images_references_paths = session.query(RawProduct.path, Information.sensor).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , RawProduct.product_type == product_id, Information.sensor == sensor_id, Information.cloud_percentage <= cloud_cover).all()
     session.close()
     return [tuples[0] for tuples in images_references_paths]
+def get_sensor_object(sensor_name):
+    session = SESSION_MAKER()
+    try:
+        sensor_object = session.query(Sensor).filter(Sensor.reference_name == sensor_name).first()
+    except Exception:
+        LOGGER.error('Not expected error in host insertion.')
+        raise
+    finally:
+        session.close()
+    return sensor_object 

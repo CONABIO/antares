@@ -74,6 +74,7 @@ class Sensor(BASE):
     __tablename__ = 'sensor'
     pk_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
+    reference_name = Column(String)
     description = Column(String)
     satellite = relationship("Satellite")
 class Satellite(BASE):
@@ -118,19 +119,6 @@ class Legend(BASE):
     name = Column(String, unique=True)
     styled_layer_descriptor = Column(String)
     path = Column(String)
-class Bundle(BASE):
-    '''
-    A bundle is a set of files that constitutes a minimum working set for a
-    certain product. For example shape files have not only one, but three files.
-    '''
-    __tablename__ = 'bundle'
-    pk_id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
-    images_regex = Column(String)
-    metadata_regex = Column(String)
-    filels_regex = Column(String)
-    quick_look_regex = Column(String)
-    sensor = Column(Integer, ForeignKey('sensor.pk_id'))
 class Unit(BASE):
     '''
     Units are the different fixed units in which the world is measured. In the
@@ -166,7 +154,9 @@ class Description(BASE):
     pk_id = Column(Integer, primary_key=True)
     description = Column(String, unique=True)
     creator = Column(Integer, ForeignKey('organization.pk_id'))
-    publisher = Column(Integer, ForeignKey('organization.pk_id'))
+    publisher_id = Column(Integer, ForeignKey('organization.pk_id'))
+    creator = relationship('Organization', backref='creator_id')
+    publisher = relationship('Organization', backref='publisher_id')
 class Information(BASE):
     '''
     Information stands for metadata, as metadata is a protected word in
@@ -178,6 +168,7 @@ class Information(BASE):
     grid_id = Column(Integer)
     projection = Column(String)
     cloud_percentage = Column(Float)
+    geometry = Column(Geometry('POLYGON'))
     elevation_angle = Column(Float)
     resolution = Column(Float)
     product = relationship('Product')
@@ -189,11 +180,11 @@ class ProductType(BASE):
     '''
     __tablename__ = 'product_type'
     pk_id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
+    level = Column(Integer)
+    name = Column(String)
     short_name = Column(String, unique=True)
-    bundle = Column(Integer, ForeignKey('bundle.pk_id'))
-    description = Column(Integer, ForeignKey('description.pk_id'))
-    algorithm = Column(Integer, ForeignKey('algorithm.pk_id'))
+    description_id = Column(Integer, ForeignKey('description.pk_id'))
+    description = relationship('Description')
 class Product(BASE):
     '''
     A product is either an input or an output of the system. Once an image is
@@ -203,15 +194,16 @@ class Product(BASE):
     '''
     __tablename__ = 'product'
     pk_id = Column(Integer, primary_key=True)
-    uuid = Column(String, unique=True)
     acquisition_date = Column(DateTime())
     ingest_date = Column(DateTime())
     path = Column(String, unique=True)
     legend = Column(Integer, ForeignKey('legend.pk_id'))
-    geometry = Column(Geometry('POLYGON'))
     information_id = Column(Integer, ForeignKey('information.pk_id'))
     information = relationship('Information')
     product_type = Column(Integer, ForeignKey('product_type.pk_id'))
+    sensor_id = Column(Integer, ForeignKey('sensor.pk_id'))
+    sensor = relationship('Sensor')
+    algorithm = Column(Integer, ForeignKey('algorithm.pk_id'))
     can_train = relationship(
         'Algorithm',
         secondary=CAN_TRAIN_TABLE)
@@ -360,54 +352,72 @@ def populate_database():
             'country':'United States',
             'url':'https://www.digitalglobe.com/'
         },
+        {
+            'name':'USGS',
+            'description':'United States Geological Survey.',
+            'country':'United States',
+            'url':'http://www.usgs.gov/'
+        },
     ]
     sensors_array = [
         {
             'name':'RE',
+            'reference_name':'rapideye',
             'description':'RapidEye'
         },
         {
             'name':'SPOT-5',
+            'reference_name':None,
             'description':'SPOT 5 HRG Multispectral.'
         },
         {
             'name':'SPOT-5-P',
+            'reference_name':None,
             'description':'SPOT 5 HRG Panchromatic.'
         },
         {
             'name':'SPOT-6',
+            'reference_name':None,
             'description':'SPOT-6'
         },
         {
             'name':'TM',
+            'reference_name':None,
             'description':'Thematic Mapper.'
         },
         {
             'name':'ETM+',
+            'reference_name':None,
             'description':'Enhanced Thematic Mapper Plus.'
         },
         {
             'name':'MODIS',
+            'reference_name':None,
             'description':'Moderate-resolution Imaging Spectroradiometer'
         },
         {
             'name':'AWF',
+            'reference_name':None,
             'description':'AWF'
         },
         {
             'name':'L-3',
+            'reference_name':None,
             'description':'L-3'
         },
         {
             'name':'WV02',
+            'reference_name':None,
             'description':'WorldView-2'
         },
         {
             'name':'OLI_TIRS',
+            'reference_name':None,
             'description':'OLI TIRS'
         },
         {
             'name':'IRS-P6',
+            'reference_name':None,
             'description':'Indian Remote-Sensing Satellite P6'
         },
     ]
@@ -742,6 +752,246 @@ def populate_database():
             'e></sld:UserStyle></sld:UserLayer></sld:StyledLayerDescriptor>'
         },
     ]
+    descriptions_array = [
+        {
+            'description':'Landsat Raw Imagery',
+            'creator':'NASA',
+            'publisher':'USGS'
+        },
+        {
+            'description':'Landsat LEDAPS Calibrated Products',
+            'creator':'CONABIO',
+            'publisher':'CONABIO'
+        },
+        {
+            'description':'Landsat FMASK Derived Data Masks',
+            'creator':'CONABIO',
+            'publisher':'CONABIO'
+        },
+        {
+            'description':'RapidEye Raw Imagery',
+            'creator':'BlackBridge',
+            'publisher':'BlackBridge'
+        },
+        {
+            'description':'SPOT 5 Georeferenced by CONABIO',
+            'creator':'CONABIO',
+            'publisher':'CONABIO'
+        },
+    ]
+    product_type_array = [
+        {
+            'level':1,
+            'name':'Level 1B',
+            'short_name':'L1B',
+            'description':'RapidEye Raw Imagery'
+        },
+        {
+            'level':2,
+            'name':'Level 3A',
+            'short_name':'L3A',
+            'description':'RapidEye Raw Imagery'
+        },
+        {
+            'level':3,
+            'name':'LEDAPS TOA reflectance',
+            'short_name':'lndcal',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':4,
+            'name':'LEDAPS Surface reflectance',
+            'short_name':'lndsr',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':5,
+            'name':'LEDAPS Temperature',
+            'short_name':'lndth',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':6,
+            'name':'LEDPAS Masks',
+            'short_name':'lndcsm',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':7,
+            'name':'FMASK',
+            'short_name':'fmask',
+            'description':'Landsat FMASK Derived Data Masks'
+        },
+        {
+            'level':1,
+            'name':'systematic radiometric and geometric corrected',
+            'short_name':'L1G',
+            'description':'Landsat Raw Imagery'
+        },
+        {
+            'level':2,
+            'name':'systematic radiometric and terrain corrected',
+            'short_name':'L1T',
+            'description':'Landsat Raw Imagery'
+        },
+        {
+            'level':2,
+            'name':'World View II Level 2A',
+            'short_name':'LV2A-Multi',
+            'description':'Landsat Raw Imagery'
+        },
+        {
+            'level':2,
+            'name':'World View II Level 2A Pan',
+            'short_name':'LV2A-P',
+            'description':'Landsat Raw Imagery'
+        },
+        {
+            'level':2,
+            'name':'World View II Level 2A Orthorectified',
+            'short_name':'LV2A-Multi-ORTHO',
+            'description':'Landsat Raw Imagery'
+        },
+        {
+            'level':2,
+            'name':'World View II Level 2A Pan Orthorectified',
+            'short_name':'LV2A-P-ORTHO',
+            'description':'Landsat Raw Imagery'
+        },
+        {
+            'level':3,
+            'name':'MODIS Combined BRDF Corrected Reflectances MCD43A4',
+            'short_name':'MCD43A4',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Terra Surface Reflectance Bands 1-7 8 day',
+            'short_name':'MOD09A1',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Terra Land Surface Temperature & Emissivity 8 day',
+            'short_name':'MOD11A2',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Aqua Land Surface Temperature & Emissivity 8 day',
+            'short_name':'MYD11A2',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Combined Land Cover Type yearly',
+            'short_name':'MCD12Q1',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Combined Land Cover Dynamics yearly',
+            'short_name':'MCD12Q2',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Terra Vegetation Indices 16 day',
+            'short_name':'MOD13Q1',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Aqua Vegetation Indices 16 day',
+            'short_name':'MYD13Q1',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Terra Vegetation Indices 16 day',
+            'short_name':'MOD13A2',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Aqua Vegetation Indices 16 day',
+            'short_name':'MYD13A2',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Combined Leaf Area Index - FPAR 8 day',
+            'short_name':'MCD15A2',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Terra Leaf Area Index - FPAR 8 day',
+            'short_name':'MOD15A2',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Aqua Leaf Area Index - FPAR 8 day',
+            'short_name':'MYD15A2',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Terra Gross Primary Productivity 8 day',
+            'short_name':'MOD17A2',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Combined BRDF-Albedo Quality 16 day',
+            'short_name':'MCD43A2',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Terra Vegetation Indices 16 day',
+            'short_name':'MOD13A1',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Aqua Vegetation Indices 16 day',
+            'short_name':'MYD13A1',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Terra Surface Reflectance Bands 1-2 8 day',
+            'short_name':'MOD09Q1',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':3,
+            'name':'MODIS Aqua Surface Reflectance Bands 1-7 8 day',
+            'short_name':'MYD09A1',
+            'description':'Landsat LEDAPS Calibrated Products'
+        },
+        {
+            'level':1,
+            'name':'systematic geometric corrected; too few GCP for orthorectification',
+            'short_name':'L1GT',
+            'description':'Landsat Raw Imagery'
+        },
+        {
+            'level':3,
+            'name':'spot5 top of atmosphere reflectance - georeferenced',
+            'short_name':'spot5toageoref',
+            'description':'SPOT 5 Georeferenced by CONABIO'
+        },
+        {
+            'level':0,
+            'name':'Corrupt Data',
+            'short_name':'Corrupt',
+            'description':None
+        }
+    ]
+    
     algorithms_array = [
         {
             'name':'ImageSegmentationProcessing_Shape',
@@ -1554,6 +1804,7 @@ def populate_database():
     session.add_all(organizations)
     sensors = [Sensor(
         name=x['name'],
+        reference_name=x['reference_name'],
         description=x['description']) for x in sensors_array]
     session.add_all(sensors)
     legends = [Legend(
@@ -1581,6 +1832,20 @@ def populate_database():
         sensor=session.query(Sensor).filter(Sensor.name == x['sensor']).first(),
         unit=session.query(Unit).filter(Unit.name == x['unit']).first()) for x in bands_array]
     session.add_all(bands)
+    descriptions = [Description(
+        description=x['description'],
+        creator=session.query(Organization).filter(
+            Organization.name == x['creator']).first(),
+        publisher=session.query(Organization).filter(
+            Organization.name == x['publisher']).first(),                              
+         ) for x in descriptions_array]
+    session.add_all(descriptions)
+    product_types = [ProductType(
+        level=x['level'],
+        name=x['name'],
+        short_name=x['short_name'],
+        description=session.query(Description).filter(Description.description == x['description']).first()) for x in product_type_array]
+    session.add_all(product_types)
     hosts = [Host(
         hostname=x['hostname'],
         alias=x['alias'],

@@ -12,6 +12,7 @@ from madmex import LOGGER
 import osr
 import re
 from madmex.preprocessing.base import calculate_rad_toa_spot5
+import __main__
 
 
 _IMAGE = r'IMAGERY.TIF$'
@@ -109,3 +110,10 @@ class Bundle(SpotBaseBundle):
         LOGGER.info('finished DN to TOA')
     def preprocess(self):
         self.calculate_top_of_atmosphere_spot5()
+if __name__ == '__main__':
+    folder = '/Volumes/Imagenes_originales/SPOT5/SinNubes/E55542921411081J1A00002/SCENE01'
+    bundle = Bundle(folder)
+    print bundle.get_raster().gcps_to_geotransform()
+    print bundle.get_raster().get_attribute(raster.GEOTRANSFORM)
+    
+        

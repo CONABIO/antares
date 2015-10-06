@@ -137,12 +137,8 @@ class Bundle(BaseBundle):
     def masking(self, top_of_atmosphere_data, top_of_atmosphere_directory, solar_zenith, solar_azimuth, geotransform, projection):
         import numpy
         from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode
-        print 'masking'
-        print top_of_atmosphere_directory
         output = top_of_atmosphere_directory + '/image_clouds_masked.tif'
-        print output
         image_masked = base_masking(top_of_atmosphere_data, output, solar_zenith, solar_azimuth, geotransform)
-        print type(image_masked)
         image_raster_class = raster.Data('', '')
         height, width = image_masked.shape
         image_mask_result = image_raster_class.create_from_reference(output, width, height, 1, geotransform, projection, NumericTypeCodeToGDALTypeCode(numpy.uint8))

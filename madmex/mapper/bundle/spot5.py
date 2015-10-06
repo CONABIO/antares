@@ -74,5 +74,8 @@ if __name__ == '__main__':
     print bundle.get_raster().get_attribute((raster.GEOTRANSFORM))
     print bundle.get_sensor()
     print bundle.get_sensor().get_attribute(bundle.get_sensor_module().SENSOR)
-    
+    print 'data_shape'
+    print bundle.get_raster().get_attribute(raster.DATA_SHAPE)
+    print 'shape of array'
+    print bundle.get_raster().read_data_file_as_array().shape    
     print bundle.get_output_directory()

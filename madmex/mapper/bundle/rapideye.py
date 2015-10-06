@@ -16,7 +16,7 @@ from madmex.preprocessing.base import calculate_rad_rapideye, calculate_toa_rapi
     base_masking
 from madmex.util import get_path_from_list, create_file_name, \
     create_directory_path, get_base_name, get_parent
-from madmex.preprocessing import clouddetection
+from madmex.preprocessing import maskingcloudsshadowswithreference
 
 
 FORMAT = 'GTiff'
@@ -144,8 +144,8 @@ class Bundle(BaseBundle):
         image_mask_result = image_raster_class.create_from_reference(output, width, height, 1, geotransform, projection, NumericTypeCodeToGDALTypeCode(numpy.uint8))
         image_raster_class.write_array(image_mask_result, image_masked)
     def masking_with_time_series(self):
-        image_clouds_masked_path = clouddetection.masking(self)
-        LOGGER.info('Image for masking clouds is: %s', image_clouds_masked_path)
+        image_clouds_shadows_masked_path = maskingcloudsshadowswithreference.masking(self)
+        LOGGER.info('Image for masking clouds is: %s', image_clouds_shadows_masked_path)
     def preprocess(self):
         self.calculate_top_of_atmosphere_rapideye()
 if __name__ == '__main__':    

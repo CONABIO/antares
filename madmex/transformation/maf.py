@@ -69,9 +69,7 @@ class Transformation(BaseTransformation):
         # simple pooling of shifts
         sigmad = 0.5 * (numpy.array(sigmadh) + numpy.array(sigmadv))
         #evalues, vec1 = scipy.linalg.eig(sigmad, sigma)
-        print 'no'
         evalues, vec1 = linalg.eig(sigmad, sigma)
-        print 'si'
 
         # Sort eigen values from smallest to largest and apply this order to
         # eigen vector matrix

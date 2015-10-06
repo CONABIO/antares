@@ -11,8 +11,8 @@ import traceback
 from unittest import result
 
 from madmex import _
-from madmex.persistence.database.connection import SESSION_MAKER, Bundle, \
-    Product, Host, Command
+from madmex.persistence.database.connection import SESSION_MAKER, Product, Host, Command, \
+    Sensor
 import madmex.persistence.database.operations as database
 import madmex.persistence.filesystem.operations as filesystem
 from madmex.util import create_directory_path
@@ -107,3 +107,13 @@ def get_host_from_command(command):
     finally:
         session.close()
     return hosts 
+def get_sensor_object(sensor_name):
+    session = SESSION_MAKER()
+    try:
+        sensor_object = session.query(Sensor).filter(Sensor.reference_name == sensor_name).first()
+    except Exception:
+        LOGGER.error('Not expected error in host insertion.')
+        raise
+    finally:
+        session.close()
+    return sensor_object 

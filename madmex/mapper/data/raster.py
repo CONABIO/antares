@@ -6,14 +6,10 @@ Created on 10/06/2015
 @author: erickpalacios
 '''
 from __future__ import unicode_literals
-
 import logging
-
 import gdal, gdalconst
 import ogr, osr
-
 from madmex.mapper.base import BaseData, _get_attribute, put_in_dictionary
-from numpy import array
 
 gdal.AllRegister()
 gdal.UseExceptions()
@@ -24,27 +20,61 @@ DRIVER_METADATA = ['driver_metadata']
 METADATA_FILE = ['metadata_file']
 PROJECTION = ['properties', 'projection']
 GEOTRANSFORM = ['properties', 'geotransform']
+GEOTRANSFORM_FROM_GCPS = ['properties', 'geotransform_from_gcps']
 DATA_SHAPE = ['properties', 'data_shape']
 FOOTPRINT = ['properties', 'footprint']
+CREATE_WITH_NUMBER_OF_BANDS = ['features_of_image_for_create', 'number_of_bands']
+CREATE_WITH_WIDTH = ['features_of_image_for_create', 'width']
+CREATE_WITH_HEIGHT = ['features_of_image_for_create', 'height']
+CREATE_WITH_PROJECTION = ['features_of_image_for_create', 'projection']
+CREATE_WITH_GEOTRANSFORM = ['features_of_image_for_create', 'geotransform']
+CREATE_WITH_GEOTRANSFORM_FROM_GCPS = ['features_of_image_for_create', 'create_using_geotransform_from_gcps']
+GDAL_CREATE_OPTIONS = ['gdal_create_options']
 
-def create_raster_tiff_from_reference(reference_object, output_file, array, number_of_bands, data_type = gdal.GDT_Float32, options = []):
+def default_options_for_create_raster_from_reference(reference_metadata):
+    width, height, bands = _get_attribute(DATA_SHAPE, reference_metadata)
+    geotransform = _get_attribute(GEOTRANSFORM, reference_metadata)
+    projection = _get_attribute(PROJECTION, reference_metadata)
+    options = {'features_of_image_for_create': None, 'gdal_create_options': None}
+    options['features_of_image_for_create'] = {'number_of_bands': None, 'width': None, 'height': None, 'projection': None, 'geotransform': None, 'create_using_geotransform_from_gcps': None}
+    put_in_dictionary(options, CREATE_WITH_NUMBER_OF_BANDS, bands)
+    put_in_dictionary(options, CREATE_WITH_WIDTH, width)
+    put_in_dictionary(options, CREATE_WITH_HEIGHT, height)
+    put_in_dictionary(options, CREATE_WITH_PROJECTION, projection)
+    put_in_dictionary(options, CREATE_WITH_GEOTRANSFORM, geotransform)
+    put_in_dictionary(options, CREATE_WITH_GEOTRANSFORM_FROM_GCPS, False)
+    put_in_dictionary(options, GDAL_CREATE_OPTIONS, [])
+    return options
+
+def new_options_for_create_raster_from_reference(reference_metadata, new_option, value, options):
+    if not options:
+        options = default_options_for_create_raster_from_reference(reference_metadata)
+        put_in_dictionary(options, new_option, value)
+        return options
+    put_in_dictionary(options, new_option, value)
+
+def create_raster_tiff_from_reference(reference_metadata, options, output_file, array, data_type = gdal.GDT_Float32):
     format_create = 'GTiff'
     driver = gdal.GetDriverByName(str(format_create))
-    geotransform = reference_object.get_raster().get_attribute(GEOTRANSFORM)
-    projection = reference_object.get_raster().get_attribute(PROJECTION)
-    width, height, bands = reference_object.get_raster().get_attribute(DATA_SHAPE)
-    if number_of_bands != 'one':
-        data = driver.Create(output_file, width, height, bands, data_type, options)
-        data.SetGeoTransform(geotransform)
-        data.SetProjection(projection)
+    width = _get_attribute(CREATE_WITH_WIDTH, options)
+    height = _get_attribute(CREATE_WITH_HEIGHT, options)
+    bands = _get_attribute(CREATE_WITH_NUMBER_OF_BANDS, options)
+    gdal_options = _get_attribute(GDAL_CREATE_OPTIONS, options)
+    data = driver.Create(output_file, width, height, bands, data_type, gdal_options)
+    projection = _get_attribute(CREATE_WITH_PROJECTION, options)
+    if _get_attribute(CREATE_WITH_GEOTRANSFORM_FROM_GCPS, options) is True:
+        geotransform = _get_attribute(GEOTRANSFORM_FROM_GCPS, reference_metadata)
+    else:
+        geotransform = _get_attribute(CREATE_WITH_GEOTRANSFORM, options)
+    data.SetProjection(projection)
+    data.SetGeoTransform(geotransform)
+    if bands != 1:
         for band in range(bands):
             data.GetRasterBand(band + 1).WriteArray(array[band, :, :])
     else:
-        data = driver.Create(output_file, width, height, 1, data_type, options)
-        data.SetGeoTransform(geotransform)
-        data.SetProjection(projection)
         data.GetRasterBand(1).WriteArray(array)
     print('Created raster in %s' % output_file)
+
 class Data(BaseData):
     '''
     This is a class to handle raster data. It might be convenient to use
@@ -92,11 +122,12 @@ class Data(BaseData):
         '''
         Extract some raster info from the raster image file using gdal functions.
         '''
-        self.metadata['properties'] ={'projection': None, 'geotransform': None, 'data_shape': None, 'footprint': None}
+        self.metadata['properties'] ={'projection': None, 'geotransform': None, 'geotransform_from_gcps': None, 'data_shape': None, 'footprint': None}
         put_in_dictionary(self.metadata, PROJECTION, self.data_file.GetProjection())
         put_in_dictionary(self.metadata, GEOTRANSFORM, self.data_file.GetGeoTransform())
         put_in_dictionary(self.metadata, DATA_SHAPE, (self.data_file.RasterXSize, self.data_file.RasterYSize, self.data_file.RasterCount))
         put_in_dictionary(self.metadata, FOOTPRINT, self._get_footprint())
+        put_in_dictionary(self.metadata, GEOTRANSFORM_FROM_GCPS, self.gcps_to_geotransform())
     def _get_footprint(self):
         '''
         Returns the extent of the raster image.

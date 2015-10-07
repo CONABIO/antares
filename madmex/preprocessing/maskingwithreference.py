@@ -8,24 +8,25 @@ from datetime import datetime
 from madmex import LOGGER
 import numpy
 from madmex.mapper.data import raster
-from madmex.preprocessing.base import filter_median, morph_dilation, calculate_cloud_shadow, morphing
+from madmex.preprocessing.masking import filter_median, morph_dilation, calculate_cloud_shadow, morphing
 from madmex.persistence.driver import find_datasets
+from madmex.mapper.data.raster import new_options_for_create_raster_from_reference,\
+    create_raster_tiff_from_reference,\
+    default_options_for_create_raster_from_reference
 
 GENERALIZE = False
 MORPHING_SIZE = 10
 #TODO: this module is lacking of landmasking....see rapideyeclouds.py of madmex_old
-def masking(re_object):
-    tile_id =  re_object.get_sensor().get_attribute(rapideye.TILE_ID)
-    image_array = re_object.get_raster().read_data_file_as_array()
-    folder = re_object.get_output_directory()
-    folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
-    folder = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/CloudMasking/RE_1649125/1649125_2014-01-23_RE4_3A_301519'
-    data_shape_reference, geotransform_reference, projection_reference, image_array_difference = reference_for_tile(folder, tile_id, image_array)
-    solar_zenith = re_object.get_sensor().get_attribute(rapideye.SOLAR_ZENITH)
-    solar_azimuth = re_object.get_sensor().get_attribute(rapideye.SOLAR_AZIMUTH)
-    image_mask_path = mask_clouds_and_shadows(image_array, image_array_difference, data_shape_reference, solar_zenith, solar_azimuth, folder, geotransform_reference, projection_reference)
+def masking(re_directory, re_sensor_metadata, re_raster_array, re_raster_metadata):
+    tile_id = re_sensor_metadata(rapideye.TILE_ID)
+    re_directory = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
+    re_directory = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/CloudMasking/RE_1649125/1649125_2014-01-23_RE4_3A_301519'
+    data_shape_reference, geotransform_reference, projection_reference, image_array_difference = reference_for_tile(re_raster_metadata, re_directory, tile_id, re_raster_array) 
+    solar_zenith = re_sensor_metadata(rapideye.SOLAR_ZENITH)
+    solar_azimuth = re_sensor_metadata(rapideye.SOLAR_AZIMUTH)
+    image_mask_path = mask_clouds_and_shadows(re_raster_metadata, re_raster_array, image_array_difference, data_shape_reference, solar_zenith, solar_azimuth, re_directory, geotransform_reference, projection_reference)
     return image_mask_path
-def reference_for_tile(folder, tile_id, image_array):
+def reference_for_tile(re_raster_metadata, folder, tile_id, image_array):
     cloud_cover = 100
     sensor_id = 1
     product_id = 2
@@ -34,8 +35,8 @@ def reference_for_tile(folder, tile_id, image_array):
     images_references_paths = find_datasets(start_date, end_date, sensor_id, product_id, cloud_cover, tile_id)
     LOGGER.info("Number of acquired images: %d" % len(images_references_paths))
     print("Number of acquired images: %d" % len(images_references_paths))
-    return get_image_array_difference(folder, images_references_paths, image_array)
-def get_image_array_difference(folder, images_references_paths, image_array):
+    return get_image_array_difference(re_raster_metadata, folder, images_references_paths, image_array)
+def get_image_array_difference(re_raster_metadata, folder, images_references_paths, image_array):
     data_shape, geotransform, projection, band_1_list, band_2_list, band_3_list, band_4_list, band_5_list = get_arrays(images_references_paths)
     band_1_stack = stack_images_per_band(band_1_list, len(band_1_list), data_shape)
     band_2_stack = stack_images_per_band(band_2_list, len(band_2_list), data_shape)
@@ -55,11 +56,9 @@ def get_image_array_difference(folder, images_references_paths, image_array):
     band_medians[4, :, :] = numpy.median(band_5_stack, axis=0)
     band_1_list, band_2_list, band_3_list, band_4_list, band_5_list = None, None, None, None, None
     #TODO: Is not necessary create a tif image, we only need the array and datashape, geotransform and projection for the next processes
-    image_reference_class = raster.Data('', '')
     image_reference_path = folder + '/re_reference.tif'
-    width, height, bands = data_shape
-    image_reference_result = image_reference_class.create_from_reference(image_reference_path, width, height, bands, geotransform, projection)
-    image_reference_class.write_raster(image_reference_result, band_medians)
+    options_to_create = default_options_for_create_raster_from_reference(re_raster_metadata)
+    create_raster_tiff_from_reference(re_raster_metadata, options_to_create, image_reference_path, band_medians)
     LOGGER.info("RE reference image: %s" % image_reference_path)
     LOGGER.info('Calculating difference between RapidEye image and reference')
     image_array_difference = numpy.zeros([data_shape[2], data_shape[1], data_shape[0]])
@@ -99,7 +98,7 @@ def stack_images_per_band(band_list, length, data_shape):
     for b in range(0, length):
         band[b, :, :] = band_list[b]
     return band
-def mask_clouds_and_shadows(image_array, image_array_difference, data_shape_reference, solar_zenith, solar_azimuth, folder, geotransform, projection):
+def mask_clouds_and_shadows(re_raster_metadata, image_array, image_array_difference, data_shape_reference, solar_zenith, solar_azimuth, folder, geotransform, projection):
     clouds =  filter_median((numpy.sum(image_array_difference, axis=0) > 30000).astype(numpy.int), 13)
     shadows = filter_median((numpy.sum(image_array_difference[3:, :, :], axis=0) < -5500).astype(numpy.int), 13)
     if GENERALIZE:
@@ -110,11 +109,8 @@ def mask_clouds_and_shadows(image_array, image_array_difference, data_shape_refe
     inbetween = calculate_cloud_shadow(clouds, shadows, solar_zenith, solar_azimuth, resolution)
     image_mask_array = numpy.zeros([data_shape_reference[1], data_shape_reference[0]])
     image_mask_array = morphing(image_mask_array, image_array, inbetween, clouds)
-    image_mask_path = folder + '/mask.tif'
-    image_raster_class = raster.Data('', '')
-    height, width = image_mask_array.shape
+    image_mask_path = folder + '/mask_reference.tif'
+    options_to_create = new_options_for_create_raster_from_reference(re_raster_metadata, raster.CREATE_WITH_NUMBER_OF_BANDS, 1, {})
     #TODO: CREATE WITH XOFFSET, YOFFSET?? IS IT NECESSARY?? GO TO OLD MADMEX
-    image_mask_result = image_raster_class.create_from_reference(image_mask_path, width, height, 1, geotransform, projection)
-    image_raster_class.write_array(image_mask_result, image_mask_array)
+    create_raster_tiff_from_reference(re_raster_metadata, options_to_create, image_mask_path, image_mask_array)
     return image_mask_path
-

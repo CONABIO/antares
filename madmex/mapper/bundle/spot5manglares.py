@@ -11,7 +11,7 @@ from datetime import datetime
 from madmex import LOGGER
 import osr
 import re
-from madmex.preprocessing.base import calculate_rad_toa_spot5
+from madmex.preprocessing.topofatmosphere import calculate_rad_toa_spot5
 import __main__
 
 

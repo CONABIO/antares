@@ -14,8 +14,7 @@ import madmex.mapper.sensor.rapideye as rapideye
 from madmex.persistence import driver
 from madmex.persistence.database.connection import Information
 from madmex.preprocessing import maskingwithreference
-from madmex.preprocessing.base import calculate_rad_rapideye, calculate_toa_rapideye, calculate_distance_sun_earth,\
-    base_top_of_atmosphere_rapideye
+from madmex.preprocessing.base import base_top_of_atmosphere_rapideye
 from madmex.util import get_path_from_list, create_file_name, \
     create_directory_path, get_base_name, get_parent
 from madmex.mapper.data.raster import create_raster_tiff_from_reference,\

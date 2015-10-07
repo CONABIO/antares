@@ -137,6 +137,24 @@ class Test(unittest.TestCase):
         self.assertFalse(action.success)
         self.assertFalse(os.path.isfile(action.new_file))
         os.remove(name)
+    def test_new_way_of_create_image_from_reference(self):
+        from madmex.mapper.data import raster
+        from madmex.mapper.data.raster import default_options_for_create_raster_from_reference
+        from madmex.mapper.data.raster import create_raster_tiff_from_reference
+        from madmex.mapper.data.raster import new_options_for_create_raster_from_reference
+        image =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/1447720_2013-02-11_RE3_3A_182802.tif'
+        image = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Tarea11/spot/SinNubes/E55582961409182J1A00001/SCENE01'
+        gdal_format = "GTiff"
+        data_class = raster.Data(image, gdal_format)
+        options_to_create = default_options_for_create_raster_from_reference(data_class.metadata)
+        output_file = image + '/result_new_create.TIF'
+        array = data_class.read_data_file_as_array()
+        create_raster_tiff_from_reference(data_class.metadata, options_to_create, output_file, array)
+        output_file = image + '/result_new_options.TIF'
+        #options_to_create = new_options_for_create_raster_from_reference(data_class.metadata, raster.CREATE_WITH_NUMBER_OF_BANDS, 1, {})
+        new_options_for_create_raster_from_reference(data_class.metadata, raster.CREATE_WITH_GEOTRANSFORM_FROM_GCPS, True, options_to_create)
+        new_options_for_create_raster_from_reference(data_class.metadata, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], options_to_create)
+        create_raster_tiff_from_reference(data_class.metadata, options_to_create, output_file, array)      
     def test_some_sqlalchemy_functions(self):
         from madmex.persistence.database.connection import SESSION_MAKER, RawProduct, Information
         from sqlalchemy import tuple_
@@ -148,18 +166,7 @@ class Test(unittest.TestCase):
         print session.query(RawProduct.path, Information.resolution).join(RawProduct.information).all()
         print session.query(RawProduct.ingest_date, Information.resolution).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , RawProduct.pk_id == 1).all()
         session.close()
-    def test_create_raster_offset(self):
-        from madmex.mapper.data  import raster
-        import gdal
-        print 'create_raster_offset'
-        image_folder = '/LUSTRE/MADMEX/eodata/rapideye/1147524/2012/2012-10-18/l3a/2012-10-18T191005_RE3_3A-NAC_11137283_149747.tif'
-        image_class = raster.Data(image_folder, 'GTiff')
-        width, height , bands = image_class.get_attribute(raster.DATA_SHAPE)
-        geotransform = image_class.get_attribute(raster.GEOTRANSFORM) 
-        projection = image_class.get_attribute(raster.PROJECTION)
-        output = '/LUSTRE/MADMEX/eodata/rapideye/1147524/2012/2012-10-18/l3a/create_raster_offset.tif'
-        options = ['xoff = 0', 'yoff = 0']
-        image_class.create_from_reference(output, width, height, bands, geotransform, projection, gdal.GDT_Float32, options)
+
     def test_create_raster_in_memory(self):
         '''
         Create a raster in memory

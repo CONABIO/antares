@@ -10,6 +10,7 @@ import matplotlib.pylab as pylab
 from skimage import io, color
 from madmex import LOGGER
 import numpy as np
+
 FMASK_LAND = 0
 FMASK_WATER = 1
 FMASK_SNOW = 3
@@ -47,8 +48,14 @@ def morphing(image_mask_array, image_array, inbetween, clouds):
         np.putmask(image_mask_array, inbetween == 1, FMASK_CLOUD_SHADOW)
         np.putmask(image_mask_array, clouds == 1, FMASK_CLOUD)
     return image_mask_array
-def base_masking_rapideye(top_of_atmosphere_data, output, solar_zenith, solar_azimuth, geotransform):
-        cloud_mask = convert_to_fmask(extract_extremes(top_of_atmosphere_data, output))
+#def base_masking_rapideye(top_of_atmosphere_data, output, solar_zenith, solar_azimuth, geotransform):
+def base_masking_rapideye(top_of_atmosphere_data, output_file, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata):
+        from madmex.mapper.sensor import rapideye
+        from madmex.mapper.data import raster
+        solar_zenith = fun_get_attr_sensor_metadata(rapideye.SOLAR_ZENITH)
+        solar_azimuth = fun_get_attr_sensor_metadata(rapideye.SOLAR_AZIMUTH)
+        geotransform = fun_get_attr_raster_metadata(raster.GEOTRANSFORM)
+        cloud_mask = convert_to_fmask(extract_extremes(top_of_atmosphere_data, output_file))
         clouds = np.where(cloud_mask==FMASK_CLOUD, 1, 0)
         shadows= np.where(cloud_mask==FMASK_CLOUD_SHADOW, 1, 0)
         resolution = geotransform[1]

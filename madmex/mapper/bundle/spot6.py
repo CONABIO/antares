@@ -10,7 +10,7 @@ from madmex import LOGGER
 from madmex.mapper.bundle._spot import SpotBaseBundle
 import madmex.mapper.data.raster as raster
 import madmex.mapper.sensor.spot6 as spot6
-from madmex.preprocessing.base import calculate_rad_toa_spot6
+from madmex.preprocessing.topofatmosphere import calculate_rad_toa_spot6
 import numpy
 import re
 

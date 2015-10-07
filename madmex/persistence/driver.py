@@ -6,15 +6,10 @@ Created on Jul 8, 2015
 from __future__ import unicode_literals
 
 import logging
-import sys
-import traceback
 from unittest import result
 from sqlalchemy import tuple_
-from madmex import _
 from madmex.persistence.database.connection import SESSION_MAKER, \
-    Product, Host, Command, RawProduct, Information
-from madmex.persistence.database.connection import SESSION_MAKER, Product, Host, Command, \
-    Sensor
+    Product, Host, Command, RawProduct, Information, Sensor
 import madmex.persistence.database.operations as database
 import madmex.persistence.filesystem.operations as filesystem
 from madmex.util import create_directory_path

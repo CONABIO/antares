@@ -9,17 +9,18 @@ import logging
 
 from madmex.configuration import SETTINGS
 from madmex.mapper.base import BaseBundle
-from madmex.mapper.data.raster import FOOTPRINT
 import madmex.mapper.data.raster as raster
 import madmex.mapper.sensor.rapideye as rapideye
 from madmex.persistence import driver
 from madmex.persistence.database.connection import Information
 from madmex.preprocessing import maskingwithreference
-from madmex.preprocessing.base import calculate_rad_rapideye, calculate_toa_rapideye, calculate_distance_sun_earth, \
-    base_masking
+from madmex.preprocessing.base import calculate_rad_rapideye, calculate_toa_rapideye, calculate_distance_sun_earth
 from madmex.util import get_path_from_list, create_file_name, \
     create_directory_path, get_base_name, get_parent
-from madmex.mapper.data.raster import create_raster_tiff_from_reference
+from madmex.mapper.data.raster import create_raster_tiff_from_reference,\
+    default_options_for_create_raster_from_reference,\
+    new_options_for_create_raster_from_reference
+from madmex.preprocessing.masking import base_masking_rapideye
 
 
 FORMAT = 'GTiff'
@@ -59,9 +60,9 @@ class Bundle(BaseBundle):
                     grid_id=self.get_sensor().get_attribute(rapideye.TILE_ID),
                     projection= self.get_raster().get_attribute(raster.PROJECTION),
                     cloud_percentage=self.get_sensor().get_attribute(rapideye.CLOUDS),
-                    geometry=self.get_raster().get_attribute(FOOTPRINT),       
+                    geometry=self.get_raster().get_attribute(raster.FOOTPRINT),       
                     elevation_angle=self.get_sensor().get_attribute(rapideye.AZIMUTH_ANGLE),
-                    resolution=1.0
+                    resolution=1.0 #TODO: change this to: self.get_raster().get_attribute(raster.GEOTRANSFORM)[1]
                     )
         return information
     def get_name(self):
@@ -139,18 +140,20 @@ class Bundle(BaseBundle):
         top_of_atmosphere_directory = create_file_name(get_parent(self.path), 'toa')
         create_directory_path(top_of_atmosphere_directory)
         geotransform_from_gcps = self.get_raster().get_attribute(raster.GEOTRANSFORM)
-        output = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[2]) + '.toa.tif') 
-        create_raster_tiff_from_reference(self, output, top_of_atmosphere_data, 'not one', data_type = NumericTypeCodeToGDALTypeCode(numpy.float32))
+        output_file = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[2]) + '.toa_nueva_creacion_2.tif') 
+        options_to_create = default_options_for_create_raster_from_reference(self.get_raster().metadata)
+        create_raster_tiff_from_reference(self.get_raster().metadata, options_to_create, output_file, top_of_atmosphere_data, data_type = NumericTypeCodeToGDALTypeCode(numpy.float32))
         solar_azimuth = self.get_sensor().get_attribute(rapideye.SOLAR_AZIMUTH)
         self.masking(top_of_atmosphere_data, top_of_atmosphere_directory, solar_zenith, solar_azimuth, geotransform_from_gcps)
     def masking(self, top_of_atmosphere_data, top_of_atmosphere_directory, solar_zenith, solar_azimuth, geotransform):
         import numpy
-        from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode
-        output = top_of_atmosphere_directory + '/image_masked.tif'
-        image_masked = base_masking(top_of_atmosphere_data, output, solar_zenith, solar_azimuth, geotransform)
-        create_raster_tiff_from_reference(self, output, image_masked, 'one', data_type = NumericTypeCodeToGDALTypeCode(numpy.uint8))
+        from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode   
+        output_file = top_of_atmosphere_directory + '/image_masked.tif'
+        image_masked = base_masking_rapideye(top_of_atmosphere_data, output_file, solar_zenith, solar_azimuth, geotransform)
+        options_to_create = new_options_for_create_raster_from_reference(self.get_raster().metadata, raster.CREATE_WITH_NUMBER_OF_BANDS, 1, {})
+        create_raster_tiff_from_reference(self.get_raster().metadata, options_to_create, output_file, image_masked, data_type = NumericTypeCodeToGDALTypeCode(numpy.uint8))
     def masking_with_time_series(self):
-        image_masked_path = maskingwithreference.masking(self)
+        image_masked_path = maskingwithreference.masking(self.get_output_directory(), self.get_sensor().parser.get_attribute, self.get_raster().read_data_file_as_array(), self.get_raster().metadata)
         LOGGER.info('Image for masking clouds is: %s', image_masked_path)
     def preprocess(self):
         self.calculate_top_of_atmosphere_rapideye()
@@ -168,5 +171,8 @@ if __name__ == '__main__':
     path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
     path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/CloudMasking/RE_1649125/1649125_2014-01-23_RE4_3A_301519'
     bundle = Bundle(path)
+    print bundle.get_raster().get_attribute(raster.GEOTRANSFORM)
+    print 'geotransform from gcps'
+    print bundle.get_raster().get_attribute(raster.GEOTRANSFORM_FROM_GCPS)
     bundle.preprocess()
     print 'Done'

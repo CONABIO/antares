@@ -8,6 +8,8 @@ from __future__ import unicode_literals
 import datetime
 import numpy as np
 
+
+
 def calculate_rad_spot5(data,gain,offset):
     '''
     Calculates radiance for spot 5.
@@ -73,6 +75,14 @@ def calculate_rad_toa_spot6(data, gain, offset, imaging_date, sun_elevation, irr
     rad = calculate_rad_spot5(data.astype(np.float), gain, offset)
     sun_distance = calculate_distance_Sun_Earth_spot5(imaging_date)
     return calculate_toa_spot6(rad, sun_distance, sun_elevation,irradiance, number_of_bands)
+
+def base_top_of_atmosphere_rapideye(sensor_metadata, array):
+    from madmex.mapper.sensor import rapideye
+    solar_zenith = sensor_metadata(rapideye.SOLAR_ZENITH)
+    data_acquisition_date = sensor_metadata(rapideye.ACQUISITION_DATE)
+    sun_earth_distance = calculate_distance_sun_earth(data_acquisition_date)
+    top_of_atmosphere_data = calculate_toa_rapideye(calculate_rad_rapideye(array), sun_earth_distance, solar_zenith)
+    return top_of_atmosphere_data
 def calculate_rad_rapideye(data, radiometricScaleFactor=0.009999999776482582, radiometricOffsetValue=0.0):
     '''
     Convert digital number into radiance according to rapideye documentation. Returns 

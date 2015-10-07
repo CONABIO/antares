@@ -14,7 +14,8 @@ import madmex.mapper.sensor.rapideye as rapideye
 from madmex.persistence import driver
 from madmex.persistence.database.connection import Information
 from madmex.preprocessing import maskingwithreference
-from madmex.preprocessing.base import calculate_rad_rapideye, calculate_toa_rapideye, calculate_distance_sun_earth
+from madmex.preprocessing.base import calculate_rad_rapideye, calculate_toa_rapideye, calculate_distance_sun_earth,\
+    base_top_of_atmosphere_rapideye
 from madmex.util import get_path_from_list, create_file_name, \
     create_directory_path, get_base_name, get_parent
 from madmex.mapper.data.raster import create_raster_tiff_from_reference,\
@@ -132,24 +133,20 @@ class Bundle(BaseBundle):
         '''
         import numpy
         from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode
-        self.get_raster()
-        solar_zenith = self.get_sensor().get_attribute(rapideye.SOLAR_ZENITH)
-        data_aquisition_date = self.get_sensor().get_attribute(rapideye.ACQUISITION_DATE)
-        sun_earth_distance  = calculate_distance_sun_earth(data_aquisition_date)
-        top_of_atmosphere_data = calculate_toa_rapideye(calculate_rad_rapideye(self.get_raster().read_data_file_as_array()), sun_earth_distance, solar_zenith)
-        top_of_atmosphere_directory = create_file_name(get_parent(self.path), 'toa')
+        fun_get_attr_sensor_metadata = self.get_sensor().parser.get_attribute
+        fun_get_attr_raster_metadata = self.get_raster().get_attribute
+        top_of_atmosphere_data = base_top_of_atmosphere_rapideye(fun_get_attr_sensor_metadata, self.get_raster().read_data_file_as_array())
+        top_of_atmosphere_directory = create_file_name(get_parent(self.path), 'TOA')
         create_directory_path(top_of_atmosphere_directory)
-        geotransform_from_gcps = self.get_raster().get_attribute(raster.GEOTRANSFORM)
-        output_file = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[2]) + '.toa_nueva_creacion_2.tif') 
+        output_file = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[2]) + '.toa.tif') #TODO: change [2] in self.get_files()[2] 
         options_to_create = default_options_for_create_raster_from_reference(self.get_raster().metadata)
         create_raster_tiff_from_reference(self.get_raster().metadata, options_to_create, output_file, top_of_atmosphere_data, data_type = NumericTypeCodeToGDALTypeCode(numpy.float32))
-        solar_azimuth = self.get_sensor().get_attribute(rapideye.SOLAR_AZIMUTH)
-        self.masking(top_of_atmosphere_data, top_of_atmosphere_directory, solar_zenith, solar_azimuth, geotransform_from_gcps)
-    def masking(self, top_of_atmosphere_data, top_of_atmosphere_directory, solar_zenith, solar_azimuth, geotransform):
+        self.masking(top_of_atmosphere_data, top_of_atmosphere_directory, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata)
+    def masking(self, top_of_atmosphere_data, top_of_atmosphere_directory, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata):
         import numpy
         from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode   
         output_file = top_of_atmosphere_directory + '/image_masked.tif'
-        image_masked = base_masking_rapideye(top_of_atmosphere_data, output_file, solar_zenith, solar_azimuth, geotransform)
+        image_masked = base_masking_rapideye(top_of_atmosphere_data, output_file, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata)
         options_to_create = new_options_for_create_raster_from_reference(self.get_raster().metadata, raster.CREATE_WITH_NUMBER_OF_BANDS, 1, {})
         create_raster_tiff_from_reference(self.get_raster().metadata, options_to_create, output_file, image_masked, data_type = NumericTypeCodeToGDALTypeCode(numpy.uint8))
     def masking_with_time_series(self):
@@ -168,6 +165,7 @@ if __name__ == '__main__':
     print bundle.get_files()
     print bundle.can_identify()
     print bundle.masking_with_time_series()
+    path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
     path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
     path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/CloudMasking/RE_1649125/1649125_2014-01-23_RE4_3A_301519'
     bundle = Bundle(path)

@@ -3,16 +3,19 @@ Created on 16/07/2015
 
 @author: erickpalacios
 '''
-from madmex.mapper.sensor import rapideye
 from datetime import datetime
-from madmex import LOGGER
+
 import numpy
+
+from madmex import LOGGER, util
 from madmex.mapper.data import raster
-from madmex.preprocessing.masking import filter_median, morph_dilation, calculate_cloud_shadow, morphing
-from madmex.persistence.driver import find_datasets
-from madmex.mapper.data.raster import new_options_for_create_raster_from_reference,\
-    create_raster_tiff_from_reference,\
+from madmex.mapper.data.raster import new_options_for_create_raster_from_reference, \
+    create_raster_tiff_from_reference, \
     default_options_for_create_raster_from_reference
+from madmex.mapper.sensor import rapideye
+from madmex.persistence.driver import find_datasets
+from madmex.preprocessing.masking import filter_median, morph_dilation, calculate_cloud_shadow, morphing
+
 
 GENERALIZE = False
 MORPHING_SIZE = 10
@@ -67,6 +70,36 @@ def get_image_array_difference(re_raster_metadata, folder, images_references_pat
     image_array = None
     band_medians = None     
     return data_shape, geotransform, projection, image_array_difference
+def create_reference_image(image_reference_path, images_references_paths):
+    data_shape, geotransform, projection, band_1_list, band_2_list, band_3_list, band_4_list, band_5_list = get_arrays(images_references_paths)
+    band_1_stack = stack_images_per_band(band_1_list, len(band_1_list), data_shape)
+    band_2_stack = stack_images_per_band(band_2_list, len(band_2_list), data_shape)
+    band_3_stack = stack_images_per_band(band_3_list, len(band_3_list), data_shape)
+    band_4_stack = stack_images_per_band(band_4_list, len(band_4_list), data_shape)
+    band_5_stack = stack_images_per_band(band_5_list, len(band_5_list), data_shape)
+    band_medians = numpy.zeros([data_shape[2], data_shape[1], data_shape[0]])
+    LOGGER.debug("Get medians for band 1")
+    band_medians[0, :, :] = numpy.median(band_1_stack, axis = 0)
+    LOGGER.debug("Get medians for band 2")
+    band_medians[1, :, :] = numpy.median(band_2_stack, axis=0)
+    LOGGER.debug("Get medians for band 3")
+    band_medians[2, :, :] = numpy.median(band_3_stack, axis=0)
+    LOGGER.debug("Get medians for band 4")
+    band_medians[3, :, :] = numpy.median(band_4_stack, axis=0)
+    LOGGER.debug("Get medians for band 5")
+    band_medians[4, :, :] = numpy.median(band_5_stack, axis=0)
+    band_1_list, band_2_list, band_3_list, band_4_list, band_5_list = None, None, None, None, None
+    #TODO: Is not necessary create a tif image, we only need the array and datashape, geotransform and projection for the next processes
+    
+    from madmex.mapper.bundle.rapideye import Bundle
+    
+    
+    bundle  = Bundle(images_references_paths[0])
+    re_raster_metadata = bundle.get_raster().metadata
+    
+    options_to_create = default_options_for_create_raster_from_reference(re_raster_metadata)
+    create_raster_tiff_from_reference(re_raster_metadata, options_to_create, image_reference_path, band_medians)
+    LOGGER.info("RE reference image: %s" % image_reference_path)
 def get_arrays(images_references_paths):
     '''
     Check consistency of folders and get arrays for every image

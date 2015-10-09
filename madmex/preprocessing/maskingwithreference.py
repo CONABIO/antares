@@ -97,7 +97,7 @@ def get_stack_arrays_per_band(images_references_paths, max_number_of_images):
     return (data_shape, geotransform, projection, list_with_arrays_stack_per_band)
 def mask_clouds_and_shadows(re_raster_metadata, image_array, image_array_difference, data_shape_reference, solar_zenith, solar_azimuth, folder, geotransform, projection):
     '''
-    This use function calculate_cloud_shadow in preprocessing.masking.py
+    This function use calculate_cloud_shadow in preprocessing.masking.py
     '''
     clouds =  filter_median((numpy.sum(image_array_difference, axis=0) > 30000).astype(numpy.int), 13)
     shadows = filter_median((numpy.sum(image_array_difference[3:, :, :], axis=0) < -5500).astype(numpy.int), 13)

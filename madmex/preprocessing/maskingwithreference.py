@@ -24,10 +24,10 @@ def masking(re_directory, re_sensor_metadata, re_raster_array, re_raster_metadat
     tile_id = re_sensor_metadata(rapideye.TILE_ID)
     re_directory = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
     re_directory = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/CloudMasking/RE_1649125/1649125_2014-01-23_RE4_3A_301519'
-    data_shape_reference, geotransform_reference, projection_reference, image_array_difference = reference_for_tile(re_raster_metadata, re_directory, tile_id, re_raster_array) 
+    data_shape_reference, geotransform_reference, image_array_difference = reference_for_tile(re_raster_metadata, re_directory, tile_id, re_raster_array) 
     solar_zenith = re_sensor_metadata(rapideye.SOLAR_ZENITH)
     solar_azimuth = re_sensor_metadata(rapideye.SOLAR_AZIMUTH)
-    image_mask_path = mask_clouds_and_shadows(re_raster_metadata, re_raster_array, image_array_difference, data_shape_reference, solar_zenith, solar_azimuth, re_directory, geotransform_reference, projection_reference)
+    image_mask_path = mask_clouds_and_shadows(re_raster_metadata, re_raster_array, image_array_difference, data_shape_reference, solar_zenith, solar_azimuth, re_directory, geotransform_reference)
     return image_mask_path
 def reference_for_tile(re_raster_metadata, folder, tile_id, image_array):
     '''
@@ -46,7 +46,7 @@ def get_image_array_difference(re_raster_metadata, folder, images_references_pat
     '''
     Return array of differences between reference image (stacking of bands) and image_array
     '''
-    data_shape, geotransform, projection, list_with_arrays_stack_per_band = get_stack_arrays_per_band(images_references_paths, max_number_of_images)
+    data_shape, geotransform, list_with_arrays_stack_per_band = get_stack_arrays_per_band(images_references_paths, max_number_of_images)
     band_medians = numpy.zeros([data_shape[2], data_shape[1], data_shape[0]])    
     number_of_bands = data_shape[2]
     for k in range(number_of_bands-1, -1, -1):
@@ -55,7 +55,7 @@ def get_image_array_difference(re_raster_metadata, folder, images_references_pat
     image_reference_path = folder + '/re_reference.tif'
     options_to_create = default_options_for_create_raster_from_reference(re_raster_metadata)
     create_raster_tiff_from_reference(re_raster_metadata, options_to_create, image_reference_path, band_medians)
-    #TODO: Is not necessary create a tiff image, we only need the array and datashape, geotransform and projection for the next processes
+    #TODO: Is not necessary create a tiff image, we only need the array and datashape and geotransform for the next processes
     LOGGER.info("RE reference image: %s" % image_reference_path)
     LOGGER.info('Calculating difference between RapidEye image and reference')
     image_array_difference = numpy.zeros([data_shape[2], data_shape[1], data_shape[0]])
@@ -63,7 +63,7 @@ def get_image_array_difference(re_raster_metadata, folder, images_references_pat
         image_array_difference[b, :, :] = image_array[b, :, :] - band_medians[b, :, :]
     image_array = None
     band_medians = None     
-    return data_shape, geotransform, projection, image_array_difference
+    return data_shape, geotransform, image_array_difference
 def get_stack_arrays_per_band(images_references_paths, max_number_of_images):
     '''
     Check consistency of folders and get stack arrays for every band. Return a list with k number 
@@ -82,7 +82,6 @@ def get_stack_arrays_per_band(images_references_paths, max_number_of_images):
             if first:
                 data_shape = (width, height, bands)
                 geotransform = bundle.get_raster().get_attribute(raster.GEOTRANSFORM) 
-                projection = bundle.get_raster().get_attribute(raster.PROJECTION)
                 for k in range(0, bands):
                     list_with_arrays_stack_per_band.append(numpy.zeros([max_number_of_images, data_shape[1], data_shape[0]]))
                 first = False
@@ -95,8 +94,8 @@ def get_stack_arrays_per_band(images_references_paths, max_number_of_images):
             list_with_arrays_stack_per_band[k] = list_with_arrays_stack_per_band[k][0:1, :, :]
         else:
             list_with_arrays_stack_per_band[k] = list_with_arrays_stack_per_band[k][0:number_of_identified_images, :, :]
-    return (data_shape, geotransform, projection, list_with_arrays_stack_per_band)
-def mask_clouds_and_shadows(re_raster_metadata, image_array, image_array_difference, data_shape_reference, solar_zenith, solar_azimuth, folder, geotransform, projection):
+    return (data_shape, geotransform, list_with_arrays_stack_per_band)
+def mask_clouds_and_shadows(re_raster_metadata, image_array, image_array_difference, data_shape_reference, solar_zenith, solar_azimuth, folder, geotransform):
     '''
     This function use calculate_cloud_shadow in preprocessing.masking.py
     '''

@@ -54,20 +54,20 @@ def base_masking_rapideye(top_of_atmosphere_data, output_file, fun_get_attr_sens
         solar_zenith = fun_get_attr_sensor_metadata(rapideye.SOLAR_ZENITH)
         solar_azimuth = fun_get_attr_sensor_metadata(rapideye.SOLAR_AZIMUTH)
         geotransform = fun_get_attr_raster_metadata(raster.GEOTRANSFORM)
-        cloud_mask = convert_to_fmask(extract_extremes(top_of_atmosphere_data, output_file))
+        make_plot = True
+        cloud_mask = convert_to_fmask(extract_extremes(top_of_atmosphere_data, output_file, make_plot))
         clouds = np.where(cloud_mask==FMASK_CLOUD, 1, 0)
         shadows= np.where(cloud_mask==FMASK_CLOUD_SHADOW, 1, 0)
         resolution = geotransform[1]
         shadow_mask = calculate_cloud_shadow(clouds, shadows, solar_zenith, solar_azimuth, resolution) * FMASK_CLOUD_SHADOW
         water_mask = convert_water_to_fmask(calculate_water(top_of_atmosphere_data))
         return combine_mask(cloud_mask, shadow_mask, water_mask)
-def extract_extremes(data, image_file, steps=1000):
+def extract_extremes(data, image_file, make_plot, steps=1000):
+    #TODO: the two for and the last one takes too long to finish
     CENTER = 50
-    result_matrix = np.zeros((data.shape), dtype=float)
     xtiles = 5000 / steps
     ytiles = 5000 / steps
     counter = 0
-    f, axarr = pylab.subplots(xtiles, ytiles)
     b = 0
     global_quant = list()
     for ycount in range(0, 5000, steps):
@@ -79,19 +79,20 @@ def extract_extremes(data, image_file, steps=1000):
             for i in range(0, z):
                 rgb[:, :, i] = subset[i, :, :] / np.max(data[i, :, :])
             col_space1 = color.rgb2lab(rgb[:, :, 0:3])
-            subset_result = np.zeros((steps, steps), dtype=np.float)
             quant = calculate_quantiles(col_space1[ :, :, 0])
             if len(quant) > 0:
                 points = calculate_breaking_points(quant)
                 break_points = np.array(calculate_continuity(points.keys()))
             else:
                 break_points = []
-            subset = data[b, ycount:ycount + steps, xcount:xcount + steps] 
-            pylab.subplot(xtiles, ytiles, counter + 1)
-            fig = pylab.plot(quant, c="k", alpha=0.5)
+            subset = data[b, ycount:ycount + steps, xcount:xcount + steps]
+            if make_plot:
+                pylab.subplot(xtiles, ytiles, counter + 1)
+                fig = pylab.plot(quant, c="k", alpha=0.5)
             if len(break_points) > 1:
-                for p in points.keys():
-                    pylab.plot(p, np.array(quant)[p], 'r.')
+                if make_plot:
+                    for p in points.keys():
+                        pylab.plot(p, np.array(quant)[p], 'r.')
                 if len(break_points[break_points < CENTER]) > 0:
                     min_bp = max(break_points[break_points < CENTER])
                 if len(break_points[break_points > CENTER]) > 0:
@@ -106,12 +107,12 @@ def extract_extremes(data, image_file, steps=1000):
                     modelled = f_lin(q, points[max_bp]["slope"], points[max_bp]["offset"])
                     diff = abs(quant[q] - modelled)
                     global_quant.append((q, quant[q], diff))
-                result_matrix[b, ycount:ycount + steps, xcount:xcount + steps] = subset_result
             counter += 1
-            fig = pylab.gcf()
-            fig.set_size_inches(18.5, 10.5)
-            name = image_file.replace(".tif", "_local.png")
-            fig.savefig(name, bbox_inches='tight', dpi=150)
+            if make_plot:
+                fig = pylab.gcf()
+                fig.set_size_inches(18.5, 10.5)
+                name = image_file.replace(".tif", "_local.png")
+                fig.savefig(name, bbox_inches='tight', dpi=150)
     z, y, x = data.shape
     rgb = np.zeros((y, x, z))
     for i in range(0, z):

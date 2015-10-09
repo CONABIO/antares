@@ -144,8 +144,9 @@ class Bundle(BaseBundle):
     def masking(self, top_of_atmosphere_data, top_of_atmosphere_directory, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata):
         import numpy
         from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode   
-        output_file = top_of_atmosphere_directory + '/image_masked.tif'
+        output_file = top_of_atmosphere_directory + '/image_masked_reducing_time.tif'
         image_masked = base_masking_rapideye(top_of_atmosphere_data, output_file, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata)
+        print 'finished base masking'
         options_to_create = new_options_for_create_raster_from_reference(self.get_raster().metadata, raster.CREATE_WITH_NUMBER_OF_BANDS, 1, {})
         create_raster_tiff_from_reference(self.get_raster().metadata, options_to_create, output_file, image_masked, data_type = NumericTypeCodeToGDALTypeCode(numpy.uint8))
     def masking_with_time_series(self):

@@ -55,6 +55,7 @@ def get_image_array_difference(re_raster_metadata, folder, images_references_pat
     image_reference_path = folder + '/re_reference.tif'
     options_to_create = default_options_for_create_raster_from_reference(re_raster_metadata)
     create_raster_tiff_from_reference(re_raster_metadata, options_to_create, image_reference_path, band_medians)
+    #TODO: Is not necessary create a tiff image, we only need the array and datashape, geotransform and projection for the next processes
     LOGGER.info("RE reference image: %s" % image_reference_path)
     LOGGER.info('Calculating difference between RapidEye image and reference')
     image_array_difference = numpy.zeros([data_shape[2], data_shape[1], data_shape[0]])

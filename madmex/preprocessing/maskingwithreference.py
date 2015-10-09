@@ -35,28 +35,15 @@ def reference_for_tile(re_raster_metadata, folder, tile_id, image_array):
     images_references_paths = find_datasets(start_date, end_date, sensor_id, product_id, cloud_cover, tile_id)
     LOGGER.info("Number of acquired images: %d" % len(images_references_paths))
     print("Number of acquired images: %d" % len(images_references_paths))
-    return get_image_array_difference(re_raster_metadata, folder, images_references_paths, image_array)
-def get_image_array_difference(re_raster_metadata, folder, images_references_paths, image_array):
-    data_shape, geotransform, projection, band_1_list, band_2_list, band_3_list, band_4_list, band_5_list = get_arrays(images_references_paths)
-    band_1_stack = stack_images_per_band(band_1_list, len(band_1_list), data_shape)
-    band_2_stack = stack_images_per_band(band_2_list, len(band_2_list), data_shape)
-    band_3_stack = stack_images_per_band(band_3_list, len(band_3_list), data_shape)
-    band_4_stack = stack_images_per_band(band_4_list, len(band_4_list), data_shape)
-    band_5_stack = stack_images_per_band(band_5_list, len(band_5_list), data_shape)
-    band_medians = numpy.zeros([data_shape[2], data_shape[1], data_shape[0]])
-    LOGGER.debug("Get medians for band 1")
-    band_medians[0, :, :] = numpy.median(band_1_stack, axis = 0)
-    LOGGER.debug("Get medians for band 2")
-    band_medians[1, :, :] = numpy.median(band_2_stack, axis=0)
-    LOGGER.debug("Get medians for band 3")
-    band_medians[2, :, :] = numpy.median(band_3_stack, axis=0)
-    LOGGER.debug("Get medians for band 4")
-    band_medians[3, :, :] = numpy.median(band_4_stack, axis=0)
-    LOGGER.debug("Get medians for band 5")
-    band_medians[4, :, :] = numpy.median(band_5_stack, axis=0)
-    band_1_list, band_2_list, band_3_list, band_4_list, band_5_list = None, None, None, None, None
-    #TODO: Is not necessary create a tif image, we only need the array and datashape, geotransform and projection for the next processes
-    image_reference_path = folder + '/re_reference.tif'
+    return get_image_array_difference(re_raster_metadata, folder, images_references_paths, image_array, len(images_references_paths))
+def get_image_array_difference(re_raster_metadata, folder, images_references_paths, image_array, max_number_of_images):
+    data_shape, geotransform, projection, list_with_arrays_stack_per_band = get_stack_arrays_per_band(images_references_paths, max_number_of_images)
+    band_medians = numpy.zeros([data_shape[2], data_shape[1], data_shape[0]])    
+    number_of_bands = data_shape[2]
+    for k in range(number_of_bands-1, -1, -1):
+        band_medians[k, :, :] = numpy.median(list_with_arrays_stack_per_band[k], axis = 0)
+        list_with_arrays_stack_per_band.pop()
+    image_reference_path = folder + '/re_reference_new_stacking.tif'
     options_to_create = default_options_for_create_raster_from_reference(re_raster_metadata)
     create_raster_tiff_from_reference(re_raster_metadata, options_to_create, image_reference_path, band_medians)
     LOGGER.info("RE reference image: %s" % image_reference_path)
@@ -67,37 +54,36 @@ def get_image_array_difference(re_raster_metadata, folder, images_references_pat
     image_array = None
     band_medians = None     
     return data_shape, geotransform, projection, image_array_difference
-def get_arrays(images_references_paths):
+def get_stack_arrays_per_band(images_references_paths, max_number_of_images):
     '''
-    Check consistency of folders and get arrays for every image
+    Check consistency of folders and get stack arrays for every band
     '''
     from madmex.mapper.bundle.rapideye import Bundle
-    band_1_list = list()
-    band_2_list = list()
-    band_3_list = list()
-    band_4_list = list()
-    band_5_list = list()
+    number_of_identified_images = 0
+    list_with_arrays_stack_per_band = list()
     for image_path in images_references_paths:
         bundle  = Bundle(image_path)
-        first = False
+        first = True
         if bundle.can_identify():
             array = bundle.get_raster().read_data_file_as_array().astype(numpy.float)
-            band_1_list.append(array[0, :, :])
-            band_2_list.append(array[1, :, :])
-            band_3_list.append(array[2, :, :])
-            band_4_list.append(array[3, :, :])
-            band_5_list.append(array[4, :, :])
-            if not first:
-                data_shape = bundle.get_raster().get_attribute(raster.DATA_SHAPE)
+            bands, height, width = array.shape
+            if first:
+                data_shape = (width, height, bands)
                 geotransform = bundle.get_raster().get_attribute(raster.GEOTRANSFORM) 
                 projection = bundle.get_raster().get_attribute(raster.PROJECTION)
-                first = True
-    return (data_shape, geotransform, projection, band_1_list, band_2_list, band_3_list, band_4_list, band_5_list)
-def stack_images_per_band(band_list, length, data_shape):
-    band = numpy.zeros([length, data_shape[1], data_shape[0]])
-    for b in range(0, length):
-        band[b, :, :] = band_list[b]
-    return band
+                for k in range(0, bands):
+                    list_with_arrays_stack_per_band.append(numpy.zeros([max_number_of_images, data_shape[1], data_shape[0]]))
+                first = False
+            for k in range(0, bands):
+                array_aux = array[k, :, :]
+                list_with_arrays_stack_per_band[k][number_of_identified_images, :, :] = array_aux
+            number_of_identified_images+= 1
+    for k in range(0, bands):
+        if number_of_identified_images == 0:
+            list_with_arrays_stack_per_band[k] = list_with_arrays_stack_per_band[k][0:1, :, :]
+        else:
+            list_with_arrays_stack_per_band[k] = list_with_arrays_stack_per_band[k][0:number_of_identified_images, :, :]
+    return (data_shape, geotransform, projection, list_with_arrays_stack_per_band)
 def mask_clouds_and_shadows(re_raster_metadata, image_array, image_array_difference, data_shape_reference, solar_zenith, solar_azimuth, folder, geotransform, projection):
     clouds =  filter_median((numpy.sum(image_array_difference, axis=0) > 30000).astype(numpy.int), 13)
     shadows = filter_median((numpy.sum(image_array_difference[3:, :, :], axis=0) < -5500).astype(numpy.int), 13)

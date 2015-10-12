@@ -36,4 +36,4 @@ class Command(BaseCommand):
         new_paths = map(util.get_parent, paths)
         
         print new_paths
-        create_reference_image('/Users/agutierrez/Development/df/output/%s' % name, new_paths)
+        create_reference_image('/Users/agutierrez/Development/df/new/%s' % name, new_paths, len(new_paths))

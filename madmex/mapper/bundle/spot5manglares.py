@@ -12,7 +12,6 @@ from madmex import LOGGER
 import osr
 import re
 from madmex.preprocessing.topofatmosphere import calculate_rad_toa_spot5
-import __main__
 
 
 _IMAGE = r'IMAGERY.TIF$'

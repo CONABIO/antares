@@ -3,6 +3,7 @@ Created on 16/07/2015
 
 @author: erickpalacios
 '''
+from __future__ import unicode_literals
 from datetime import datetime
 
 import numpy
@@ -68,6 +69,9 @@ def get_image_array_difference(re_raster_metadata, folder, images_references_pat
     band_medians = None     
     return data_shape, geotransform, image_array_difference
 def create_reference_image(image_reference_path, images_references_paths, max_number_of_images):
+    '''
+    Creates an image in the given path with an array of images using the median function.
+    '''
     data_shape, geotransform, list_with_arrays_stack_per_band = get_stack_arrays_per_band(images_references_paths, max_number_of_images)
     band_medians = numpy.zeros([data_shape[2], data_shape[1], data_shape[0]])    
     number_of_bands = data_shape[2]

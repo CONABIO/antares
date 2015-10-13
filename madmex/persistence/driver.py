@@ -9,7 +9,8 @@ import logging
 from unittest import result
 from sqlalchemy import tuple_
 from madmex.persistence.database.connection import SESSION_MAKER, \
-    Product, Host, Command, RawProduct, Information, Sensor
+    Product, Host, Command, RawProduct, Information, Sensor,\
+    RapidEyeFootPrintsMexicoOld
 import madmex.persistence.database.operations as database
 import madmex.persistence.filesystem.operations as filesystem
 from madmex.util import create_directory_path
@@ -114,6 +115,10 @@ def find_datasets(start_date, end_date, sensor_id, product_id, cloud_cover, tile
     #images_references_paths = session.query(RawProduct.path, Information.sensor).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , RawProduct.product_type == product_id, Information.sensor == sensor_id, Information.cloud_percentage <= cloud_cover).all()
     session.close()
     return [tuples[0] for tuples in images_references_paths]
+def acquisitions_by_mapgrid_and_date(date, mapgrid_target, daybuffer):
+    session = SESSION_MAKER()
+    images_paths = session.query(RapidEyeFootPrintsMexicoOld.fp_id, RapidEyeFootPrintsMexicoOld.mapgrid).filter(RapidEyeFootPrintsMexicoOld.mapgrid == mapgrid_target).first()
+    return images_paths
 def get_sensor_object(sensor_name):
     session = SESSION_MAKER()
     try:
@@ -124,3 +129,6 @@ def get_sensor_object(sensor_name):
     finally:
         session.close()
     return sensor_object 
+if __name__ == '__main__':
+    images_paths = acquisitions_by_mapgrid_and_date('2000-01-01', 13521, 3)
+    print images_paths

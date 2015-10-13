@@ -115,9 +115,11 @@ def find_datasets(start_date, end_date, sensor_id, product_id, cloud_cover, tile
     #images_references_paths = session.query(RawProduct.path, Information.sensor).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , RawProduct.product_type == product_id, Information.sensor == sensor_id, Information.cloud_percentage <= cloud_cover).all()
     session.close()
     return [tuples[0] for tuples in images_references_paths]
-def acquisitions_by_mapgrid_and_date(date, mapgrid_target, daybuffer):
+def acquisitions_by_mapgrid_and_date(date, mapgrid_target, day_buffer):
+    from sqlalchemy import Integer, func, Date
+    from sqlalchemy.sql.expression import cast
     session = SESSION_MAKER()
-    images_paths = session.query(RapidEyeFootPrintsMexicoOld.fp_id, RapidEyeFootPrintsMexicoOld.mapgrid).filter(RapidEyeFootPrintsMexicoOld.mapgrid == mapgrid_target).first()
+    images_paths = session.query(RawProduct.path, RapidEyeFootPrintsMexicoOld.code, RapidEyeFootPrintsMexicoOld.mapgrid2).distinct().join(RawProduct.information).filter(RawProduct.sensor_id == 1, RapidEyeFootPrintsMexicoOld.mapgrid2 == mapgrid_target, cast(RapidEyeFootPrintsMexicoOld.code, Integer) == cast(Information.grid_id, Integer), func.abs(cast(RawProduct.acquisition_date, Date)-date) < day_buffer).all()
     return images_paths
 def get_sensor_object(sensor_name):
     session = SESSION_MAKER()
@@ -130,5 +132,6 @@ def get_sensor_object(sensor_name):
         session.close()
     return sensor_object 
 if __name__ == '__main__':
-    images_paths = acquisitions_by_mapgrid_and_date('2000-01-01', 13521, 3)
+    images_paths = acquisitions_by_mapgrid_and_date('2013-12-31', 15462121, 100)
     print images_paths
+    print len(images_paths)

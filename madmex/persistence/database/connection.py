@@ -265,11 +265,14 @@ class RapidEyeFootPrintsMexicoOld(BASE):
     #TODO: this is just an example of three columns in the table and two columns mapped
     __table__ = Table('rapideye_footprints_mexico_old', BASE.metadata,
                         Column('gid', Integer, primary_key = True),
-                          Column('fp_id', Integer),
-                          Column('mapgrid', Integer))
+                          Column('code', Integer),
+                          Column('mapgrid', Integer),
+                          Column('mapgrid2', Integer))
     __table_args__ ={'autoload': True, 'autoload_with': ENGINE}
+    code = __table__.c.code
     mapgrid = __table__.c.mapgrid
-    fp_id = __table__.c.fp_id
+    mapgrid2 = __table__.c.mapgrid2
+    
 
 
 def create_database():

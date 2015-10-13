@@ -259,6 +259,18 @@ class Command(BASE):
     command = Column(String, unique=True)
     queue = Column(String)
     host = relationship('Host')
+
+class RapidEyeFootPrintsMexicoOld(BASE):
+    ''''''''
+    __table__ = Table('rapideye_footprints_mexico_old', BASE.metadata,
+                        Column('gid', Integer, primary_key = True),
+                          Column('fp_id', Integer),
+                          Column('mapgrid', Integer))
+    __table_args__ ={'autoload': True, 'autoload_with': ENGINE}
+    mapgrid = __table__.c.mapgrid
+    fp_id = __table__.c.fp_id
+
+
 def create_database():
     '''
     This method creates the database model in the database engine.
@@ -269,6 +281,7 @@ def delete_database():
     This method deletes the database model in the database engine.
     '''
     BASE.metadata.drop_all(ENGINE)
+
 # a => \u00E1
 # e => \u00E9
 # i => \u00ED
@@ -1862,9 +1875,22 @@ def populate_database():
     session.commit()
     session.close_all()
 
+def create_vector_tables(path_query):
+    klass = sessionmaker(bind=ENGINE)
+    session = klass()
+    file_open = open(path_query, 'r')
+    sql = " ".join(file_open.readlines())
+    session.execute(sql)
+    #vector = Table('rapideye_footprints_mexico_old', BASE.metadata, Column('gid', Integer, primary_key = 'True'))
+    #mapper(RapidEyeFootPrintsMexicoOld, vector)
+
+
 if __name__ == '__main__':
     CREATE = 1
     if CREATE:
+        path_query = getattr(SETTINGS, 'RAPIDEYE_FOOTPRINTS_MEXICO_OLD')
+        create_vector_tables(path_query)
+        print 'vector tables created'
         create_database()
         print 'database created'
         populate_database()

@@ -262,6 +262,7 @@ class Command(BASE):
 
 class RapidEyeFootPrintsMexicoOld(BASE):
     ''''''''
+    #TODO: this is just an example of three columns in the table and two columns mapped
     __table__ = Table('rapideye_footprints_mexico_old', BASE.metadata,
                         Column('gid', Integer, primary_key = True),
                           Column('fp_id', Integer),
@@ -1881,9 +1882,6 @@ def create_vector_tables(path_query):
     file_open = open(path_query, 'r')
     sql = " ".join(file_open.readlines())
     session.execute(sql)
-    #vector = Table('rapideye_footprints_mexico_old', BASE.metadata, Column('gid', Integer, primary_key = 'True'))
-    #mapper(RapidEyeFootPrintsMexicoOld, vector)
-
 
 if __name__ == '__main__':
     CREATE = 1

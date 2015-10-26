@@ -30,13 +30,25 @@ CREATE_WITH_PROJECTION = ['features_of_image_for_create', 'projection']
 CREATE_WITH_GEOTRANSFORM = ['features_of_image_for_create', 'geotransform']
 CREATE_WITH_GEOTRANSFORM_FROM_GCPS = ['features_of_image_for_create', 'create_using_geotransform_from_gcps']
 GDAL_CREATE_OPTIONS = ['gdal_create_options']
+GDAL_TIFF = 'GTiff'
 
 def default_options_for_create_raster_from_reference(reference_metadata):
+    '''
+    This method will extract the metadata from a given reference file to be used
+    in the creation of a new file.
+    '''
     width, height, bands = _get_attribute(DATA_SHAPE, reference_metadata)
     geotransform = _get_attribute(GEOTRANSFORM, reference_metadata)
     projection = _get_attribute(PROJECTION, reference_metadata)
     options = {'features_of_image_for_create': None, 'gdal_create_options': None}
-    options['features_of_image_for_create'] = {'number_of_bands': None, 'width': None, 'height': None, 'projection': None, 'geotransform': None, 'create_using_geotransform_from_gcps': None}
+    options['features_of_image_for_create'] = {
+        'number_of_bands': None,
+        'width': None,
+        'height': None,
+        'projection': None,
+        'geotransform': None,
+        'create_using_geotransform_from_gcps': None
+        }
     put_in_dictionary(options, CREATE_WITH_NUMBER_OF_BANDS, bands)
     put_in_dictionary(options, CREATE_WITH_WIDTH, width)
     put_in_dictionary(options, CREATE_WITH_HEIGHT, height)
@@ -45,17 +57,26 @@ def default_options_for_create_raster_from_reference(reference_metadata):
     put_in_dictionary(options, CREATE_WITH_GEOTRANSFORM_FROM_GCPS, False)
     put_in_dictionary(options, GDAL_CREATE_OPTIONS, [])
     return options
-
 def new_options_for_create_raster_from_reference(reference_metadata, new_option, value, options):
+    '''
+    Convenience method to add options to the dictionary.
+    '''
     if not options:
-        options = default_options_for_create_raster_from_reference(reference_metadata)
+        options = default_options_for_create_raster_from_reference(
+            reference_metadata
+            )
         put_in_dictionary(options, new_option, value)
         return options
     put_in_dictionary(options, new_option, value)
-
-def create_raster_tiff_from_reference(reference_metadata, options, output_file, array, data_type = gdal.GDT_Float32):
-    format_create = 'GTiff'
-    driver = gdal.GetDriverByName(str(format_create))
+def create_raster_tiff_from_reference(reference_metadata,  output_file, array, options={}, data_type = gdal.GDT_Float32):
+    '''
+    This method creates a raster tif from a given tif file to be used as a
+    reference. From the reference file, data such as the width, the height, the
+    projection, and the transform will be extracted and used in the new file. 
+    '''
+    if not options:
+        options =  default_options_for_create_raster_from_reference(reference_metadata)
+    driver = gdal.GetDriverByName(str(GDAL_TIFF))
     width = _get_attribute(CREATE_WITH_WIDTH, options)
     height = _get_attribute(CREATE_WITH_HEIGHT, options)
     bands = _get_attribute(CREATE_WITH_NUMBER_OF_BANDS, options)
@@ -93,12 +114,12 @@ class Data(BaseData):
             self.driver = gdal.GetDriverByName(str(gdal_format))
             LOGGER.info('driver: %s' % self.driver)
         except AttributeError:
-            LOGGER.info('Cannot access driver for format %s' % gdal_format)
+            LOGGER.error('Cannot access driver for format %s' % gdal_format)
         try:
             LOGGER.info('Extracting metadata of driver %s' % gdal_format)
             self.metadata[DRIVER_METADATA[0]] = self.driver.GetMetadata()
         except:
-            LOGGER.info('Unable to extract metadata of driver of image %s' % image_path)
+            LOGGER.error('Unable to extract metadata of driver of image %s' % image_path)
         self.data_file = self._open_file()
         if self.data_file != None:
             LOGGER.info("Extracting metadata_file of file %s" % self.data_file)
@@ -114,10 +135,10 @@ class Data(BaseData):
         Open the raster image file with gdal.
         '''
         try:
-            LOGGER.info('Open raster file: %s' % self.image_path)
+            LOGGER.debug('Open raster file: %s' % self.image_path)
             return gdal.Open(self.image_path, mode)
         except RuntimeError:
-            LOGGER.info('Unable to open raster file %s', self.image_path)
+            LOGGER.error('Unable to open raster file %s', self.image_path)
     def _extract_raster_properties(self):
         '''
         Extract some raster info from the raster image file using gdal functions.

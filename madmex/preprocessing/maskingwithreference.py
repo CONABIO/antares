@@ -16,6 +16,7 @@ from madmex.mapper.data.raster import new_options_for_create_raster_from_referen
 from madmex.mapper.sensor import rapideye
 from madmex.persistence.driver import find_datasets
 from madmex.preprocessing.masking import filter_median, morph_dilation, calculate_cloud_shadow, morphing
+from numpy import histogram
 
 
 GENERALIZE = False
@@ -57,8 +58,7 @@ def get_image_array_difference(re_raster_metadata, folder, images_references_pat
         band_medians[k, :, :] = numpy.median(list_with_arrays_stack_per_band[k], axis = 0)
         list_with_arrays_stack_per_band.pop()
     image_reference_path = folder + '/re_reference.tif'
-    options_to_create = default_options_for_create_raster_from_reference(re_raster_metadata)
-    create_raster_tiff_from_reference(re_raster_metadata, options_to_create, image_reference_path, band_medians)
+    create_raster_tiff_from_reference(re_raster_metadata, image_reference_path, band_medians)
     #TODO: Is not necessary create a tiff image, we only need the array and datashape and geotransform for the next processes
     LOGGER.info("RE reference image: %s" % image_reference_path)
     LOGGER.info('Calculating difference between RapidEye image and reference')
@@ -86,8 +86,9 @@ def create_reference_image(image_reference_path, images_references_paths, max_nu
     bundle  = Bundle(images_references_paths[0])
     re_raster_metadata = bundle.get_raster().metadata
     
-    options_to_create = default_options_for_create_raster_from_reference(re_raster_metadata)
-    create_raster_tiff_from_reference(re_raster_metadata, options_to_create, image_reference_path, band_medians)
+    print re_raster_metadata
+    
+    create_raster_tiff_from_reference(re_raster_metadata, image_reference_path, band_medians)
     LOGGER.info("RE reference image: %s" % image_reference_path)
 def get_stack_arrays_per_band(images_references_paths, max_number_of_images):
     '''
@@ -97,7 +98,10 @@ def get_stack_arrays_per_band(images_references_paths, max_number_of_images):
     #TODO: change this line to identify different sensors
     from madmex.mapper.bundle.rapideye import Bundle
     number_of_identified_images = 0
+    bands, height, width = 0, 0, 0
+    data_shape = (width, height, bands)
     list_with_arrays_stack_per_band = list()
+    geotransform = {}
     for image_path in images_references_paths:
         bundle  = Bundle(image_path)
         first = True
@@ -137,5 +141,5 @@ def mask_clouds_and_shadows(re_raster_metadata, image_array, image_array_differe
     image_mask_path = folder + '/mask_reference.tif'
     options_to_create = new_options_for_create_raster_from_reference(re_raster_metadata, raster.CREATE_WITH_NUMBER_OF_BANDS, 1, {})
     #TODO: CREATE WITH XOFFSET, YOFFSET?? IS IT NECESSARY?? GO TO OLD MADMEX
-    create_raster_tiff_from_reference(re_raster_metadata, options_to_create, image_mask_path, image_mask_array)
+    create_raster_tiff_from_reference(re_raster_metadata, image_mask_path, image_mask_array, options_to_create)
     return image_mask_path

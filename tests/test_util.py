@@ -149,12 +149,12 @@ class Test(unittest.TestCase):
         options_to_create = default_options_for_create_raster_from_reference(data_class.metadata)
         output_file = image + '/result_new_create.TIF'
         array = data_class.read_data_file_as_array()
-        create_raster_tiff_from_reference(data_class.metadata, options_to_create, output_file, array)
+        create_raster_tiff_from_reference(data_class.metadata, output_file, array)
         output_file = image + '/result_new_options.TIF'
         #options_to_create = new_options_for_create_raster_from_reference(data_class.metadata, raster.CREATE_WITH_NUMBER_OF_BANDS, 1, {})
         new_options_for_create_raster_from_reference(data_class.metadata, raster.CREATE_WITH_GEOTRANSFORM_FROM_GCPS, True, options_to_create)
         new_options_for_create_raster_from_reference(data_class.metadata, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], options_to_create)
-        create_raster_tiff_from_reference(data_class.metadata, options_to_create, output_file, array)      
+        create_raster_tiff_from_reference(data_class.metadata, output_file, array, options_to_create)      
     def test_some_sqlalchemy_functions(self):
         from madmex.persistence.database.connection import SESSION_MAKER, RawProduct, Information
         from sqlalchemy import tuple_

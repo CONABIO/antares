@@ -9,7 +9,6 @@ from madmex import _, util
 from madmex.core.controller.base import BaseCommand
 from madmex.preprocessing.maskingwithreference import create_reference_image
 
-
 class Command(BaseCommand):
     '''
     classdocs

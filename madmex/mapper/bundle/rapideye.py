@@ -138,8 +138,7 @@ class Bundle(BaseBundle):
         top_of_atmosphere_directory = create_file_name(get_parent(self.path), 'TOA')
         create_directory_path(top_of_atmosphere_directory)
         output_file = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[2]) + '.toa.tif') #TODO: change [2] in self.get_files()[2] 
-        options_to_create = default_options_for_create_raster_from_reference(self.get_raster().metadata)
-        create_raster_tiff_from_reference(self.get_raster().metadata, options_to_create, output_file, top_of_atmosphere_data, data_type = NumericTypeCodeToGDALTypeCode(numpy.float32))
+        create_raster_tiff_from_reference(self.get_raster().metadata, output_file, top_of_atmosphere_data, data_type = NumericTypeCodeToGDALTypeCode(numpy.float32))
         self.masking(top_of_atmosphere_data, top_of_atmosphere_directory, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata)
     def masking(self, top_of_atmosphere_data, top_of_atmosphere_directory, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata):
         import numpy
@@ -148,7 +147,7 @@ class Bundle(BaseBundle):
         image_masked = base_masking_rapideye(top_of_atmosphere_data, output_file, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata)
         print 'finished base masking'
         options_to_create = new_options_for_create_raster_from_reference(self.get_raster().metadata, raster.CREATE_WITH_NUMBER_OF_BANDS, 1, {})
-        create_raster_tiff_from_reference(self.get_raster().metadata, options_to_create, output_file, image_masked, data_type = NumericTypeCodeToGDALTypeCode(numpy.uint8))
+        create_raster_tiff_from_reference(self.get_raster().metadata, output_file, image_masked, options_to_create, data_type = NumericTypeCodeToGDALTypeCode(numpy.uint8))
     def masking_with_time_series(self):
         image_masked_path = maskingwithreference.masking(self.get_output_directory(), self.get_sensor().parser.get_attribute, self.get_raster().read_data_file_as_array(), self.get_raster().metadata)
         LOGGER.info('Image for masking clouds is: %s', image_masked_path)

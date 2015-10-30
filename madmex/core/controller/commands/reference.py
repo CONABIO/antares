@@ -7,16 +7,9 @@ from __future__ import unicode_literals
 
 from madmex import _, util
 from madmex.core.controller.base import BaseCommand
-from madmex.mapper.base import put_in_dictionary
-from madmex.mapper.data import raster
-from madmex.mapper.data.raster import create_raster_tiff_from_reference, \
-    CREATE_WITH_NUMBER_OF_BANDS, new_options_for_create_raster_from_reference
-import madmex.mapper.sensor.rapideye as rapideye
-from madmex.preprocessing.masking import filter_median, morph_dilation, \
-    FMASK_OUTSIDE
-from madmex.preprocessing.maskingwithreference import create_reference_array, \
-    calculate_difference_from_reference, MORPHING_SIZE, cloud_shadow_mask_array, \
-    get_images_for_tile
+from madmex.mapper.data.raster import create_raster_tiff_from_reference
+from madmex.preprocessing.maskingwithreference import get_images_for_tile, \
+    create_reference_array
 
 
 class Command(BaseCommand):

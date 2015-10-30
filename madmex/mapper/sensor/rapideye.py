@@ -93,6 +93,30 @@ TILE_ID = [
     're:EarthObservationMetaData',
     're:tileId'
     ]
+BANDS = [
+    're:EarthObservation',
+    'gml:resultOf',
+    're:EarthObservationResult',
+    'eop:product',
+    're:ProductInformation',
+    're:numBands'    
+    ]
+ROWS = [
+    're:EarthObservation',
+    'gml:resultOf',
+    're:EarthObservationResult',
+    'eop:product',
+    're:ProductInformation',
+    're:numRows'    
+    ]
+COLUMNS = [
+    're:EarthObservation',
+    'gml:resultOf',
+    're:EarthObservationResult',
+    'eop:product',
+    're:ProductInformation',
+    're:numColumns'    
+    ]
 
 class Sensor(BaseSensor):
     '''

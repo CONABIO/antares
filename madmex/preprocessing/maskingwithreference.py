@@ -229,10 +229,3 @@ def mask_clouds_and_shadows(re_raster_metadata, image_array, image_array_differe
     #TODO: CREATE WITH XOFFSET, YOFFSET?? IS IT NECESSARY?? GO TO OLD MADMEX
     create_raster_tiff_from_reference(re_raster_metadata, image_mask_path, image_mask_array, options_to_create)
     return image_mask_path
-
-if __name__ == '__main__':
-    tile_id = 1447813
-    sensor_id = 1
-    product_id = 2
-    for image in  get_images_for_tile(tile_id, sensor_id, product_id):
-        print image

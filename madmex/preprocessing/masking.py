@@ -3,13 +3,15 @@ Created on 07/10/2015
 
 @author: erickpalacios
 '''
+from __future__ import unicode_literals
+
 from scipy import ndimage
 from scipy import signal
 from scipy import stats 
 import matplotlib.pylab as pylab
-from skimage import io, color
+from skimage import color
 from madmex import LOGGER
-import numpy as np
+import numpy
 
 FMASK_LAND = 0
 FMASK_WATER = 1
@@ -31,7 +33,7 @@ def morph_dilation(input_image_raster, filter_size):
     '''
     ndim = 3
     if input_image_raster.ndim == 2:
-        input_image_raster = np.expand_dims(input_image_raster, axis=0)
+        input_image_raster = numpy.expand_dims(input_image_raster, axis=0)
         ndim = 2
     if input_image_raster.ndim != 3:
         raise Exception("Input array has to be 3D")
@@ -39,29 +41,31 @@ def morph_dilation(input_image_raster, filter_size):
         return ndimage.grey_dilation(input_image_raster, (1, filter_size, filter_size))
     else:
         return ndimage.grey_dilation(input_image_raster, (1, filter_size, filter_size))[0]
+
 def morphing(image_mask_array, image_array, inbetween, clouds):
-    np.putmask(image_mask_array, image_array[0, :, :] == 0, FMASK_OUTSIDE)
+    print image_mask_array.shape, image_array.shape, inbetween.shape, clouds.shape
+    numpy.putmask(image_mask_array, image_array[0, :, :] == 0, FMASK_OUTSIDE)
     m = len(MORPHING_SIZES)
     for MORPHING_SIZE in MORPHING_SIZES:
-        np.putmask(image_mask_array, morph_dilation(clouds, MORPHING_SIZE) == 1, FMASK_CLOUD*10+m)
+        numpy.putmask(image_mask_array, morph_dilation(clouds, MORPHING_SIZE) == 1, FMASK_CLOUD)#*10+m)
         m = m-1
-        np.putmask(image_mask_array, inbetween == 1, FMASK_CLOUD_SHADOW)
-        np.putmask(image_mask_array, clouds == 1, FMASK_CLOUD)
+        numpy.putmask(image_mask_array, inbetween == 1, FMASK_CLOUD_SHADOW)
+        numpy.putmask(image_mask_array, clouds == 1, FMASK_CLOUD)
     return image_mask_array
 def base_masking_rapideye(top_of_atmosphere_data, output_file, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata):
-        from madmex.mapper.sensor import rapideye
-        from madmex.mapper.data import raster
-        solar_zenith = fun_get_attr_sensor_metadata(rapideye.SOLAR_ZENITH)
-        solar_azimuth = fun_get_attr_sensor_metadata(rapideye.SOLAR_AZIMUTH)
-        geotransform = fun_get_attr_raster_metadata(raster.GEOTRANSFORM)
-        make_plot = True
-        cloud_mask = convert_to_fmask(extract_extremes(top_of_atmosphere_data, output_file, make_plot))
-        clouds = np.where(cloud_mask==FMASK_CLOUD, 1, 0)
-        shadows= np.where(cloud_mask==FMASK_CLOUD_SHADOW, 1, 0)
-        resolution = geotransform[1]
-        shadow_mask = calculate_cloud_shadow(clouds, shadows, solar_zenith, solar_azimuth, resolution) * FMASK_CLOUD_SHADOW
-        water_mask = convert_water_to_fmask(calculate_water(top_of_atmosphere_data))
-        return combine_mask(cloud_mask, shadow_mask, water_mask)
+    from madmex.mapper.sensor import rapideye
+    from madmex.mapper.data import raster
+    solar_zenith = fun_get_attr_sensor_metadata(rapideye.SOLAR_ZENITH)
+    solar_azimuth = fun_get_attr_sensor_metadata(rapideye.SOLAR_AZIMUTH)
+    geotransform = fun_get_attr_raster_metadata(raster.GEOTRANSFORM)
+    make_plot = True
+    cloud_mask = convert_to_fmask(extract_extremes(top_of_atmosphere_data, output_file, make_plot))
+    clouds = numpy.where(cloud_mask==FMASK_CLOUD, 1, 0)
+    shadows= numpy.where(cloud_mask==FMASK_CLOUD_SHADOW, 1, 0)
+    resolution = geotransform[1]
+    shadow_mask = calculate_cloud_shadow(clouds, shadows, solar_zenith, solar_azimuth, resolution) * FMASK_CLOUD_SHADOW
+    water_mask = convert_water_to_fmask(calculate_water(top_of_atmosphere_data))
+    return combine_mask(cloud_mask, shadow_mask, water_mask)
 def extract_extremes(data, image_file, make_plot, steps=1000):
     #TODO: the two for and the last one takes too long to finish
     CENTER = 50
@@ -75,14 +79,14 @@ def extract_extremes(data, image_file, make_plot, steps=1000):
             subset = data[:, ycount:ycount + steps, xcount:xcount + steps]
             LOGGER.info("Extent: %dx%d"% (xcount,ycount))
             z, y, x = subset.shape
-            rgb = np.zeros((y, x, z))
+            rgb = numpy.zeros((y, x, z))
             for i in range(0, z):
-                rgb[:, :, i] = subset[i, :, :] / np.max(data[i, :, :])
+                rgb[:, :, i] = subset[i, :, :] / numpy.max(data[i, :, :])
             col_space1 = color.rgb2lab(rgb[:, :, 0:3])
             quant = calculate_quantiles(col_space1[ :, :, 0])
             if len(quant) > 0:
                 points = calculate_breaking_points(quant)
-                break_points = np.array(calculate_continuity(points.keys()))
+                break_points = numpy.array(calculate_continuity(points.keys()))
             else:
                 break_points = []
             subset = data[b, ycount:ycount + steps, xcount:xcount + steps]
@@ -92,13 +96,13 @@ def extract_extremes(data, image_file, make_plot, steps=1000):
             if len(break_points) > 1:
                 if make_plot:
                     for p in points.keys():
-                        pylab.plot(p, np.array(quant)[p], 'r.')
+                        pylab.plot(p, numpy.array(quant)[p], 'r.')
                 if len(break_points[break_points < CENTER]) > 0:
                     min_bp = max(break_points[break_points < CENTER])
                 if len(break_points[break_points > CENTER]) > 0:
                     max_bp = min(break_points[break_points > CENTER])
-                if np.min(subset) != 0.0 or np.max(subset) != 0.0:
-                    LOGGER.info("%d, %3.2f, %3.2f, %3.2f * %d, %3.2f, %3.2f, %3.2f" % (min_bp, quant[min_bp], np.min(subset), quant[0] / np.min(subset), max_bp, quant[99] , np.max(subset), quant[99] / np.max(subset)))
+                if numpy.min(subset) != 0.0 or numpy.max(subset) != 0.0:
+                    LOGGER.info("%d, %3.2f, %3.2f, %3.2f * %d, %3.2f, %3.2f, %3.2f" % (min_bp, quant[min_bp], numpy.min(subset), quant[0] / numpy.min(subset), max_bp, quant[99] , numpy.max(subset), quant[99] / numpy.max(subset)))
                 for i, q in enumerate(range(max_bp, 100, 1)):
                     modelled = f_lin(q, points[max_bp]["slope"], points[max_bp]["offset"])
                     diff = abs(quant[q] - modelled)
@@ -114,11 +118,11 @@ def extract_extremes(data, image_file, make_plot, steps=1000):
                 name = image_file.replace(".tif", "_local.png")
                 fig.savefig(name, bbox_inches='tight', dpi=150)
     z, y, x = data.shape
-    rgb = np.zeros((y, x, z))
+    rgb = numpy.zeros((y, x, z))
     for i in range(0, z):
-        rgb[:, :, i] = data[i, :, :] / np.max(data[i, :, :])
+        rgb[:, :, i] = data[i, :, :] / numpy.max(data[i, :, :])
     col_space1 = color.rgb2lab(rgb[:, :, 0:3])
-    subset_result = np.zeros((3, y, x), dtype=np.float)
+    subset_result = numpy.zeros((3, y, x), dtype=numpy.float)
     total_q = len(global_quant)
     for counter, item in enumerate(global_quant):
         LOGGER.info("%d: %d, %s" % ( counter, total_q, str(item)))
@@ -126,40 +130,40 @@ def extract_extremes(data, image_file, make_plot, steps=1000):
         MAX_ERROR = 10
         if diff > MAX_ERROR:
             if q < 50.0:
-                subset_result[0, :, :] = np.where(col_space1[ :, :, 0] < value, 1 + col_space1[ :, :, 0] - diff, subset_result[0, :, :])
-                subset_result[1, :, :] = np.where(col_space1[ :, :, 0] < value, subset_result[1, :, :] + diff, subset_result[1, :, :])
-                subset_result[2, :, :] = np.where(col_space1[ :, :, 2] < value, subset_result[2, :, :] - 1, subset_result[2, :, :])
-            else:
-                subset_result[0, :, :] = np.where(col_space1[ :, :, 0] > value, 100. + col_space1[ :, :, 0] - diff, subset_result[0, :, :])
-                subset_result[1, :, :] = np.where(col_space1[ :, :, 0] > value, subset_result[1, :, :] + diff, subset_result[1, :, :])
-                subset_result[2, :, :] = np.where(col_space1[ :, :, 2] > value, subset_result[2, :, :] + 1, subset_result[2, :, :])
+                subset_result[0, :, :] = numpy.where(col_space1[ :, :, 0] < value, 1 + col_space1[ :, :, 0] - diff, subset_result[0, :, :])
+                subset_result[1, :, :] = numpy.where(col_space1[ :, :, 0] < value, subset_result[1, :, :] + diff, subset_result[1, :, :])
+                subset_result[2, :, :] = numpy.where(col_space1[ :, :, 2] < value, subset_result[2, :, :] - 1, subset_result[2, :, :])
+            else:                        
+                subset_result[0, :, :] = numpy.where(col_space1[ :, :, 0] > value, 100. + col_space1[ :, :, 0] - diff, subset_result[0, :, :])
+                subset_result[1, :, :] = numpy.where(col_space1[ :, :, 0] > value, subset_result[1, :, :] + diff, subset_result[1, :, :])
+                subset_result[2, :, :] = numpy.where(col_space1[ :, :, 2] > value, subset_result[2, :, :] + 1, subset_result[2, :, :])
     return subset_result
 def calculate_water(data):
     z,y,x = data.shape
-    pot_water = np.zeros((y,x))
+    pot_water = numpy.zeros((y,x))
     for b in range(z-1,1,-1):
-        pot_water[:,:] = np.where(data[b,:,:]<data[b-1,:,:],pot_water+b*1,pot_water)
+        pot_water[:,:] = numpy.where(data[b,:,:]<data[b-1,:,:],pot_water+b*1,pot_water)
     for b in range(z-1,1,-1):
-        pot_water[:,:] = np.where(data[b,:,:]>data[b-1,:,:],pot_water-b*1,pot_water)
+        pot_water[:,:] = numpy.where(data[b,:,:]>data[b-1,:,:],pot_water-b*1,pot_water)
     # NDWI bands
     b=4
-    pot_water[:,:] = np.where(data[b,:,:]>data[b-3,:,:],pot_water-1,pot_water) 
+    pot_water[:,:] = numpy.where(data[b,:,:]>data[b-3,:,:],pot_water-1,pot_water) 
     #NIR-RE diff to  R-RE aka sun glid
-    dark_nir = np.where(data[b,:,:]<0.12,data, data*0 )
-    pot_water[:,:] = np.where(np.abs(dark_nir[b,:,:]-dark_nir[b-1,:,:]) < abs(dark_nir[b-1,:,:]-dark_nir[b-2,:,:]),pot_water+1.5,pot_water-1.5) 
+    dark_nir = numpy.where(data[b,:,:]<0.12,data, data*0 )
+    pot_water[:,:] = numpy.where(numpy.abs(dark_nir[b,:,:]-dark_nir[b-1,:,:]) < abs(dark_nir[b-1,:,:]-dark_nir[b-2,:,:]),pot_water+1.5,pot_water-1.5) 
     pot_water = signal.medfilt2d(pot_water,kernel_size=5)
-    pot_water = np.where(data[0,:,:]==0, -999, pot_water)
+    pot_water = numpy.where(data[0,:,:]==0, -999, pot_water)
     return pot_water
 def calculate_quantiles(band, NA=0):
     quant = list()
     na_free_data = band[band > NA]
     if len(na_free_data) > 100:
         for i in range(0, 100, 1):
-            p = np.percentile(na_free_data, i)
+            p = numpy.percentile(na_free_data, i)
             quant.append(p)
     else:
         quant = []
-    return np.array(quant)
+    return numpy.array(quant)
 def calculate_breaking_points(quant_list):
     MAX_ERROR = 5
     RANGE = 5
@@ -209,58 +213,63 @@ def f_lin(x, scale, off):
 def convert_to_fmask(raster):
     from numpy.core.numerictypes import byte
     z, y, x = raster.shape
-    fmask = np.zeros((y, x)).astype(byte)  # FMASK_LAND
-    fmask = np.where (raster[0, :, :] > 100, FMASK_CLOUD, fmask)
-    fmask = np.where (raster[0, :, :] < 100, FMASK_CLOUD_SHADOW, fmask)
-    fmask = np.where (raster[0, :, :] == 0, FMASK_LAND, fmask)
-    fmask = np.where (raster[0, :, :] == -999.0, FMASK_OUTSIDE, fmask)
+    fmask = numpy.zeros((y, x)).astype(byte)  # FMASK_LAND
+    fmask = numpy.where (raster[0, :, :] > 100, FMASK_CLOUD, fmask)
+    fmask = numpy.where (raster[0, :, :] < 100, FMASK_CLOUD_SHADOW, fmask)
+    fmask = numpy.where (raster[0, :, :] == 0, FMASK_LAND, fmask)
+    fmask = numpy.where (raster[0, :, :] == -999.0, FMASK_OUTSIDE, fmask)
     return fmask
-def calculate_cloud_shadow(clouds, shadows, solarzenith, solarazimuth, resolution):
-    cloudrowcol = np.column_stack(np.where(clouds == 1))
-    cloudheight = np.arange(1000, 3100, 100)
+def calculate_cloud_shadow(clouds, shadows, solar_zenith, solar_azimuth, resolution):
+    '''
+    This method iterates over a list of different cloud heights, and calculates
+    the shadow that the clouds in the given mask project. This projections are
+    then intersected with the shadow mask that we already have.
+    '''
+    cloud_row_column = numpy.column_stack(numpy.where(clouds == 1))
+    cloud_heights = numpy.arange(1000, 3100, 100)
     cloud_mask_shape = clouds.shape
-    cloudsproj = np.zeros(cloud_mask_shape)  
-    for h in cloudheight:    
-        dist = h / resolution * np.tan(np.deg2rad(90 - solarzenith))
-        ydiff = dist * np.sin(np.deg2rad(360-solarazimuth))
-        xdiff = dist * np.cos(np.deg2rad(360-solarazimuth))     
-        if solarazimuth < 180:
-            rows = cloudrowcol[:, 0] - ydiff #/ 5
-            cols = cloudrowcol[:, 1] - xdiff #/ 5
+    clouds_projection = numpy.zeros(cloud_mask_shape)  
+    for cloud_height in cloud_heights:    
+        distance = cloud_height / resolution * numpy.tan(numpy.deg2rad(90 - solar_zenith))
+        y_difference = distance * numpy.sin(numpy.deg2rad(360 - solar_azimuth))
+        x_difference = distance * numpy.cos(numpy.deg2rad(360 - solar_azimuth))     
+        if solar_azimuth < 180:
+            rows = cloud_row_column[:, 0] - y_difference #/ 5
+            cols = cloud_row_column[:, 1] - x_difference #/ 5
         else:
-            rows = cloudrowcol[:, 0] + ydiff #/ 5
-            cols = cloudrowcol[:, 1] + xdiff #/ 5
-        rows = rows.astype(np.int)
-        cols = cols.astype(np.int)
-        np.putmask(rows, rows < 0, 0)
-        np.putmask(cols, cols < 0, 0)
-        np.putmask(rows, rows >= cloud_mask_shape[0] - 1, cloud_mask_shape[0]  - 1)
-        np.putmask(cols, cols >= cloud_mask_shape[1]  - 1, cloud_mask_shape[1]  - 1)
-        cloudsproj[rows, cols] = 1  
-    inbetween = shadows * cloudsproj
-    return inbetween
+            rows = cloud_row_column[:, 0] + y_difference #/ 5
+            cols = cloud_row_column[:, 1] + x_difference #/ 5
+        rows = rows.astype(numpy.int)
+        cols = cols.astype(numpy.int)
+        numpy.putmask(rows, rows < 0, 0)
+        numpy.putmask(cols, cols < 0, 0)
+        numpy.putmask(rows, rows >= cloud_mask_shape[0] - 1, cloud_mask_shape[0]  - 1)
+        numpy.putmask(cols, cols >= cloud_mask_shape[1]  - 1, cloud_mask_shape[1]  - 1)
+        clouds_projection[rows, cols] = 1  
+    in_between = shadows * clouds_projection
+    return in_between
 def combine_mask(cloudmask, shadowmask, watermask):
-    watermask = np.where(watermask == FMASK_CLOUD_SHADOW, FMASK_CLOUD_SHADOW, watermask)
-    watermask = np.where(cloudmask == FMASK_CLOUD, FMASK_CLOUD, watermask)
-    watermask = np.where(shadowmask == FMASK_CLOUD_SHADOW, FMASK_CLOUD_SHADOW, watermask)
+    watermask = numpy.where(watermask == FMASK_CLOUD_SHADOW, FMASK_CLOUD_SHADOW, watermask)
+    watermask = numpy.where(cloudmask == FMASK_CLOUD, FMASK_CLOUD, watermask)
+    watermask = numpy.where(shadowmask == FMASK_CLOUD_SHADOW, FMASK_CLOUD_SHADOW, watermask)
     return watermask
 def convert_cloud_to_fmask(raster):
     from numpy.core.numerictypes import byte
     z, y, x = raster.shape
-    fmask = np.zeros((y, x)).astype(byte)  # FMASK_LAND
-    fmask = np.where (raster[0, :, :] > 100, FMASK_CLOUD, fmask)
-    fmask = np.where (raster[0, :, :] < 100, FMASK_CLOUD_SHADOW, fmask)
-    fmask = np.where (raster[0, :, :] == 0, FMASK_LAND, fmask)
-    fmask = np.where (raster[0, :, :] == -999.0, FMASK_OUTSIDE, fmask)
+    fmask = numpy.zeros((y, x)).astype(byte)  # FMASK_LAND
+    fmask = numpy.where (raster[0, :, :] > 100, FMASK_CLOUD, fmask)
+    fmask = numpy.where (raster[0, :, :] < 100, FMASK_CLOUD_SHADOW, fmask)
+    fmask = numpy.where (raster[0, :, :] == 0, FMASK_LAND, fmask)
+    fmask = numpy.where (raster[0, :, :] == -999.0, FMASK_OUTSIDE, fmask)
     fmask = signal.medfilt2d(fmask*1.0, kernel_size=3)
     fmask = signal.medfilt2d(fmask*1.0, kernel_size=5)    
     return fmask
 def convert_water_to_fmask(raster):
     from numpy.core.numerictypes import byte
     y, x = raster.shape
-    fmask = np.zeros((y, x)).astype(byte)  # FMASK_LAND
-    fmask = np.where (raster > 1, FMASK_WATER, fmask)
-    fmask = np.where (raster <= 1, FMASK_LAND, fmask)
-    fmask = np.where (raster == -999.0, FMASK_OUTSIDE, fmask)
+    fmask = numpy.zeros((y, x)).astype(byte)  # FMASK_LAND
+    fmask = numpy.where (raster > 1, FMASK_WATER, fmask)
+    fmask = numpy.where (raster <= 1, FMASK_LAND, fmask)
+    fmask = numpy.where (raster == -999.0, FMASK_OUTSIDE, fmask)
     return fmask
 

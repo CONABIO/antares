@@ -111,7 +111,7 @@ def find_datasets(start_date, end_date, sensor_id, product_id, cloud_cover, tile
     Get the rows in DB that fulfill the condition in the orm-query 
     '''
     session = SESSION_MAKER()
-    images_references_paths = session.query(RawProduct.path).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , Information.cloud_percentage <= cloud_cover).all()
+    images_references_paths = session.query(RawProduct.path).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , Information.cloud_percentage <= cloud_cover, Information.grid_id == tile_id).all()
     #images_references_paths = session.query(RawProduct.path, Information.sensor).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , RawProduct.product_type == product_id, Information.sensor == sensor_id, Information.cloud_percentage <= cloud_cover).all()
     session.close()
     return [tuples[0] for tuples in images_references_paths]

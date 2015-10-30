@@ -46,12 +46,8 @@ class Command(BaseCommand):
         print paths
         tiles = options['tiles']
         name = ''.join(options['name'])
-        
-        
+
         from madmex.mapper.bundle.rapideye import Bundle
-        
-        import time
-        start = time.time()
         
         if tiles:
             for tile in tiles:
@@ -63,11 +59,7 @@ class Command(BaseCommand):
                 re_raster_metadata = bundle.get_raster().metadata
                 create_raster_tiff_from_reference(re_raster_metadata, '%s.tif' % tile, reference_array)
         if paths:
-            
-            
-            import numpy
             new_paths = map(util.get_parent, paths)
-            image = '/Users/agutierrez/Development/df/1447813/2013/2013-02-17/l3a/'
             bundle = Bundle(new_paths[0])
             re_raster_metadata = bundle.get_raster().metadata
-            create_raster_tiff_from_reference(re_raster_metadata, '%s.tif' % tile, reference_array)
+            create_raster_tiff_from_reference(re_raster_metadata, '%s.tif' % name, reference_array)

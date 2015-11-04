@@ -257,9 +257,12 @@ class BaseData(object):
         data_file: data that will have the data in parameter data_to_write
         data_to_write: array
         '''
-        bands, height, width = data_to_write.shape
-        for band in range(bands):
-            data_file.GetRasterBand(band + 1).WriteArray(data_to_write[band, :, :])    
+        if len(data_to_write.shape) > 2:
+            bands = data_to_write.shape[0]
+            for band in range(bands):
+                data_file.GetRasterBand(band + 1).WriteArray(data_to_write[band, :, :])    
+        else:
+            data_file.GetRasterBand(1).WriteArray(data_to_write)    
     def write_array(self, data_file, data_to_write):
         data_file.GetRasterBand(1).WriteArray(data_to_write)
 

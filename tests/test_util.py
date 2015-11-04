@@ -12,8 +12,10 @@ import unittest
 from madmex.configuration import SETTINGS
 from madmex.core import controller
 from madmex.mapper.base import _get_attribute
-from madmex.util import get_last_package_from_name, create_directory_path,\
-    get_parent
+from madmex.mapper.data._gdal import create_raster
+from madmex.util import get_last_package_from_name, create_directory_path, \
+    get_parent, create_file_name
+
 
 class Test(unittest.TestCase):
 
@@ -302,7 +304,7 @@ class Test(unittest.TestCase):
         data_array = data_class.read_data_file_as_array()
         data_file = data_class.create_from_reference(outname, width, height, number_of_bands, geotransform, projection)
         data_class.write_raster(data_file, data_array)
-            
+
 class UtilTest(unittest.TestCase):
     def test_space_string(self):
         from madmex.util import space_string

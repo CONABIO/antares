@@ -3,6 +3,8 @@ Created on 03/09/2015
 
 @author: erickpalacios
 '''
+from __future__ import unicode_literals
+
 from madmex.transformation.base import BaseTransformation
 import logging
 import numpy
@@ -15,18 +17,18 @@ class Transformation(BaseTransformation):
     classdocs
     '''
     
-    def __init__(self, image_array):
+    def __init__(self, image_array, no_data=0):
         '''
         Constructor
         '''
         self.image_array = image_array
         self.output = None
+        self.no_data_value = no_data
         self.bands, self.rows, self.cols = image_array.shape
     def preprocessing(self):
         '''
-        Preprare data for maf transformation
+        Prepare data for maximum autocorrelation factor transform.
         '''
-        self.no_data_value = 0 # TODO: every image needs to have nodata "NA" value set to 0 <-----Discuss if 0 is an appropiate value for NA values
         self.number_of_maf_variates = self.bands - 1
         variates_stack = numpy.zeros((self.cols*self.rows, self.number_of_maf_variates), dtype = float)
         # coavariance matrix from image and itself shifted by 1 pixel

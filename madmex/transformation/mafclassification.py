@@ -3,6 +3,7 @@ Created on 08/09/2015
 
 @author: erickpalacios
 '''
+from __future__ import unicode_literals
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.optimize as so
@@ -14,17 +15,17 @@ USED_COMPONENTS = (0, 1)
 DPI = 300
 MIN_QUANTILE = 5
 MAX_QUANTILE = 95
-THRESHOLD_LE = "le"
-THRESHOLD_GE = "ge"
-GLOBAL_MODE = "global"  # calc global thresholds
-LOCAL_MODE = "local"  # use local thresholds for image classfication
+THRESHOLD_LE = 'le'
+THRESHOLD_GE = 'ge'
+GLOBAL_MODE = 'global'  # calc global thresholds
+LOCAL_MODE = 'local'  # use local thresholds for image classfication
 
 def find_confidence_interval(x, pdf, confidence_level):
     return pdf[pdf > x].sum() - confidence_level
 def calc_threshold_grid(image_array, pdf_image, tiles = 10, bins = 55):
-    """
-    Calculate thresholds based on PDF approach
-    """
+    '''
+    Calculate thresholds based on probability density function approach.
+    '''
     no_data_value = 0 # TODO: every image needs to have nodata "NA" value set to 0 <-----Discuss if 0 is an appropiate value for NA values
     bands, rows, columns = image_array.shape
     f, axarr = plt.subplots(tiles, tiles)
@@ -33,7 +34,7 @@ def calc_threshold_grid(image_array, pdf_image, tiles = 10, bins = 55):
     for band_combination in [USED_COMPONENTS]:
         res = list()
         first_band, second_band = band_combination
-        LOGGER.info("Calculate thresholds for MAF band combination: %d:%d" % (first_band, second_band))
+        LOGGER.info('Calculate thresholds for MAF band combination: %d:%d' % (first_band, second_band))
         y_step_no = np.floor(rows / tiles).astype(np.int)
         x_step_no = np.floor(columns / tiles).astype(np.int)
         ycount = 0
@@ -70,7 +71,7 @@ def calc_threshold_grid(image_array, pdf_image, tiles = 10, bins = 55):
             
     return res
 def density_contour(xdata, ydata, nbins_x, nbins_y, labeltext=None, ax=None, pdf_image=None, **contour_kwargs):
-    """ Create a density contour plot.
+    ''' Create a density contour plot.
  
     Parameters
     ----------
@@ -84,7 +85,7 @@ def density_contour(xdata, ydata, nbins_x, nbins_y, labeltext=None, ax=None, pdf
         If supplied, plot the contour to this axis. Otherwise, open a new figure
     contour_kwargs : dict
         kwargs to be passed to pyplot.contour()
-    """
+    '''
     axis_font = {'fontname':'Arial', 'size':'10'}
     if len(xdata) == 0:
         return None
@@ -119,9 +120,9 @@ def density_contour(xdata, ydata, nbins_x, nbins_y, labeltext=None, ax=None, pdf
     else:
         return None  # ignore local PDF because it is unsuitable
 def extract_min_max(contour):
-    """
+    '''
     Extract global min/max limits of countour object
-    """
+    '''
     limit = dict()
     for i in range (len(contour.collections)):  # for each sigma contour collection
         limit[i] = list()
@@ -135,9 +136,9 @@ def extract_min_max(contour):
         limit[i] = (np.min(x_path), np.max(x_path), np.min(y_path), np.max(y_path))
     return limit
 def recode_classes_grid(data, thresholds, tiles=10, NODATA=-999, mode=GLOBAL_MODE):
-    """
+    '''
     Recode data matrix to class thresholds
-    """
+    '''
     bands, y_max, x_max = data.shape
     LOGGER.info("PDF classification mode: %s grid" % mode)
  
@@ -188,9 +189,9 @@ def recode_classes_grid(data, thresholds, tiles=10, NODATA=-999, mode=GLOBAL_MOD
                 counter += 1
     return result
 def class_split(thresholds, index=None):
-    """
+    '''
     Generate class list based on thresholds for further class recoding
-    """
+    '''
     mode = (THRESHOLD_LE, THRESHOLD_GE)
     bands = tuple(sorted(USED_COMPONENTS * len(mode)))
 
@@ -210,9 +211,9 @@ def class_split(thresholds, index=None):
         
     return class_list
 def get_local_thres(thresholds, idx):
-    """
-    Get local threshold for a given tile specified by index based on PDF 
-    """
+    '''
+    Get local threshold for a given tile specified by index based on probability density function.
+    '''
 
     if idx < len(thresholds) and idx > 0:
         t = thresholds[idx]
@@ -220,9 +221,9 @@ def get_local_thres(thresholds, idx):
             yield t[sigma]
 
 def get_global_thres(thresholds):
-    """
-    Get global thresholds based on local PDF using 5/95 quantiles
-    """
+    '''
+    Get global thresholds based on local probability density function using 5/95 quantiles.
+    '''
     for sigma in range(len(boundaries)):
         glob = list()
 

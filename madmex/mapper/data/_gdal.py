@@ -11,9 +11,8 @@ import logging
 import gdal
 from osgeo._gdalconst import GA_ReadOnly
 import osr
-
-from madmex.mapper.base import BaseData
-from madmex.util import create_file_name
+from lib2to3.pgen2.driver import Driver
+from madmex.persistence import driver
 
 
 GTIFF = 'GTiff'
@@ -40,7 +39,21 @@ def get_bands(image_path):
     '''
     dataset = gdal.Open(image_path, GA_ReadOnly)
     bands = dataset.RasterCount
-    return bands 
+    return bands
+def get_driver(image_path):
+    '''
+    This function will return the driver from a given raster file.
+    '''
+    dataset = gdal.Open(image_path, GA_ReadOnly)
+    driver = _get_driver(dataset)
+    dataset = None
+    return driver
+def _get_driver(dataset):
+    '''
+    Helper function to get the geotransform from an already open dataset.
+    '''
+    driver = dataset.GetDriver().ShortName
+    return driver
 def get_projection(image_path):
     '''
     This function will query the projection from a file and return it.
@@ -48,6 +61,13 @@ def get_projection(image_path):
     dataset = gdal.Open(image_path, GA_ReadOnly)
     projection = _get_projection(dataset)
     dataset = None
+    return projection
+def _get_projection(dataset):
+    '''
+    Helper function to get the projection from an already open dataset.
+    '''
+    projection = osr.SpatialReference()
+    projection.ImportFromWkt(dataset.GetProjectionRef())
     return projection
 def get_geotransform(image_path):
     '''
@@ -64,20 +84,13 @@ def get_geotransform(image_path):
     geotransform = _get_geotransform(dataset)
     dataset = None
     return geotransform
-def _get_projection(dataset):
-    '''
-    Helper function to get the projection from an already open dataset.
-    '''
-    projection = osr.SpatialReference()
-    projection.ImportFromWkt(dataset.GetProjectionRef())
-    return projection
 def _get_geotransform(dataset):
     '''
     Helper function to get the geotransform from an already open dataset.
     '''
     geotransform = dataset.GetGeoTransform()
     return geotransform
-def create_raster_from_reference(image_path, array, reference_path, driver_type=GTIFF, data_type=gdal.GDT_Float32):
+def create_raster_from_reference(image_path, array, reference_path, data_type=gdal.GDT_Float32):
     '''
     This function creates a raster image with the info in the given array. It
     uses the reference path to extract the geotransform and the projection from
@@ -86,6 +99,10 @@ def create_raster_from_reference(image_path, array, reference_path, driver_type=
     dataset = gdal.Open(reference_path, GA_ReadOnly)
     projection = _get_projection(dataset)
     geotransform =  _get_geotransform(dataset)
+    driver_type = _get_driver(dataset)
+    print projection
+    print geotransform
+    print driver_type
     dataset = None
     create_raster(image_path, array, geotransform, projection, driver_type, data_type)
 def create_raster(image_path, array, geotransform=None, projection=None, driver_type=GTIFF, data_type=gdal.GDT_Float32):
@@ -115,7 +132,7 @@ def create_raster(image_path, array, geotransform=None, projection=None, driver_
         if geotransform:
             data.SetGeoTransform(geotransform)
         if projection:
-            data.SetProjection(projection)
+            data.SetProjection(str(projection))
         if bands == 1:
             data.GetRasterBand(bands).WriteArray(array)
         else:

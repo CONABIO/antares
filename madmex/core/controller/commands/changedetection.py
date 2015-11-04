@@ -14,7 +14,9 @@ from madmex.configuration import SETTINGS
 from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands import get_bundle_from_path
 from madmex.mapper.data import raster, harmonized
-from madmex.transformation import imad
+from madmex.transformation import imad, maf
+from madmex.transformation.mafclassification import calc_threshold_grid, \
+    recode_classes_grid
 from madmex.util import create_file_name
 
 
@@ -46,8 +48,10 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         '''
-        In this example command, the values that come from the user input are
-        added up and the result is printed in the screen.
+        This process will call the change detection process from a set of two
+        individual images. It will perform the harmonization and the multivariate
+        alteration detection on the images. It will then perform a maximum
+        correlation factor on them and work with the resulting bands.
         '''
         image_a = options['ima'][0]
         image_b = options['imb'][0]
@@ -66,11 +70,32 @@ class Command(BaseCommand):
             width, height, bands = data_shape_harmonized
             geotransform_harmonized = harmonized_class.get_attribute(harmonized.GEOTRANSFORM)
             projection_harmonized = harmonized_class.get_attribute(harmonized.PROJECTION)    
-            output = create_file_name(getattr(SETTINGS, 'TEST_FOLDER'), 'result_change_detection.tif') 
-            mad_image = harmonized_class.create_from_reference(output, width, height, (bands+1), geotransform_harmonized, projection_harmonized)
+            output = create_file_name(getattr(SETTINGS, 'TEST_FOLDER'), 'result_change_detection.tif')
+            classification = create_file_name(getattr(SETTINGS, 'TEST_FOLDER'), 'result_reclassification.tif') 
+            mad_image = harmonized_class.create_from_reference(output, width, height, (bands + 1), geotransform_harmonized, projection_harmonized)
+            maf_image = harmonized_class.create_from_reference(classification, width, height, 1, geotransform_harmonized, projection_harmonized)
             image_a_data_array, image_b_data_array = harmonized_class.harmonized_arrays(image_a_data_class, image_b_data_class)            
             imad_class = imad.Transformation(image_a_data_array, image_b_data_array)
             imad_class.execute()
-            harmonized_class.write_raster(mad_image, imad_class.output)
+            
+            maf_class = maf.Transformation(imad_class.output)
+            
+            maf_class.execute()
+            
+            pdf_file = create_file_name(getattr(SETTINGS, 'TEST_FOLDER'), 'result_maf_pdf.png')
+
+            thresholds = calc_threshold_grid(maf_class.output, pdf_file)
+            
+            result = recode_classes_grid(maf_class.output, thresholds)
+            
+            print result.shape
+            
+            harmonized_class.write_raster(mad_image, maf_class.output)
+            harmonized_class.write_raster(maf_image, result)
+            
+            maf_image
+            
+            
+            
             print 'Output written in: %s' % output
             print 'Shape is ', imad_class.output.shape

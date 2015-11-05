@@ -89,6 +89,7 @@ def create_raster_tiff_from_reference(reference_metadata,  output_file, array, o
         geotransform = _get_attribute(CREATE_WITH_GEOTRANSFORM, options)
     data.SetProjection(projection)
     data.SetGeoTransform(geotransform)
+    
     if bands != 1:
         for band in range(bands):
             data.GetRasterBand(band + 1).WriteArray(array[band, :, :])

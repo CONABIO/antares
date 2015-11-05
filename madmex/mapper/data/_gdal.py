@@ -11,9 +11,6 @@ import logging
 import gdal
 from osgeo._gdalconst import GA_ReadOnly
 import osr
-from lib2to3.pgen2.driver import Driver
-from madmex.persistence import driver
-
 
 GTIFF = 'GTiff'
 
@@ -139,5 +136,6 @@ def create_raster(image_path, array, geotransform=None, projection=None, driver_
             for band in range(bands):
                 data.GetRasterBand(band + 1).WriteArray(array[band, :, :])
         data.FlushCache()
-
-        
+        LOGGER.error('Raster file was successfully created on %s.', image_path)
+        print 'Raster file was successfully created on %s.'% image_path
+   

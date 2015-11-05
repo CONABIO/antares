@@ -7,20 +7,25 @@ from __future__ import unicode_literals
 
 import logging
 
+import numpy
+from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode
+
 from madmex.configuration import SETTINGS
 from madmex.mapper.base import BaseBundle
+from madmex.mapper.data._gdal import create_raster_from_reference, create_raster
+from madmex.mapper.data.raster import create_raster_tiff_from_reference, \
+    default_options_for_create_raster_from_reference, \
+    new_options_for_create_raster_from_reference, PROJECTION, GEOTRANSFORM
 import madmex.mapper.data.raster as raster
+from madmex.mapper.sensor.rapideye import SOLAR_ZENITH, SOLAR_AZIMUTH, TILE_ID
 import madmex.mapper.sensor.rapideye as rapideye
 from madmex.persistence import driver
 from madmex.persistence.database.connection import Information
 from madmex.preprocessing import maskingwithreference
+from madmex.preprocessing.masking import base_masking_rapideye
 from madmex.preprocessing.topofatmosphere import base_top_of_atmosphere_rapideye
 from madmex.util import get_path_from_list, create_file_name, \
     create_directory_path, get_base_name, get_parent
-from madmex.mapper.data.raster import create_raster_tiff_from_reference,\
-    default_options_for_create_raster_from_reference,\
-    new_options_for_create_raster_from_reference
-from madmex.preprocessing.masking import base_masking_rapideye
 
 
 FORMAT = 'GTiff'
@@ -130,26 +135,53 @@ class Bundle(BaseBundle):
         '''
         This method calculates the top of atmosphere for the rapideye images.
         '''
-        import numpy
-        from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode
         fun_get_attr_sensor_metadata = self.get_sensor().parser.get_attribute
         fun_get_attr_raster_metadata = self.get_raster().get_attribute
         top_of_atmosphere_data = base_top_of_atmosphere_rapideye(fun_get_attr_sensor_metadata, self.get_raster().read_data_file_as_array())
         top_of_atmosphere_directory = create_file_name(get_parent(self.path), 'TOA')
         create_directory_path(top_of_atmosphere_directory)
         output_file = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[2]) + '.toa.tif') #TODO: change [2] in self.get_files()[2] 
-        create_raster_tiff_from_reference(self.get_raster().metadata, output_file, top_of_atmosphere_data, data_type = NumericTypeCodeToGDALTypeCode(numpy.float32))
+        create_raster_from_reference(output_file,
+                                     top_of_atmosphere_data,
+                                     self.file_dictionary[_IMAGE],
+                                     data_type=NumericTypeCodeToGDALTypeCode(numpy.float32)
+                                     )
         self.masking(top_of_atmosphere_data, top_of_atmosphere_directory, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata)
     def masking(self, top_of_atmosphere_data, top_of_atmosphere_directory, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata):
-        import numpy
-        from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode   
+        '''
+        Creates an image mask. 
+        TODO: this comment should be more specific on what exactly
+        does the algorithm does. 
+        '''
         output_file = top_of_atmosphere_directory + '/image_masked_reducing_time.tif'
-        image_masked = base_masking_rapideye(top_of_atmosphere_data, output_file, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata)
-        print 'finished base masking'
-        options_to_create = new_options_for_create_raster_from_reference(self.get_raster().metadata, raster.CREATE_WITH_NUMBER_OF_BANDS, 1, {})
-        create_raster_tiff_from_reference(self.get_raster().metadata, output_file, image_masked, options_to_create, data_type = NumericTypeCodeToGDALTypeCode(numpy.uint8))
+        image_masked = base_masking_rapideye(top_of_atmosphere_data, output_file, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata)        
+        create_raster_from_reference(output_file,
+                             image_masked,
+                             self.file_dictionary[_IMAGE],
+                             data_type=NumericTypeCodeToGDALTypeCode(numpy.float32)
+                             )
     def masking_with_time_series(self):
-        image_masked_path = maskingwithreference.masking(self.get_output_directory(), self.get_sensor().parser.get_attribute, self.get_raster().read_data_file_as_array(), self.get_raster().metadata)
+        '''
+        This method will create a mask using a time series of images as a reference
+        to look for shadows and clouds to mask.
+        '''
+        image_masked_path = self.get_output_directory() + '/mask_reference.tif'
+        
+        solar_zenith = self.get_sensor().get_attribute(SOLAR_ZENITH)
+        solar_azimuth = self.get_sensor().get_attribute(SOLAR_AZIMUTH)
+        tile_id = self.get_sensor().get_attribute(TILE_ID)
+        geotransform = self.get_raster().get_attribute(GEOTRANSFORM)
+        resolution = geotransform[1]
+        
+        print solar_zenith, solar_azimuth, tile_id
+        
+        cloud_shadow_array = maskingwithreference.masking(self.get_raster().read_data_file_as_array(), tile_id, solar_zenith, solar_azimuth, resolution)
+        
+        create_raster_from_reference(image_masked_path,
+                             cloud_shadow_array,
+                             self.file_dictionary[_IMAGE],
+                             data_type=NumericTypeCodeToGDALTypeCode(numpy.float32)
+                             )
         LOGGER.info('Image for masking clouds is: %s', image_masked_path)
     def preprocess(self):
         self.calculate_top_of_atmosphere_rapideye()
@@ -157,16 +189,17 @@ if __name__ == '__main__':
     print 'Rapideye test'
     #path =  '/Users/agutierrez/Documents/rapideye/acopilco/1448013/2011/2011-03-20/l3a'
     #path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
-    path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/CloudMasking/RE_1649125/1649125_2014-01-23_RE4_3A_301519'
+    path = '/Users/agutierrez/Development/df/1448114/2015/2015-02-24/l3a'
     #path =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/'
     bundle = Bundle(path)
     print bundle.get_raster().get_attribute(raster.FOOTPRINT)
     print bundle.get_files()
     print bundle.can_identify()
     print bundle.masking_with_time_series()
-    path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
-    path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
-    path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/CloudMasking/RE_1649125/1649125_2014-01-23_RE4_3A_301519'
+    #path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
+    #path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
+    #path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/CloudMasking/RE_1649125/1649125_2014-01-23_RE4_3A_301519'
+    path = '/Users/agutierrez/Development/df/1448114/2015/2015-02-24/l3a'
     bundle = Bundle(path)
     print bundle.get_raster().get_attribute(raster.GEOTRANSFORM)
     print 'geotransform from gcps'

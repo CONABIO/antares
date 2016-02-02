@@ -50,7 +50,7 @@ class Command(BaseCommand):
         for image_path in options['path']:
                 ds = gdal.Open(image_path)
                 bands = ds.RasterCount
-                
+                print bands
                 
                 
                 array = numpy.array(ds.GetRasterBand(interest_band).ReadAsArray())

@@ -77,7 +77,7 @@ def create_reference_array(images_references_paths):
     for band in range(bands):
         medians[band] = numpy.median(my_array[:,band,:,:], axis=0)
     return medians
-def cloud_mask_array(image_difference_array, threshold=30000, filter_size=13, morphing_size=0):
+def cloud_mask_array(image_difference_array, threshold=30000, filter_size=13, morphing_size=0): #TODO: Is it 0 in morphing_size?? is not 10??
     '''
     This method returns a mask for the given array, it stacks all the bands into
     one and filters values that match the threshold. The new array will be filled
@@ -89,7 +89,7 @@ def cloud_mask_array(image_difference_array, threshold=30000, filter_size=13, mo
     if morphing_size:
         clouds = morph_dilation(clouds, morphing_size)
     return clouds
-def shadow_mask_array(image_difference_array, threshold=-5500, filter_size=13, morphing_size=0):
+def shadow_mask_array(image_difference_array, threshold=-5500, filter_size=13, morphing_size=0): #TODO: Is it 0 in morphing_size?? is not 10??
     '''
     This method returns a mask for the given array, it stacks all the bands into
     one and filters values that match the threshold. The new array will be filled

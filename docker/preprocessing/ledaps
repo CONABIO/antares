@@ -1,0 +1,67 @@
+# Ubuntu 14.04 Trusty Tahyr
+FROM ubuntu:trusty
+
+MAINTAINER Amaury Gutierrez, Erick Palacios <amaury.gtz@gmail.com, epalacios@conabio.gob.mx>
+
+RUN apt-get update -y && \
+	apt-get install -y \
+	zlib1g \
+	zlib1g-dev \
+	libtiff5 \
+	libtiff5-dev \
+	libgeotiff2 \
+	libgeotiff-dev \
+	libxml2 \
+	libxml2-dev \
+	curl \
+	gfortran \
+	bison \
+	byacc \
+	flex \
+	g++ \
+	csh \
+	make \
+	nano \
+	git \
+	subversion \
+	python
+ 
+ENV USERNAME=root
+RUN mkdir /usr/local/hdf4
+RUN chown $USERNAME /usr/local/hdf4
+RUN cd /usr/local/hdf4 && curl http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-4.2.11.tar.gz -O && tar -xzvf hdf-4.2.11.tar.gz
+RUN cd /usr/local/hdf4/hdf-4.2.11 && ./configure && make check install && ldconfig
+
+
+RUN mkdir /usr/local/hdf-eos
+RUN chown $USERNAME /usr/local/hdf-eos
+RUN cd /usr/local/hdf-eos && curl ftp://edhs1.gsfc.nasa.gov/edhs/hdfeos/latest_release/HDF-EOS2.19v1.00.tar.Z -O && tar -xzvf HDF-EOS2.19v1.00.tar.Z
+RUN cd /usr/local/hdf-eos/hdfeos && ./configure -enable-install-include CC=/usr/local/hdf4/hdf-4.2.11/hdf4/bin/h4cc && make check install && ldconfig
+
+
+ENV HDFEOS_GCTPINC="/usr/local/hdf-eos/hdfeos/hdfeos2/include"
+ENV HDFEOS_GCTPLIB="/usr/local/hdf-eos/hdfeos/hdfeos2/lib"
+ENV TIFFINC="/usr/include/x86_64-linux-gnu/"
+ENV TIFFLIB="/usr/lib/x86_64-linux-gnu/"
+ENV GEOTIFF_INC="/usr/include/geotiff/"
+ENV GEOTIFF_LIB="/usr/lib/"
+ENV HDFINC="/usr/local/hdf4/hdf-4.2.11/hdf4/include/"
+ENV HDFLIB="/usr/local/hdf4/hdf-4.2.11/hdf4/lib/"
+ENV HDFEOS_INC="/usr/local/hdf-eos/hdfeos/include/"
+ENV HDFEOS_LIB="/usr/local/hdf-eos/hdfeos/hdfeos2/lib"
+ENV JPEGINC="/usr/include/"
+ENV JPEGLIB="/usr/lib/x86_64-linux-gnu/"
+ENV XML2INC="/usr/include/libxml2/"
+ENV XML2LIB="/usr/lib/x86_64-linux-gnu/"
+ENV ZLIBINC="/usr/include/"
+ENV ZLIBLIB="/usr/lib/x86_64-linux-gnu/"
+ENV BIN="/usr/local/bin/ledapsSrc/bin"
+
+
+RUN svn checkout http://ledaps.googlecode.com/svn/releases/version_1.3.0 /usr/local/bin
+RUN cd /usr/local/bin/ledapsSrc/src && make 
+RUN cd /usr/local/bin/ledapsSrc/src && make install
+RUN cd $BIN && chmod gou+x lndsrbm.ksh
+
+USER root
+

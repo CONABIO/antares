@@ -42,15 +42,15 @@ def morph_dilation(input_image_raster, filter_size):
     else:
         return ndimage.grey_dilation(input_image_raster, (1, filter_size, filter_size))[0]
 
-def morphing(image_mask_array, image_array, inbetween, clouds):
+def morphing(image_mask_array, image_array, inbetween, clouds): #TODO: review this method and compare to /adapters/atomic/rapideye_clouds.py
     print image_mask_array.shape, image_array.shape, inbetween.shape, clouds.shape
     numpy.putmask(image_mask_array, image_array[0, :, :] == 0, FMASK_OUTSIDE)
     m = len(MORPHING_SIZES)
     for MORPHING_SIZE in MORPHING_SIZES:
-        numpy.putmask(image_mask_array, morph_dilation(clouds, MORPHING_SIZE) == 1, FMASK_CLOUD)#*10+m)
+        numpy.putmask(image_mask_array, morph_dilation(clouds, MORPHING_SIZE) == 1, FMASK_CLOUD)#*10+m) Multiply by 10 and then sum m?? or not
         m = m-1
-        numpy.putmask(image_mask_array, inbetween == 1, FMASK_CLOUD_SHADOW)
-        numpy.putmask(image_mask_array, clouds == 1, FMASK_CLOUD)
+        numpy.putmask(image_mask_array, inbetween == 1, FMASK_CLOUD_SHADOW) #This line must be out of the for loop??
+        numpy.putmask(image_mask_array, clouds == 1, FMASK_CLOUD) #This line must be out of the for loop??
     return image_mask_array
 def base_masking_rapideye(top_of_atmosphere_data, output_file, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata):
     from madmex.mapper.sensor import rapideye

@@ -146,6 +146,7 @@ class Bundle(BaseBundle):
                                      self.file_dictionary[_IMAGE],
                                      data_type=NumericTypeCodeToGDALTypeCode(numpy.float32)
                                      )
+        print 'TOA ready'
         self.masking(top_of_atmosphere_data, top_of_atmosphere_directory, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata)
     def masking(self, top_of_atmosphere_data, top_of_atmosphere_directory, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata):
         '''
@@ -153,6 +154,7 @@ class Bundle(BaseBundle):
         TODO: this comment should be more specific on what exactly
         does the algorithm does. 
         '''
+        print 'Starting cloud masking.'
         output_file = top_of_atmosphere_directory + '/image_masked_reducing_time.tif'
         image_masked = base_masking_rapideye(top_of_atmosphere_data, output_file, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata)        
         create_raster_from_reference(output_file,
@@ -185,24 +187,31 @@ class Bundle(BaseBundle):
         LOGGER.info('Image for masking clouds is: %s', image_masked_path)
     def preprocess(self):
         self.calculate_top_of_atmosphere_rapideye()
-if __name__ == '__main__':    
+if __name__ == '__main__': 
+    
+    path_list = [
+            '/Users/agutierrez/Development/df/1447814/2014/2014-07-21/l3a/']
+    
     print 'Rapideye test'
+    
+    for path in path_list:
+        bundle = Bundle(path)
+        bundle.preprocess()
+        
+       
+    
     #path =  '/Users/agutierrez/Documents/rapideye/acopilco/1448013/2011/2011-03-20/l3a'
     #path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
-    path = '/Users/agutierrez/Development/df/1448114/2015/2015-02-24/l3a'
+    #path = '/Users/agutierrez/Development/df/1448114/2015/2015-02-24/l3a'
     #path =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/'
-    bundle = Bundle(path)
-    print bundle.get_raster().get_attribute(raster.FOOTPRINT)
-    print bundle.get_files()
-    print bundle.can_identify()
-    print bundle.masking_with_time_series()
+    #bundle = Bundle(path)
+    #print bundle.get_raster().get_attribute(raster.FOOTPRINT)
+    #print bundle.get_files()
+    #print bundle.can_identify()
+    #print bundle.masking_with_time_series()
     #path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
     #path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
     #path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/CloudMasking/RE_1649125/1649125_2014-01-23_RE4_3A_301519'
-    path = '/Users/agutierrez/Development/df/1448114/2015/2015-02-24/l3a'
-    bundle = Bundle(path)
-    print bundle.get_raster().get_attribute(raster.GEOTRANSFORM)
-    print 'geotransform from gcps'
-    print bundle.get_raster().get_attribute(raster.GEOTRANSFORM_FROM_GCPS)
-    bundle.preprocess()
-    print 'Done'
+    '''
+
+    '''

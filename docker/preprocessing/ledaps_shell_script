@@ -1,0 +1,22 @@
+#!/bin/bash
+if [ "$#" -ne 3 ]; then
+echo "Usage: bash shell_script <path to ancilliary data in docker> <path to source data in docker/L*.*.tar.bz> <path to destiny results in docker>"
+	exit
+else
+	name=$(basename $2)
+	basename=$(echo $name|sed -n 's/\(L*.*\).tar.bz/\1/;p')
+	dir=$3/$basename
+	mkdir $dir
+	cp -r $2 $dir
+	year=$(echo $name|sed -n 's/L[A-Z][5-7][0-9][0-9][0-9][0-9][0-9][0-9]\([0-9][0-9][0-9][0-9]\).*.tar.bz/\1/p')
+	cp $1/CMGDEM.hdf $dir
+	mkdir $dir/EP_TOMS && cp -r $1/EP_TOMS/ozone_$year $dir/EP_TOMS
+	mkdir $dir/REANALYSIS && cp -r $1/REANALYSIS/RE_$year $dir/REANALYSIS
+	cd $dir && tar xvf $name 
+	metadata=$(ls $dir|grep *_MTL.txt)
+	cd $dir && /usr/local/bin/ledapsSrc/bin/do_ledaps.csh $metadata
+	rm $dir/$name
+	rm -r $dir/CMGDEM.hdf
+	rm -r $dir/EP_TOMS/
+	rm -r $dir/REANALYSIS/
+fi

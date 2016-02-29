@@ -1,8 +1,9 @@
 # Ubuntu 14.04 Trusty Tahyr
-#docker run -v <path to directory with ancilliary data>:/opt/ledaps -v <path to local directory with data>:/data -v $(pwd):/results ledaps/ledaps_desde_cero:v3 <path to ancilliary data in docker> <path to source data in docker/L*.*.tar.bz> <path to destiny results in docker>
+#docker run -v <path to directory with ancilliary data>:/opt/ledaps -v <path to local directory with data>:/data -v $(pwd):/results name_image <path to ancilliary data in docker> <path to source data in docker/L*.*.tar.bz> <path to destiny results in docker>
 #Example:
-#docker run -v /Users/ledaps_anc:/opt/ledaps -v /Users/data:/data -v $(pwd):/results name_image /opt/ledaps /data/LE70210481999203AGS00.tar.bz /results
+#docker run -v /Users/ledaps_anc:/opt/ledaps -v /Users/data:/data -v /Users/results:/results name_image /opt/ledaps /data/LE70210481999203AGS00.tar.bz /results
 
+# Ubuntu 14.04 Trusty Tahyr
 FROM ubuntu:trusty
 
 MAINTAINER Amaury Gutierrez, Erick Palacios <amaury.gtz@gmail.com, epalacios@conabio.gob.mx>
@@ -74,9 +75,6 @@ RUN cp $BIN/do_ledaps.csh /opt/ledaps/
 
 ADD shell_script /opt/shell_script
 
-WORKDIR /opt/ledaps
+WORKDIR /results
 
 ENTRYPOINT ["/opt/shell_script"]
-
-
-

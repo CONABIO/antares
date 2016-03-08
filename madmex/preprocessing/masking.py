@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 
 from scipy import ndimage
 from scipy import signal
-from scipy import stats 
+from scipy import stats
 import matplotlib.pylab as pylab
 from skimage import color
 from madmex import LOGGER
@@ -20,12 +20,13 @@ FMASK_OUTSIDE = 255
 FMASK_CLOUD_SHADOW = 2
 FMASK_CLOUD = 4
 MORPHING_SIZE = 10
-MORPHING_SIZES = [250,150,50] # pixel sizes of structure elements
+MORPHING_SIZES = [250, 150, 50] # pixel sizes of structure elements
+MAX_ERROR = 10
 
 def filter_median(input_image_raster, filter_size):
     '''
     Median filtering of raster
-    '''    
+    '''
     return ndimage.median_filter(input_image_raster, filter_size)
 def morph_dilation(input_image_raster, filter_size):
     '''
@@ -42,13 +43,16 @@ def morph_dilation(input_image_raster, filter_size):
     else:
         return ndimage.grey_dilation(input_image_raster, (1, filter_size, filter_size))[0]
 
-def morphing(image_mask_array, image_array, inbetween, clouds): #TODO: review this method and compare to /adapters/atomic/rapideye_clouds.py
+def morphing(image_mask_array, image_array, inbetween, clouds): 
+    '''
+    TODO: review this method and compare to /adapters/atomic/rapideye_clouds.py
+    '''
     print image_mask_array.shape, image_array.shape, inbetween.shape, clouds.shape
     numpy.putmask(image_mask_array, image_array[0, :, :] == 0, FMASK_OUTSIDE)
     m = len(MORPHING_SIZES)
     for MORPHING_SIZE in MORPHING_SIZES:
         numpy.putmask(image_mask_array, morph_dilation(clouds, MORPHING_SIZE) == 1, FMASK_CLOUD)#*10+m) Multiply by 10 and then sum m?? or not
-        m = m-1
+        m = m - 1
         numpy.putmask(image_mask_array, inbetween == 1, FMASK_CLOUD_SHADOW) #This line must be out of the for loop??
         numpy.putmask(image_mask_array, clouds == 1, FMASK_CLOUD) #This line must be out of the for loop??
     return image_mask_array
@@ -60,8 +64,8 @@ def base_masking_rapideye(top_of_atmosphere_data, output_file, fun_get_attr_sens
     geotransform = fun_get_attr_raster_metadata(raster.GEOTRANSFORM)
     make_plot = True
     cloud_mask = convert_to_fmask(extract_extremes(top_of_atmosphere_data, output_file, make_plot))
-    clouds = numpy.where(cloud_mask==FMASK_CLOUD, 1, 0)
-    shadows= numpy.where(cloud_mask==FMASK_CLOUD_SHADOW, 1, 0)
+    clouds = numpy.where(cloud_mask == FMASK_CLOUD, 1, 0)
+    shadows= numpy.where(cloud_mask == FMASK_CLOUD_SHADOW, 1, 0)
     resolution = geotransform[1]
     shadow_mask = calculate_cloud_shadow(clouds, shadows, solar_zenith, solar_azimuth, resolution) * FMASK_CLOUD_SHADOW
     water_mask = convert_water_to_fmask(calculate_water(top_of_atmosphere_data))
@@ -77,7 +81,7 @@ def extract_extremes(data, image_file, make_plot, steps=1000):
     for ycount in range(0, 5000, steps):
         for xcount in range(0, 5000, steps):
             subset = data[:, ycount:ycount + steps, xcount:xcount + steps]
-            LOGGER.info("Extent: %dx%d"% (xcount,ycount))
+            LOGGER.info("Extent: %dx%d"% (xcount, ycount))
             z, y, x = subset.shape
             rgb = numpy.zeros((y, x, z))
             for i in range(0, z):
@@ -95,22 +99,22 @@ def extract_extremes(data, image_file, make_plot, steps=1000):
                 fig = pylab.plot(quant, c="k", alpha=0.5)
             if len(break_points) > 1:
                 if make_plot:
-                    for p in points.keys():
-                        pylab.plot(p, numpy.array(quant)[p], 'r.')
+                    for point in points.keys():
+                        pylab.plot(point, numpy.array(quant)[point], 'r.')
                 if len(break_points[break_points < CENTER]) > 0:
                     min_bp = max(break_points[break_points < CENTER])
                 if len(break_points[break_points > CENTER]) > 0:
                     max_bp = min(break_points[break_points > CENTER])
                 if numpy.min(subset) != 0.0 or numpy.max(subset) != 0.0:
                     LOGGER.info("%d, %3.2f, %3.2f, %3.2f * %d, %3.2f, %3.2f, %3.2f" % (min_bp, quant[min_bp], numpy.min(subset), quant[0] / numpy.min(subset), max_bp, quant[99] , numpy.max(subset), quant[99] / numpy.max(subset)))
-                for i, q in enumerate(range(max_bp, 100, 1)):
-                    modelled = f_lin(q, points[max_bp]["slope"], points[max_bp]["offset"])
-                    diff = abs(quant[q] - modelled)
-                    global_quant.append((q, quant[q], diff))
-                for i, q in enumerate(range(0, min_bp,)):
-                    modelled = f_lin(q, points[max_bp]["slope"], points[max_bp]["offset"])
-                    diff = abs(quant[q] - modelled)
-                    global_quant.append((q, quant[q], diff))
+                for i, value in enumerate(range(max_bp, 100, 1)):
+                    modelled = f_lin(value, points[max_bp]["slope"], points[max_bp]["offset"])
+                    diff = abs(quant[value] - modelled)
+                    global_quant.append((value, quant[value], diff))
+                for i, value in enumerate(range(0, min_bp,)):
+                    modelled = f_lin(value, points[max_bp]["slope"], points[max_bp]["offset"])
+                    diff = abs(quant[value] - modelled)
+                    global_quant.append((value, quant[value], diff))
             counter += 1
             if make_plot:
                 fig = pylab.gcf()
@@ -127,7 +131,6 @@ def extract_extremes(data, image_file, make_plot, steps=1000):
     for counter, item in enumerate(global_quant):
         LOGGER.info("%d: %d, %s" % ( counter, total_q, str(item)))
         q, value, diff = item
-        MAX_ERROR = 10
         if diff > MAX_ERROR:
             if q < 50.0:
                 subset_result[0, :, :] = numpy.where(col_space1[ :, :, 0] < value, 1 + col_space1[ :, :, 0] - diff, subset_result[0, :, :])

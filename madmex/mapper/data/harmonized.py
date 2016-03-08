@@ -5,12 +5,16 @@ Created on 21/08/2015
 '''
 
 from __future__ import unicode_literals
-from madmex.mapper.base import BaseData, _get_attribute, put_in_dictionary
-import numpy
-#import numpy.ma as ma
-import logging
-#from Carbon.TextEdit import WIDTHHook
 
+import logging
+
+import numpy
+
+from madmex.mapper.base import BaseData, _get_attribute, put_in_dictionary
+
+
+#import numpy.ma as ma
+#from Carbon.TextEdit import WIDTHHook
 LOGGER = logging.getLogger(__name__)
 PROJECTION = ['projection']
 DATA_SHAPE = ['data_shape']
@@ -18,7 +22,7 @@ GEOTRANSFORM = ['geotransform']
 XRANGE = ['x_range']
 YRANGE = ['y_range']
 XOFFSET = ['x_offset']
-YOFFSET = ['y_offset'] 
+YOFFSET = ['y_offset']
 
 
 def get_image_mask(data, threshold=0):
@@ -30,7 +34,7 @@ def get_image_mask(data, threshold=0):
     if len(data.shape) != 2:
         raise ValueError('Invalid data dimension, data should be 2 dimensional.')
     mask = numpy.zeros(data.shape)
-    numpy.putmask(mask, data<=threshold, 1)
+    numpy.putmask(mask, data <= threshold, 1)
     return mask
 def get_multiband_image_mask(data, threshold=0):
     '''
@@ -244,14 +248,14 @@ if __name__ == '__main__':
     
     subset = my_data[x:x+width, y:y+height]
     
-    x_mask = get_image_mask(my_data,threshold)
+    x_mask = get_image_mask(my_data, threshold)
     
     x_mask_subset = get_image_subset(x,y,width,height,x_mask)
     
     print my_data
     print x_mask
     
-    x_mask_subset = get_image_mask(subset,threshold)
+    x_mask_subset = get_image_mask(subset, threshold)
                                     
     subset_x_mask = get_image_subset(x,y,width,height,x_mask)
     

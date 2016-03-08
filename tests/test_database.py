@@ -68,6 +68,7 @@ class DatabaseSimpleTests(DatabaseTest):
             self.get_session().close()
     
 class DatabaseBundleInsertionTest(DatabaseTest):
+    @unittest.skip("testing skipping")
     def test_persist_bundle_with_error(self):
         '''
         Tests the behavior of persisting a bundle object when the file to

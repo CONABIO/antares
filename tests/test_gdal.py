@@ -31,6 +31,7 @@ class Test(unittest.TestCase):
         blue = array * 1000
         create_raster(create_file_name(getattr(SETTINGS, 'TEST_FOLDER'), 'single.tif'), array)
         create_raster(create_file_name(getattr(SETTINGS, 'TEST_FOLDER'), 'multi.tif'), numpy.array([red, green, blue]))
+    @unittest.skip("testing skipping")
     def test_creat_image(self):
         import numpy
         filename = '/Users/agutierrez/Development/df/1448114/2015/2015-02-24/l3a/1448114_2015-02-24_RE3_3A_302417.tif'

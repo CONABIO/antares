@@ -139,6 +139,7 @@ class Test(unittest.TestCase):
         self.assertFalse(action.success)
         self.assertFalse(os.path.isfile(action.new_file))
         os.remove(name)
+    @unittest.skip("testing skipping")
     def test_new_way_of_create_image_from_reference(self):
         from madmex.mapper.data import raster
         from madmex.mapper.data.raster import default_options_for_create_raster_from_reference

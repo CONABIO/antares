@@ -1889,8 +1889,8 @@ def create_vector_tables(path_query):
 if __name__ == '__main__':
     CREATE = 1
     if CREATE:
-        path_query = getattr(SETTINGS, 'RAPIDEYE_FOOTPRINTS_MEXICO_OLD')
-        create_vector_tables(path_query)
+        #path_query = getattr(SETTINGS, 'RAPIDEYE_FOOTPRINTS_MEXICO_OLD')
+        #create_vector_tables(path_query)
         print 'vector tables created'
         create_database()
         print 'database created'

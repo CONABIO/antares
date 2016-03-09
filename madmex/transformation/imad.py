@@ -23,14 +23,15 @@ class Transformation(BaseTransformation):
     '''
     classdocs
     '''
-    def __init__(self, image1_array, image2_array):
+    def __init__(self, params):
         '''
         Constructor
         '''
-        self.image1_array = image1_array
-        self.image2_array = image2_array
+        super(Transformation, self).__init__(params)
+        self.image1_array = params[0]
+        self.image2_array = params[1]
         self.output = None
-        self.bands, self.rows, self.columns = image1_array.shape
+        self.bands, self.rows, self.columns = self.image1_array.shape
         self.image_bands_flattened = None
         self.index = None
         self.index_sum = None

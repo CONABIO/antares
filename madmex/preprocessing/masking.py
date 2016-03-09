@@ -196,12 +196,12 @@ def calculate_breaking_points(quant_list):
         # pylab.plot([x_iter, x_iter + RANGE, ], [ f(x_iter, slope, intercept), f(x_iter + RANGE, slope, intercept)], "b", alpha=0.3)
     return BRAKE_POINTS
 def calculate_error(slope, offset, x_val, y_val):
-    CENTER = 50.0000001
+    center = 50.0000001
     err_sum_total = 0.0
     err_sum_local = 0.0
     for i, x in enumerate(x_val):
-            err_sum_local += ((f_lin(x, slope, offset) - y_val[i]) ** 2) * (CENTER - x) ** 2
-            err_sum_total += ((f_lin(x, slope, offset) - y_val[i]) ** 2) * (CENTER - x) ** 2
+            err_sum_local += ((f_lin(x, slope, offset) - y_val[i]) ** 2) * (center - x) ** 2
+            err_sum_total += ((f_lin(x, slope, offset) - y_val[i]) ** 2) * (center - x) ** 2
     return err_sum_total, err_sum_local
 def calculate_continuity(point_list):
     breaks = list()

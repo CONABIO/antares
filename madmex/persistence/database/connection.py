@@ -165,7 +165,7 @@ class Information(BASE):
     '''
     __tablename__ = 'information'
     pk_id = Column(Integer, primary_key=True)
-    grid_id = Column(Integer)
+    grid_id = Column(String)
     projection = Column(String)
     cloud_percentage = Column(Float)
     geometry = Column(Geometry('POLYGON'))

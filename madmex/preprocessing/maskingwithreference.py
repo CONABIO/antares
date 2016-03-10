@@ -25,9 +25,10 @@ GENERALIZE = False
 MORPHING_SIZE = 10
 
 
-def masking(image_array, tile_id, solar_zenith, solar_azimuth, resolution, sensor_id=1, product_id=2, cloud_cover=100):
+def masking(image_array, tile_id, solar_zenith, solar_azimuth, geotransform, sensor_id=1, product_id=2, cloud_cover=100):
     '''
     '''
+    resolution = geotransform[1]
     images_references_paths = get_images_for_tile(tile_id, sensor_id, product_id, cloud_cover)
     image_difference_array =  calculate_difference_from_reference(image_array, images_references_paths)
     cloud_shadow_array = cloud_shadow_mask_array(image_array, image_difference_array, solar_zenith, solar_azimuth, resolution)

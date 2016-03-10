@@ -26,12 +26,8 @@ class Command(BaseCommand):
         added up and the result is printed in the screen.
         '''
         paths = options['paths']
-        print paths
-        tiles = options['tiles']
-        name = ''.join(options['name'])
 
         from madmex.mapper.bundle.rapideye import Bundle
-        
-        
         if paths:
-            pass
+            for path in paths:
+                print path

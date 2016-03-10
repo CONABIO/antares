@@ -40,6 +40,7 @@ def _get_usgs_metadata(path, row, sensor, date):
     This method creates a url and builds a request with it. The response is then
     returned to the caller.
     '''
+    print sensor
     if sensor == 'ETM+' or sensor == 'ETM+':
         date_object = datetime.datetime.strptime(date, getattr(SETTINGS, 'DATE_FORMAT'))
         date_lansat_change = datetime.datetime.strptime(
@@ -51,7 +52,7 @@ def _get_usgs_metadata(path, row, sensor, date):
         else:
             sensor_encoding = 'LANDSAT_ETM'
     elif sensor == 'OLI_TIRS':
-        sensor_encoding = "LANDSAT_8"
+        sensor_encoding = 'LANDSAT_8'
     elif sensor == 'TM':
         sensor_encoding = 'LANDSAT_TM'
     usgs_url = USGS_HTTP_SERVICE % (path, path, row, row, sensor_encoding, date, date)

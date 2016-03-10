@@ -30,4 +30,5 @@ class Command(BaseCommand):
         from madmex.mapper.bundle.rapideye import Bundle
         if paths:
             for path in paths:
-                print path
+                bundle = Bundle(path)
+                bundle.preprocess()

@@ -23,7 +23,8 @@ from madmex.persistence import driver
 from madmex.persistence.database.connection import Information
 from madmex.preprocessing import maskingwithreference
 from madmex.preprocessing.masking import base_masking_rapideye
-from madmex.preprocessing.topofatmosphere import base_top_of_atmosphere_rapideye
+from madmex.preprocessing.topofatmosphere import calculate_distance_sun_earth, \
+    calculate_toa_rapideye, calculate_rad_rapideye
 from madmex.util import get_path_from_list, create_file_name, \
     create_directory_path, get_base_name, get_parent
 
@@ -131,37 +132,7 @@ class Bundle(BaseBundle):
                 product_name
                 ])
         return self.output_directory
-    def calculate_top_of_atmosphere_rapideye(self):
-        '''
-        This method calculates the top of atmosphere for the rapideye images.
-        '''
-        fun_get_attr_sensor_metadata = self.get_sensor().parser.get_attribute
-        fun_get_attr_raster_metadata = self.get_raster().get_attribute
-        top_of_atmosphere_data = base_top_of_atmosphere_rapideye(fun_get_attr_sensor_metadata, self.get_raster().read_data_file_as_array())
-        top_of_atmosphere_directory = create_file_name(get_parent(self.path), 'TOA')
-        create_directory_path(top_of_atmosphere_directory)
-        output_file = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[2]) + '.toa.tif') #TODO: change [2] in self.get_files()[2] 
-        create_raster_from_reference(output_file,
-                                     top_of_atmosphere_data,
-                                     self.file_dictionary[_IMAGE],
-                                     data_type=NumericTypeCodeToGDALTypeCode(numpy.float32)
-                                     )
-        print 'TOA ready'
-        self.masking(top_of_atmosphere_data, top_of_atmosphere_directory, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata)
-    def masking(self, top_of_atmosphere_data, top_of_atmosphere_directory, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata):
-        '''
-        Creates an image mask. 
-        TODO: this comment should be more specific on what exactly
-        does the algorithm does. 
-        '''
-        print 'Starting cloud masking.'
-        output_file = top_of_atmosphere_directory + '/image_masked_reducing_time.tif'
-        image_masked = base_masking_rapideye(top_of_atmosphere_data, output_file, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata)        
-        create_raster_from_reference(output_file,
-                             image_masked,
-                             self.file_dictionary[_IMAGE],
-                             data_type=NumericTypeCodeToGDALTypeCode(numpy.float32)
-                             )
+
     def masking_with_time_series(self):
         '''
         This method will create a mask using a time series of images as a reference
@@ -174,7 +145,7 @@ class Bundle(BaseBundle):
         tile_id = self.get_sensor().get_attribute(TILE_ID)
         geotransform = self.get_raster().get_attribute(GEOTRANSFORM)
         resolution = geotransform[1]
-        
+
         print solar_zenith, solar_azimuth, tile_id
         
         cloud_shadow_array = maskingwithreference.masking(self.get_raster().read_data_file_as_array(), tile_id, solar_zenith, solar_azimuth, resolution)
@@ -186,32 +157,35 @@ class Bundle(BaseBundle):
                              )
         LOGGER.info('Image for masking clouds is: %s', image_masked_path)
     def preprocess(self):
-        self.calculate_top_of_atmosphere_rapideye()
-if __name__ == '__main__': 
-    
-    path_list = [
-            '/Users/agutierrez/Development/df/1447814/2014/2014-07-21/l3a/']
-    
-    print 'Rapideye test'
-    
-    for path in path_list:
-        bundle = Bundle(path)
-        bundle.preprocess()
-        
-       
-    
-    #path =  '/Users/agutierrez/Documents/rapideye/acopilco/1448013/2011/2011-03-20/l3a'
-    #path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
-    #path = '/Users/agutierrez/Development/df/1448114/2015/2015-02-24/l3a'
-    #path =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/'
-    #bundle = Bundle(path)
-    #print bundle.get_raster().get_attribute(raster.FOOTPRINT)
-    #print bundle.get_files()
-    #print bundle.can_identify()
-    #print bundle.masking_with_time_series()
-    #path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
-    #path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/l3a'
-    #path = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Rapideye/CloudMasking/RE_1649125/1649125_2014-01-23_RE4_3A_301519'
-    '''
+        '''
+        Top of atmosphere is calculated and persisted into a file. These
+        information is then used to create a cloud mask using the detection
+        anomaly algorithm.
+        '''
+        solar_zenith = self.get_sensor().parser.get_attribute(rapideye.SOLAR_ZENITH)
+        data_acquisition_date = self.get_sensor().parser.get_attribute(rapideye.ACQUISITION_DATE)
+        solar_azimuth = self.get_sensor().parser.get_attribute(rapideye.SOLAR_AZIMUTH)
+        geotransform = self.get_raster().get_attribute(raster.GEOTRANSFORM)
 
-    '''
+        sun_earth_distance = calculate_distance_sun_earth(data_acquisition_date)
+        top_of_atmosphere_data = calculate_toa_rapideye(calculate_rad_rapideye(self.get_raster().read_data_file_as_array()), sun_earth_distance, solar_zenith)
+        top_of_atmosphere_directory = create_file_name(get_parent(self.path), 'TOA')
+
+        create_directory_path(top_of_atmosphere_directory)
+        output_file = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[2]) + '.toa.tif') #TODO: change [2] in self.get_files()[2] 
+
+        create_raster_from_reference(output_file,
+                                     top_of_atmosphere_data,
+                                     self.file_dictionary[_IMAGE],
+                                     data_type=NumericTypeCodeToGDALTypeCode(numpy.float32)
+                                     )
+        LOGGER.debug('Top of atmosphere file was created.')
+
+        cloud_output_file = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[2]) + '_cloud.tif')
+        clouds = base_masking_rapideye(top_of_atmosphere_data, cloud_output_file, solar_zenith, solar_azimuth, geotransform)
+        create_raster_from_reference(output_file,
+                             clouds,
+                             self.file_dictionary[_IMAGE],
+                             data_type=NumericTypeCodeToGDALTypeCode(numpy.float32)
+                             )
+        LOGGER.info('Cloud mask by anomaly detection was created.')

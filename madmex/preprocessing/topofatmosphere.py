@@ -30,7 +30,7 @@ def calculate_toa_spot5(rad, sun_distance, sun_elevation, hrg, number_of_bands):
     for i in range(number_of_bands):
         toa[i,:,:] = (numpy.pi * rad[i, :, :]) / (sun_distance * sun_distance * irradiance[i] * numpy.cos((90 - sun_elevation) * numpy.pi / 180))
     return toa
-def calculate_distance_Sun_Earth_spot5(datestr):
+def calculate_distance_sun_earth_spot5(datestr):
     '''
     Returns distance between sun and earth.
     '''
@@ -65,14 +65,14 @@ def calculate_rad_toa_spot5(data, gain, offset, imaging_date, sun_elevation, hrg
     Calculates top of atmosphere for spot 5.
     '''
     rad = calculate_rad_spot5(data.astype(numpy.float), gain, offset)
-    sun_distance = calculate_distance_Sun_Earth_spot5(imaging_date)
+    sun_distance = calculate_distance_sun_earth_spot5(imaging_date)
     return calculate_toa_spot5(rad, sun_distance, sun_elevation, hrg, number_of_bands)
 def calculate_rad_toa_spot6(data, gain, offset, imaging_date, sun_elevation, irradiance, number_of_bands):
     '''
     Calculates top of atmosphere for spot 6.
     '''
     rad = calculate_rad_spot5(data.astype(numpy.float), gain, offset)
-    sun_distance = calculate_distance_Sun_Earth_spot5(imaging_date)
+    sun_distance = calculate_distance_sun_earth_spot5(imaging_date)
     return calculate_toa_spot6(rad, sun_distance, sun_elevation,irradiance, number_of_bands)
 def calculate_rad_rapideye(data, radiometricScaleFactor=0.009999999776482582, radiometricOffsetValue=0.0):
     '''

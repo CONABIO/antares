@@ -97,9 +97,9 @@ def create_raster_from_reference(image_path, array, reference_path, data_type=gd
     projection = _get_projection(dataset)
     geotransform =  _get_geotransform(dataset)
     driver_type = _get_driver(dataset)
-    print projection
-    print geotransform
-    print driver_type
+    LOGGER.debug('Projection from reference: %s', projection)
+    LOGGER.debug('Geotransform from reference: %s', geotransform)
+    LOGGER.debug('Driver from reference: %s', driver_type)
     dataset = None
     create_raster(image_path, array, geotransform, projection, driver_type, data_type)
 def create_raster(image_path, array, geotransform=None, projection=None, driver_type=GTIFF, data_type=gdal.GDT_Float32):
@@ -136,6 +136,4 @@ def create_raster(image_path, array, geotransform=None, projection=None, driver_
             for band in range(bands):
                 data.GetRasterBand(band + 1).WriteArray(array[band, :, :])
         data.FlushCache()
-        LOGGER.error('Raster file was successfully created on %s.', image_path)
-        print 'Raster file was successfully created on %s.'% image_path
-   
+        LOGGER.debug('Raster file was successfully created on %s.', image_path)

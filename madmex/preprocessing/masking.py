@@ -56,14 +56,13 @@ def morphing(image_mask_array, image_array, inbetween, clouds):
         numpy.putmask(image_mask_array, inbetween == 1, FMASK_CLOUD_SHADOW) #This line must be out of the for loop??
         numpy.putmask(image_mask_array, clouds == 1, FMASK_CLOUD) #This line must be out of the for loop??
     return image_mask_array
-def base_masking_rapideye(top_of_atmosphere_data, output_file, fun_get_attr_sensor_metadata, fun_get_attr_raster_metadata):
-    from madmex.mapper.sensor import rapideye
-    from madmex.mapper.data import raster
-    solar_zenith = fun_get_attr_sensor_metadata(rapideye.SOLAR_ZENITH)
-    solar_azimuth = fun_get_attr_sensor_metadata(rapideye.SOLAR_AZIMUTH)
-    geotransform = fun_get_attr_raster_metadata(raster.GEOTRANSFORM)
+def base_masking_rapideye(top_of_atmosphere_data, basename, solar_zenith, solar_azimuth, geotransform):
+    '''
+    This method uses the top of atmosphere data provided to calculate a cloud
+    mask and returns the cloud information as an array.
+    '''
     make_plot = True
-    cloud_mask = convert_to_fmask(extract_extremes(top_of_atmosphere_data, output_file, make_plot))
+    cloud_mask = convert_to_fmask(extract_extremes(top_of_atmosphere_data, basename, make_plot))
     clouds = numpy.where(cloud_mask == FMASK_CLOUD, 1, 0)
     shadows= numpy.where(cloud_mask == FMASK_CLOUD_SHADOW, 1, 0)
     resolution = geotransform[1]

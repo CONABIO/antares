@@ -6,9 +6,7 @@ Created on 16/07/2015
 
 from __future__ import unicode_literals
 import datetime
-import numpy as np
-
-
+import numpy
 
 def calculate_rad_spot5(data,gain,offset):
     '''
@@ -25,27 +23,28 @@ def calculate_toa_spot5(rad, sun_distance, sun_elevation, hrg, number_of_bands):
     Calculates top of atmosphere for spot 5.
     '''
     if hrg == 'SCENE HRG2 J':
-        E = [1858, 1575, 1047, 234]
+        irradiance = [1858, 1575, 1047, 234]
     else:
-        E = [1858, 1573, 1043, 236]
-    BANDS = number_of_bands
+        irradiance = [1858, 1573, 1043, 236]
     toa = rad
-    for i in range(BANDS):
-        toa[i,:,:] = (np.pi*rad[i,:,:]) / (sun_distance * sun_distance * E[i] * np.cos((90 - sun_elevation) * np.pi / 180))
+    for i in range(number_of_bands):
+        toa[i,:,:] = (numpy.pi * rad[i, :, :]) / (sun_distance * sun_distance * irradiance[i] * numpy.cos((90 - sun_elevation) * numpy.pi / 180))
     return toa
 def calculate_distance_Sun_Earth_spot5(datestr):
     '''
     Returns distance between sun and earth.
     '''
     day = datestr.timetuple().tm_yday
-    sun_distance = 1 / (1 - 0.016729 * np.cos((0.9856 * (day - 4)) * np.pi / 180))
+    sun_distance = 1 / (1 - 0.016729 * numpy.cos((0.9856 * (day - 4)) * numpy.pi / 180))
     return sun_distance
 def calculate_toa_spot6(rad, sun_distance, sun_elevation, irradiance, number_of_bands):
-    E = irradiance
-    BANDS = number_of_bands
+    '''
+    Calculates top of atmosphere for spot 6.
+    '''
+    irrad = irradiance
     toa = rad
-    for i in range(BANDS):
-        toa[i,:,:] = (np.pi*rad[i,:,:])/(sun_distance*E[i]*np.cos(sun_elevation))
+    for i in range(number_of_bands):
+        toa[i,:,:] = (numpy.pi * rad[i,:,:]) / (sun_distance * irrad[i] * numpy.cos(sun_elevation))
     return toa
 def calculate_distance_sun_earth(datestr):
     '''
@@ -65,25 +64,16 @@ def calculate_rad_toa_spot5(data, gain, offset, imaging_date, sun_elevation, hrg
     '''
     Calculates top of atmosphere for spot 5.
     '''
-    rad = calculate_rad_spot5(data.astype(np.float), gain, offset)
+    rad = calculate_rad_spot5(data.astype(numpy.float), gain, offset)
     sun_distance = calculate_distance_Sun_Earth_spot5(imaging_date)
     return calculate_toa_spot5(rad, sun_distance, sun_elevation, hrg, number_of_bands)
 def calculate_rad_toa_spot6(data, gain, offset, imaging_date, sun_elevation, irradiance, number_of_bands):
     '''
     Calculates top of atmosphere for spot 6.
     '''
-    rad = calculate_rad_spot5(data.astype(np.float), gain, offset)
+    rad = calculate_rad_spot5(data.astype(numpy.float), gain, offset)
     sun_distance = calculate_distance_Sun_Earth_spot5(imaging_date)
     return calculate_toa_spot6(rad, sun_distance, sun_elevation,irradiance, number_of_bands)
-'''
-def base_top_of_atmosphere_rapideye(sensor_metadata, array):
-    from madmex.mapper.sensor import rapideye
-    solar_zenith = sensor_metadata(rapideye.SOLAR_ZENITH)
-    data_acquisition_date = sensor_metadata(rapideye.ACQUISITION_DATE)
-    sun_earth_distance = calculate_distance_sun_earth(data_acquisition_date)
-    top_of_atmosphere_data = calculate_toa_rapideye(calculate_rad_rapideye(array), sun_earth_distance, solar_zenith)
-    return top_of_atmosphere_data
-'''
 def calculate_rad_rapideye(data, radiometricScaleFactor=0.009999999776482582, radiometricOffsetValue=0.0):
     '''
     Convert digital number into radiance according to rapideye documentation. Returns 
@@ -97,10 +87,10 @@ def calculate_toa_rapideye(rad, sun_distance, sun_elevation):
     Calculates top of atmosphere from radiance according to RE documentation
     needs sun-earth distance and sun elevation.
     '''
-    BANDS = 5
+    bands = 5
     solar_zenit = 90 - sun_elevation
-    EAI = [1997.8, 1863.5, 1560.4, 1395.0, 1124.4]  # Exo-Atmospheric Irradiance in 
+    irradiance = [1997.8, 1863.5, 1560.4, 1395.0, 1124.4]  # Exo-Atmospheric Irradiance in 
     toa = rad
-    for i in range(BANDS):
-        toa[i, :, :] = rad[i, :, :] * (np.pi * (sun_distance * sun_distance)) / (EAI[i] * np.cos(np.pi * solar_zenit / 180)) 
+    for i in range(bands):
+        toa[i, :, :] = rad[i, :, :] * (numpy.pi * (sun_distance * sun_distance)) / (irradiance[i] * numpy.cos(numpy.pi * solar_zenit / 180)) 
     return toa

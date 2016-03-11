@@ -12,6 +12,7 @@ import gdal
 from osgeo._gdalconst import GA_ReadOnly
 import osr
 
+
 GTIFF = 'GTiff'
 
 LOGGER = logging.getLogger(__name__)
@@ -101,8 +102,18 @@ def create_raster_from_reference(image_path, array, reference_path, data_type=gd
     LOGGER.debug('Geotransform from reference: %s', geotransform)
     LOGGER.debug('Driver from reference: %s', driver_type)
     dataset = None
-    create_raster(image_path, array, geotransform, projection, driver_type, data_type)
-def create_raster(image_path, array, geotransform=None, projection=None, driver_type=GTIFF, data_type=gdal.GDT_Float32):
+    create_raster(image_path,
+                  array,
+                  geotransform,
+                  projection,
+                  driver_type,
+                  data_type)
+def create_raster(image_path,
+                  array,
+                  geotransform=None,
+                  projection=None,
+                  driver_type=GTIFF,
+                  data_type=gdal.GDT_Float32):
     '''
     This method facilitates the creation of a raster image using gdal. By setting
     several attributes by default, it removes the overhead of creating images

@@ -75,7 +75,7 @@ def test():
 
 
     mask = numpy.logical_not(numpy.logical_and(mask_a, mask_b))
-
+    LOGGER.debug('mask : %s', mask)
 
     LOGGER.debug('a : %s', a)
     LOGGER.debug('b : %s', b)
@@ -88,14 +88,18 @@ def test():
     height = 4
     threshold = .3
 
+   
+    
     subset = my_data[x:x + width, y:y + height]
-
+    LOGGER.debug('*********************************************')
+    LOGGER.debug('my_data : %s', my_data)
     x_mask = get_image_mask(my_data, threshold)
-
+    LOGGER.debug('*********************************************')
+    LOGGER.debug('x_mask : %s', x_mask)
     x_mask_subset = get_image_subset(x, y, width, height, x_mask)
-
-    LOGGER.debug(my_data)
-    LOGGER.debug(x_mask)
+    LOGGER.debug('*********************************************')
+    LOGGER.debug('x_mask_subset : %s', x_mask_subset)
+    
 
     x_mask_subset = get_image_mask(subset, threshold)
                            
@@ -127,9 +131,11 @@ def test():
 
 
     LOGGER.debug('*************************')
-    LOGGER.debug(multi_subset)
+    LOGGER.debug('my_data: %s', my_data)
     LOGGER.debug('*************************')
-    LOGGER.debug(multi_mask_subset)
+    LOGGER.debug('multi_subset: %s', multi_subset)
+    LOGGER.debug('*************************')
+    LOGGER.debug('multi_mask_subset: %s', multi_mask_subset)
     LOGGER.debug('*************************')
     LOGGER.debug(get_mask_multiband_image_subset(x, y, width, height, my_data, threshold))
 

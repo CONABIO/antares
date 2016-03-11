@@ -14,8 +14,8 @@ import madmex.mapper.sensor.spot5 as spot5
 from madmex.util import get_path_from_list
 
 
-_IMAGE = r'[0-9]{3}_[0-9]{3}_[0-9]{6}_SP5.(IMG|img)$' #TODO: SP5 is going to be in the standard? if not, change this reg exp
-_METADATA = r'[0-9]{3}_[0-9]{3}_[0-9]{6}_SP5.(DIM|dim)$'#TODO: SP5 is going to be in the standard? if not, change this reg exp
+_IMAGE = r'[0-9]{3}_[0-9]{3}_[0-9]{6}_SP5.(IMG|img)$'  # TODO: SP5 is going to be in the standard? if not, change this reg exp
+_METADATA = r'[0-9]{3}_[0-9]{3}_[0-9]{6}_SP5.(DIM|dim)$'  # TODO: SP5 is going to be in the standard? if not, change this reg exp
 FORMAT = 'HFA'
 _NAME = 'Spot5'
 

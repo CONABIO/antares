@@ -95,7 +95,7 @@ def create_raster_from_reference(image_path, array, reference_path, data_type=gd
     '''
     dataset = gdal.Open(reference_path, GA_ReadOnly)
     projection = _get_projection(dataset)
-    geotransform =  _get_geotransform(dataset)
+    geotransform = _get_geotransform(dataset)
     driver_type = _get_driver(dataset)
     LOGGER.debug('Projection from reference: %s', projection)
     LOGGER.debug('Geotransform from reference: %s', geotransform)

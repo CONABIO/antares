@@ -57,11 +57,11 @@ def put_in_dictionary(dictionary, stack, value):
     missing, a empty dictionary will be inserted in its place.
     '''
     current = dictionary
-    for i in range(len(stack)-1):
+    for i in range(len(stack) - 1):
         if stack[i] not in current:
             current[stack[i]] = {}
         current = current[stack[i]]
-    current[stack[len(stack)-1]] = value
+    current[stack[len(stack) - 1]] = value
 
 def parse_value(value):
     '''
@@ -122,14 +122,14 @@ class BaseBundle(object):
         self.file_list = os.listdir(path)
         self.file_dictionary = {}
         self.regex_dict = {}
-    def scan(self): #TODO : Remove this function because is not used
+    def scan(self):  # TODO : Remove this function because is not used
         '''
         This method will traverse through the list of files in the given
         directory using the given regex dictionary, creating a map for the
         founded files.
         '''
         raise NotImplementedError('subclasses of BaseBundle must provide a scan() method')
-    def is_consistent(self):#TODO : Remove this function because is not used
+    def is_consistent(self):  # TODO : Remove this function because is not used
         '''
         Subclasses must implement this method.
         '''
@@ -232,7 +232,7 @@ class BaseData(object):
         footprint.Transform(coordinate_transformation)
         wkt = WKTElement(footprint.ExportToWkt(), srid=4326)
         return wkt
-    def create_from_reference(self, output, width, height, bands, geotransform, projection, data_type = gdal.GDT_Float32, options = []):
+    def create_from_reference(self, output, width, height, bands, geotransform, projection, data_type=gdal.GDT_Float32, options=[]):
         '''
         This method creates a gdal data file using the width, height and bands
         specified. options could be:

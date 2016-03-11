@@ -41,7 +41,7 @@ class RemoteProcessLauncher():
         self._get_ssh_client().load_system_host_keys()
         self._get_ssh_client().connect(
             self.host.hostname,
-            username=self.host.user,password=self.host.password
+            username=self.host.user, password=self.host.password
             )
         
         

@@ -33,7 +33,7 @@ class Data(BaseData):
         Open the vector image file with ogr.
         '''
         try:
-            return self.driver.Open(self.image_path, 0) # 0 means read-only. 1 means writeable.
+            return self.driver.Open(self.image_path, 0)  # 0 means read-only. 1 means writeable.
         except Exception:
             LOGGER.error('Unable to open shape file: %s', self.image_path)
     def _extract_metadata(self, data):

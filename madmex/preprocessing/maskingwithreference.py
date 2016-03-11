@@ -30,7 +30,7 @@ def masking(image_array, tile_id, solar_zenith, solar_azimuth, geotransform, sen
     '''
     resolution = geotransform[1]
     images_references_paths = get_images_for_tile(tile_id, sensor_id, product_id, cloud_cover)
-    image_difference_array =  calculate_difference_from_reference(image_array, images_references_paths)
+    image_difference_array = calculate_difference_from_reference(image_array, images_references_paths)
     cloud_shadow_array = cloud_shadow_mask_array(image_array, image_difference_array, solar_zenith, solar_azimuth, resolution)
     return cloud_shadow_array
 def get_images_for_tile(tile_id, sensor_id, product_id, cloud_cover=100):
@@ -59,7 +59,7 @@ def create_reference_array(images_references_paths):
     rows = None
     columns = None
     for image_path in images_references_paths:
-        bundle  = Bundle(image_path)
+        bundle = Bundle(image_path)
         if bundle.can_identify():
             if not bands:
                 bands = bundle.get_sensor().get_attribute(sensor.BANDS)
@@ -76,9 +76,9 @@ def create_reference_array(images_references_paths):
         my_array[index] = identified[index].get_raster().read_data_file_as_array().astype(numpy.float)
     medians = numpy.empty((bands, rows, columns))
     for band in range(bands):
-        medians[band] = numpy.median(my_array[:,band,:,:], axis=0)
+        medians[band] = numpy.median(my_array[:, band, :, :], axis=0)
     return medians
-def cloud_mask_array(image_difference_array, threshold=30000, filter_size=13, morphing_size=0): #TODO: Is it 0 in morphing_size?? is not 10??
+def cloud_mask_array(image_difference_array, threshold=30000, filter_size=13, morphing_size=0):  # TODO: Is it 0 in morphing_size?? is not 10??
     '''
     This method returns a mask for the given array, it stacks all the bands into
     one and filters values that match the threshold. The new array will be filled
@@ -90,7 +90,7 @@ def cloud_mask_array(image_difference_array, threshold=30000, filter_size=13, mo
     if morphing_size:
         clouds = morph_dilation(clouds, morphing_size)
     return clouds
-def shadow_mask_array(image_difference_array, threshold=-5500, filter_size=13, morphing_size=0): #TODO: Is it 0 in morphing_size?? is not 10??
+def shadow_mask_array(image_difference_array, threshold=-5500, filter_size=13, morphing_size=0):  # TODO: Is it 0 in morphing_size?? is not 10??
     '''
     This method returns a mask for the given array, it stacks all the bands into
     one and filters values that match the threshold. The new array will be filled
@@ -127,7 +127,7 @@ def outside_mask_array(image_array, no_data_value=0, outside_value=255):
     together, we mask values with 0 value in them.
     '''
     mask_array = numpy.zeros((image_array.shape[1], image_array.shape[2]))
-    sum_of_bands_array = numpy.sum(image_array,axis = 0) == 0
+    sum_of_bands_array = numpy.sum(image_array, axis=0) == 0
     numpy.putmask(mask_array, sum_of_bands_array, outside_value)
     return mask_array
 

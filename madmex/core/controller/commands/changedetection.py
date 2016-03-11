@@ -62,7 +62,7 @@ class Command(BaseCommand):
         # bundle_a = _get_bundle_from_path(image_a)
         # bundle_b = _get_bundle_from_path(image_a)
         gdal_format = "GTiff"
-        image_a_data_class =raster.Data(image_a, gdal_format)
+        image_a_data_class = raster.Data(image_a, gdal_format)
         image_b_data_class = raster.Data(image_b, gdal_format)
         harmonized_class = harmonized.Data(image_a_data_class, image_b_data_class)
         if harmonized_class:

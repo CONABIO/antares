@@ -33,18 +33,18 @@ class LandsatBaseBundle(BaseBundle):
         '''
         mission = self.get_mission()
         if not self.file_dictionary:
-            band_1 = _BASE % (mission,'B1[0-9].TIF')
-            band_2 = _BASE % (mission,'B2[0-9].TIF')
-            band_3 = _BASE % (mission,'B3[0-9].TIF')
-            band_4 = _BASE % (mission,'B4[0-9].TIF')
-            band_5 = _BASE % (mission,'B5[0-9].TIF')
-            band_6 = _BASE % (mission,'B6[0-9].TIF')
-            band_61 = _BASE % (mission,'B61.TIF')
-            band_62 = _BASE % (mission,'B62.TIF')
-            band_7 = _BASE % (mission,'B7[0-9].TIF')
-            band_8 = _BASE % (mission,'B7[0-9].TIF')
-            gcp = _BASE % (mission,'GCP.txt')
-            metadata = _BASE % (mission,'MTL.txt')
+            band_1 = _BASE % (mission, 'B1[0-9].TIF')
+            band_2 = _BASE % (mission, 'B2[0-9].TIF')
+            band_3 = _BASE % (mission, 'B3[0-9].TIF')
+            band_4 = _BASE % (mission, 'B4[0-9].TIF')
+            band_5 = _BASE % (mission, 'B5[0-9].TIF')
+            band_6 = _BASE % (mission, 'B6[0-9].TIF')
+            band_61 = _BASE % (mission, 'B61.TIF')
+            band_62 = _BASE % (mission, 'B62.TIF')
+            band_7 = _BASE % (mission, 'B7[0-9].TIF')
+            band_8 = _BASE % (mission, 'B7[0-9].TIF')
+            gcp = _BASE % (mission, 'GCP.txt')
+            metadata = _BASE % (mission, 'MTL.txt')
             
             self.file_dictionary = {}
                 
@@ -99,13 +99,13 @@ class LandsatBaseBundle(BaseBundle):
         files, one file for each band. This method will return the file for the
         specified band.
         '''
-        return self.file_dictionary[_BASE % (self.get_mission(),'Bs%[0-9].TIF' % band)]
+        return self.file_dictionary[_BASE % (self.get_mission(), 'Bs%[0-9].TIF' % band)]
     
     def get_metadata_file(self):
         '''
         This method is a getter for the file that contains metadata for this image.
         '''
-        return self.file_dictionary[_BASE % (self.get_mission(),'MTL.txt')]
+        return self.file_dictionary[_BASE % (self.get_mission(), 'MTL.txt')]
     def get_raster(self):
         '''
         Lazily creates and returns a raster object for this bundle.

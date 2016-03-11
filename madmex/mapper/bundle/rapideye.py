@@ -64,11 +64,11 @@ class Bundle(BaseBundle):
     def get_information_object(self):
         information = Information(
                     grid_id=self.get_sensor().get_attribute(rapideye.TILE_ID),
-                    projection= self.get_raster().get_attribute(raster.PROJECTION),
+                    projection=self.get_raster().get_attribute(raster.PROJECTION),
                     cloud_percentage=self.get_sensor().get_attribute(rapideye.CLOUDS),
-                    geometry=self.get_raster().get_attribute(raster.FOOTPRINT),       
+                    geometry=self.get_raster().get_attribute(raster.FOOTPRINT),
                     elevation_angle=self.get_sensor().get_attribute(rapideye.AZIMUTH_ANGLE),
-                    resolution=1.0 #TODO: change this to: self.get_raster().get_attribute(raster.GEOTRANSFORM)[1]
+                    resolution=1.0  # TODO: change this to: self.get_raster().get_attribute(raster.GEOTRANSFORM)[1]
                     )
         return information
     def get_name(self):
@@ -139,10 +139,10 @@ class Bundle(BaseBundle):
         Top of atmosphere information is used to create a cloud mask using the 
         detection anomaly algorithm.
         '''
-        return masking.base_masking_rapideye(top_of_atmosphere_data, 
-                                               cloud_output_file, 
-                                               solar_zenith, 
-                                               solar_azimuth, 
+        return masking.base_masking_rapideye(top_of_atmosphere_data,
+                                               cloud_output_file,
+                                               solar_zenith,
+                                               solar_azimuth,
                                                geotransform
                                                )
     def masking_with_time_series(self, data, cloud_output_file, solar_zenith, solar_azimuth, geotransform, tile_id):
@@ -150,10 +150,10 @@ class Bundle(BaseBundle):
         This method will create a mask using a time series of images as a reference
         to look for shadows and clouds to mask.
         '''
-        return maskingwithreference.masking(data, 
-                                              tile_id, 
-                                              solar_zenith, 
-                                              solar_azimuth, 
+        return maskingwithreference.masking(data,
+                                              tile_id,
+                                              solar_zenith,
+                                              solar_azimuth,
                                               geotransform)
     def preprocess(self):
         '''
@@ -171,7 +171,7 @@ class Bundle(BaseBundle):
         top_of_atmosphere_directory = create_file_name(get_parent(self.path), 'TOA')
 
         create_directory_path(top_of_atmosphere_directory)
-        output_file = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[2]) + '_toa.tif') #TODO: change [2] in self.get_files()[2] 
+        output_file = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[2]) + '_toa.tif')  # TODO: change [2] in self.get_files()[2] 
 
         create_raster_from_reference(output_file,
                                      top_of_atmosphere_data,

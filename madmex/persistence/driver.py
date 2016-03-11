@@ -9,7 +9,7 @@ import logging
 from unittest import result
 from sqlalchemy import tuple_
 from madmex.persistence.database.connection import SESSION_MAKER, \
-    Product, Host, Command, RawProduct, Information, Sensor,\
+    Product, Host, Command, RawProduct, Information, Sensor, \
     RapidEyeFootPrintsMexicoOld
 import madmex.persistence.database.operations as database
 import madmex.persistence.filesystem.operations as filesystem
@@ -36,7 +36,7 @@ def persist_bundle(bundle):
     actions = []
     session = SESSION_MAKER()
     try:
-        if not session.query(Product).filter(Product.path==bundle.get_database_object().path).count():
+        if not session.query(Product).filter(Product.path == bundle.get_database_object().path).count():
             for file_name in bundle.get_files():
                 actions.append(filesystem.InsertAction(file_name, destination))
             actions.append(database.InsertAction(
@@ -112,14 +112,14 @@ def find_datasets(start_date, end_date, sensor_id, product_id, cloud_cover, tile
     '''
     session = SESSION_MAKER()
     images_references_paths = session.query(RawProduct.path).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , Information.cloud_percentage <= cloud_cover, Information.grid_id == tile_id).all()
-    #images_references_paths = session.query(RawProduct.path, Information.sensor).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , RawProduct.product_type == product_id, Information.sensor == sensor_id, Information.cloud_percentage <= cloud_cover).all()
+    # images_references_paths = session.query(RawProduct.path, Information.sensor).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , RawProduct.product_type == product_id, Information.sensor == sensor_id, Information.cloud_percentage <= cloud_cover).all()
     session.close()
     return [tuples[0] for tuples in images_references_paths]
 def acquisitions_by_mapgrid_and_date(date, mapgrid_target, day_buffer):
     from sqlalchemy import Integer, func, Date
     from sqlalchemy.sql.expression import cast
     session = SESSION_MAKER()
-    images_paths = session.query(RawProduct.path, RapidEyeFootPrintsMexicoOld.code, RapidEyeFootPrintsMexicoOld.mapgrid2).distinct().join(RawProduct.information).filter(RawProduct.sensor_id == 1, RapidEyeFootPrintsMexicoOld.mapgrid2 == mapgrid_target, cast(RapidEyeFootPrintsMexicoOld.code, Integer) == cast(Information.grid_id, Integer), func.abs(cast(RawProduct.acquisition_date, Date)-date) < day_buffer).all()
+    images_paths = session.query(RawProduct.path, RapidEyeFootPrintsMexicoOld.code, RapidEyeFootPrintsMexicoOld.mapgrid2).distinct().join(RawProduct.information).filter(RawProduct.sensor_id == 1, RapidEyeFootPrintsMexicoOld.mapgrid2 == mapgrid_target, cast(RapidEyeFootPrintsMexicoOld.code, Integer) == cast(Information.grid_id, Integer), func.abs(cast(RawProduct.acquisition_date, Date) - date) < day_buffer).all()
     return images_paths
 def get_sensor_object(sensor_name):
     session = SESSION_MAKER()

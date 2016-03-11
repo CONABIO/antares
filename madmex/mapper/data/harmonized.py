@@ -13,8 +13,8 @@ import numpy
 from madmex.mapper.base import BaseData, _get_attribute, put_in_dictionary
 
 
-#import numpy.ma as ma
-#from Carbon.TextEdit import WIDTHHook
+# import numpy.ma as ma
+# from Carbon.TextEdit import WIDTHHook
 LOGGER = logging.getLogger(__name__)
 PROJECTION = ['projection']
 DATA_SHAPE = ['data_shape']
@@ -54,7 +54,7 @@ def get_image_subset(x, y, width, height, data):
     '''
     if len(data.shape) != 2:
         raise ValueError('Invalid data dimension, data should be 2 dimensional.')
-    subset = data[x:x + width,y:y + height]
+    subset = data[x:x + width, y:y + height]
     return subset
 def get_multiband_image_subset(x, y, width, height, data):
     '''
@@ -65,20 +65,20 @@ def get_multiband_image_subset(x, y, width, height, data):
     '''
     if len(data.shape) != 3:
         raise ValueError('Invalid data dimension, data should be 3 dimensional.')
-    subset = data[:,x:x + width,y:y + height]
+    subset = data[:, x:x + width, y:y + height]
     return subset
 def get_mask_image_subset(x, y, width, height, data, threshold=0):
     '''
     This method is a helper method that calls the mask and subset methods one
     after the other.
     '''
-    return get_image_mask(get_image_subset(x,y,width,height,my_data),threshold)
+    return get_image_mask(get_image_subset(x, y, width, height, my_data), threshold)
 def get_mask_multiband_image_subset(x, y, width, height, data, threshold=0):
     '''
     This method is a helper method that calls the mask and subset methods one
     after the other. In particular it handles the case for a multiband image.
     '''
-    return get_multiband_image_mask(get_multiband_image_subset(x,y,width,height,my_data),threshold)
+    return get_multiband_image_mask(get_multiband_image_subset(x, y, width, height, my_data), threshold)
 def stack_images():
     pass
 
@@ -94,7 +94,7 @@ def harmonize_images(images, projection, shape):
     shapes = []
     accepted_images = []
     for image in images:
-        if image and image.get_attribute(raster.PROJECTION) == projection and image.get_attribute(raster.DATA_SHAPE)==shape:
+        if image and image.get_attribute(raster.PROJECTION) == projection and image.get_attribute(raster.DATA_SHAPE) == shape:
             geotransforms.append(image.get_attribute(raster.GEOTRANSFORM))
             projections.append(image.get_attribute(raster.PROJECTION))
             shapes.append(image.get_attribute(raster.DATA_SHAPE))
@@ -155,7 +155,7 @@ class Data(BaseData):
         '''
         Given two images of class raster  returns two arrays with common harmonized properties        
         '''
-        yoffset =  self.get_attribute(YOFFSET)
+        yoffset = self.get_attribute(YOFFSET)
         xoffset = self.get_attribute(XOFFSET)
         x_range = self.get_attribute(XRANGE)  
         y_range = self.get_attribute(YRANGE)
@@ -180,7 +180,7 @@ if __name__ == '__main__':
     image_pair_list.append(image1)
     image_pair_list.append(image2)
     gdal_format = "GTiff"
-    image1_data_class =raster.Data(image1, gdal_format)
+    image1_data_class = raster.Data(image1, gdal_format)
     image2_data_class = raster.Data(image2, gdal_format)
 
     harmonized_class = Data(image1_data_class, image2_data_class)
@@ -216,39 +216,39 @@ if __name__ == '__main__':
     LOGGER.debug([first, second])
     LOGGER.debug([third, fourth])
 
-    a = numpy.min(image1_data[first:second, third:fourth],axis=0)
-    b = numpy.min(image2_data[int(y_offset[1]):int(y_offset[1] + y_range),int(x_offset[1]):int(x_offset[1] + x_range)],axis=0)
+    a = numpy.min(image1_data[first:second, third:fourth], axis=0)
+    b = numpy.min(image2_data[int(y_offset[1]):int(y_offset[1] + y_range), int(x_offset[1]):int(x_offset[1] + x_range)], axis=0)
     
     mask_a = numpy.ones((y_range, x_range))
     mask_b = numpy.ones((y_range, x_range))
 
 
-    mask =  numpy.logical_not(numpy.logical_and(mask_a, mask_b))
+    mask = numpy.logical_not(numpy.logical_and(mask_a, mask_b))
 
 
     LOGGER.debug('a : %s', a)
     LOGGER.debug('b : %s', b)
 
 
-    my_data = numpy.random.rand(10,10)
+    my_data = numpy.random.rand(10, 10)
     x = 2
     y = 2
     width = 3
     height = 4
     threshold = .3
 
-    subset = my_data[x:x+width, y:y+height]
+    subset = my_data[x:x + width, y:y + height]
 
     x_mask = get_image_mask(my_data, threshold)
 
-    x_mask_subset = get_image_subset(x,y,width,height,x_mask)
+    x_mask_subset = get_image_subset(x, y, width, height, x_mask)
 
     LOGGER.debug(my_data)
     LOGGER.debug(x_mask)
 
     x_mask_subset = get_image_mask(subset, threshold)
                            
-    subset_x_mask = get_image_subset(x,y,width,height,x_mask)
+    subset_x_mask = get_image_subset(x, y, width, height, x_mask)
 
     LOGGER.debug('*************************')
     LOGGER.debug(subset)
@@ -257,14 +257,14 @@ if __name__ == '__main__':
     LOGGER.debug('*************************')
     LOGGER.debug(subset_x_mask)
     LOGGER.debug('*************************')
-    LOGGER.debug(get_mask_image_subset(x,y,width,height,my_data,threshold))
+    LOGGER.debug(get_mask_image_subset(x, y, width, height, my_data, threshold))
 
 
 
     LOGGER.debug('multiband')
 
 
-    my_data = numpy.random.rand(5,10,10)
+    my_data = numpy.random.rand(5, 10, 10)
     x = 2
     y = 2
     width = 3
@@ -272,7 +272,7 @@ if __name__ == '__main__':
     threshold = .3
 
     multi_subset = get_multiband_image_subset(x, y, width, height, my_data)
-    multi_mask_subset = get_multiband_image_mask(multi_subset,threshold)
+    multi_mask_subset = get_multiband_image_mask(multi_subset, threshold)
 
 
     LOGGER.debug('*************************')

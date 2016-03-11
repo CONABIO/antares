@@ -87,7 +87,7 @@ class Parser(BaseParser):
                 key, value = line.split('=')
                 if key.lower().strip() == 'group':
                     stack.append(value.strip())
-                    #put_in_dictionary(groups, stack, {})
+                    # put_in_dictionary(groups, stack, {})
                 elif key.lower().strip() == 'end_group':
                     if group_dictionary:
                         put_in_dictionary(groups, stack, group_dictionary)

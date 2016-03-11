@@ -29,7 +29,7 @@ def find_confidence_interval(mu, pdf, confidence_level):
     desinty function at the given confidence level.
     '''
     return pdf[pdf > mu].sum() - confidence_level
-def calc_threshold_grid(image_array, pdf_image, tiles = 10, bins = 55):
+def calc_threshold_grid(image_array, pdf_image, tiles=10, bins=55):
     '''
     Calculate thresholds based on probability density function approach.
     '''
@@ -42,8 +42,8 @@ def calc_threshold_grid(image_array, pdf_image, tiles = 10, bins = 55):
     for band_combination in [USED_COMPONENTS]:
         res = list()
         first_band, second_band = band_combination
-        LOGGER.info('Calculate thresholds for MAF band combination: %d:%d', 
-                    first_band, 
+        LOGGER.info('Calculate thresholds for MAF band combination: %d:%d',
+                    first_band,
                     second_band)
         y_step_no = np.floor(rows / tiles).astype(np.int)
         x_step_no = np.floor(columns / tiles).astype(np.int)
@@ -72,7 +72,7 @@ def calc_threshold_grid(image_array, pdf_image, tiles = 10, bins = 55):
                 xcount += 1
             ycount += 1
         if pdf_image != None:
-            plt.savefig(pdf_image, dpi = DPI, transparent=True, bbox_inches='tight')
+            plt.savefig(pdf_image, dpi=DPI, transparent=True, bbox_inches='tight')
     return res
 
 def density_contour(xdata, ydata, nbins_x, nbins_y, labeltext=None, ax=None, pdf_image=None, **contour_kwargs):

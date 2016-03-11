@@ -262,13 +262,13 @@ class Command(BASE):
 
 class RapidEyeFootPrintsMexicoOld(BASE):
     ''''''''
-    #TODO: this is just an example of three columns in the table and two columns mapped
+    # TODO: this is just an example of three columns in the table and two columns mapped
     __table__ = Table('rapideye_footprints_mexico_old', BASE.metadata,
-                        Column('gid', Integer, primary_key = True),
+                        Column('gid', Integer, primary_key=True),
                           Column('code', Integer),
                           Column('mapgrid', Integer),
                           Column('mapgrid2', Integer))
-    __table_args__ ={'autoload': True, 'autoload_with': ENGINE}
+    __table_args__ = {'autoload': True, 'autoload_with': ENGINE}
     code = __table__.c.code
     mapgrid = __table__.c.mapgrid
     mapgrid2 = __table__.c.mapgrid2
@@ -1807,7 +1807,7 @@ def populate_database():
             'hostname':'96.126.98.33',
             'command':'greet',
             'queue':'workers.q'        
-        },             
+        },
     ]
     units = [Unit(
         name=x['name'],
@@ -1854,7 +1854,7 @@ def populate_database():
         creator=session.query(Organization).filter(
             Organization.name == x['creator']).first(),
         publisher=session.query(Organization).filter(
-            Organization.name == x['publisher']).first(),                              
+            Organization.name == x['publisher']).first(),
          ) for x in descriptions_array]
     session.add_all(descriptions)
     product_types = [ProductType(
@@ -1889,8 +1889,8 @@ def create_vector_tables(path_query):
 if __name__ == '__main__':
     CREATE = 1
     if CREATE:
-        #path_query = getattr(SETTINGS, 'RAPIDEYE_FOOTPRINTS_MEXICO_OLD')
-        #create_vector_tables(path_query)
+        # path_query = getattr(SETTINGS, 'RAPIDEYE_FOOTPRINTS_MEXICO_OLD')
+        # create_vector_tables(path_query)
         print 'vector tables created'
         create_database()
         print 'database created'

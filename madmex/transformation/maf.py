@@ -30,7 +30,7 @@ class Transformation(BaseTransformation):
         Prepare data for maximum autocorrelation factor transform.
         '''
         self.number_of_maf_variates = self.bands - 1
-        variates_stack = numpy.zeros((self.cols*self.rows, self.number_of_maf_variates), dtype = float)
+        variates_stack = numpy.zeros((self.cols * self.rows, self.number_of_maf_variates), dtype=float)
         # coavariance matrix from image and itself shifted by 1 pixel
         # (vertically and horizontally)
         rows_1 = self.rows - 1
@@ -44,21 +44,21 @@ class Transformation(BaseTransformation):
             self.V[:, b] = numpy.ravel(variates[0:rows_1, 0:cols_1] - variates[1:self.rows, 0:cols_1])
             variates_stack[:, b] = numpy.ravel(variates)
         # close useless image data
-        self.image_array= None
+        self.image_array = None
         # band_data = None
         # label data considered as NA
         nodataidx = variates_stack[:, :] == self.no_data_value
         self.gooddataidx = nodataidx[:, 0] == False
         self.variates_stack = numpy.array(variates_stack[self.gooddataidx, :])
-        #variates_stack = numpy.ma.array(variates_stack, mask=self.no_data_value) #TODO: is this correct?
-        #variates_stack = numpy.ma.masked_values(variates_stack, self.no_data_value) #If this line is executed, the next line (variates_stack.data) erases this execution
-        #self.variates_stack = numpy.array(variates_stack.data[self.gooddataidx, :]) 
+        # variates_stack = numpy.ma.array(variates_stack, mask=self.no_data_value) #TODO: is this correct?
+        # variates_stack = numpy.ma.masked_values(variates_stack, self.no_data_value) #If this line is executed, the next line (variates_stack.data) erases this execution
+        # self.variates_stack = numpy.array(variates_stack.data[self.gooddataidx, :]) 
     def processing(self):
         '''
         Perform the maf transformation
         '''
         # covariance of original bands
-        sigma = numpy.ma.cov(self.variates_stack.T, allow_masked=True) #TODO: Jenkins can't run this lines with allow_masked =True, whyyyy??
+        sigma = numpy.ma.cov(self.variates_stack.T, allow_masked=True)  # TODO: Jenkins can't run this lines with allow_masked =True, whyyyy??
         # covariance for horizontal and vertical shifts
         sigmadh = numpy.ma.cov(self.H.T, allow_masked=True)
         sigmadv = numpy.ma.cov(self.V.T, allow_masked=True)
@@ -70,7 +70,7 @@ class Transformation(BaseTransformation):
         
         # simple pooling of shifts
         sigmad = 0.5 * (numpy.array(sigmadh) + numpy.array(sigmadv))
-        #evalues, vec1 = scipy.linalg.eig(sigmad, sigma)
+        # evalues, vec1 = scipy.linalg.eig(sigmad, sigma)
         evalues, vec1 = linalg.eig(sigmad, sigma)
 
         # Sort eigen values from smallest to largest and apply this order to
@@ -92,7 +92,7 @@ class Transformation(BaseTransformation):
         N = numpy.shape(self.variates_stack)[0]
         X = self.variates_stack - numpy.tile(numpy.mean(self.variates_stack, 0), (N, 1))
         # scale v to give MAFs with unit variance
-        aux1 = numpy.dot(numpy.dot(v.T, sigma), v)# dispersion of MAFs
+        aux1 = numpy.dot(numpy.dot(v.T, sigma), v)  # dispersion of MAFs
         aux2 = 1 / numpy.sqrt(numpy.diag(aux1))
         aux3 = numpy.tile(aux2.T, (self.number_of_maf_variates, 1))
         v = v * aux3  # now dispersion is unit matrix

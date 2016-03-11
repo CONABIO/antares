@@ -8,15 +8,15 @@ from __future__ import unicode_literals
 import datetime
 import numpy
 
-def calculate_rad_spot5(data,gain,offset):
+def calculate_rad_spot5(data, gain, offset):
     '''
     Calculates radiance for spot 5.
     '''
     b = 0
     rad = data
     for g in gain:
-        rad[b,:,:] = data[b,:,:] / g + offset[b]
-        b = b+1
+        rad[b, :, :] = data[b, :, :] / g + offset[b]
+        b = b + 1
     return rad
 def calculate_toa_spot5(rad, sun_distance, sun_elevation, hrg, number_of_bands):
     '''
@@ -28,7 +28,7 @@ def calculate_toa_spot5(rad, sun_distance, sun_elevation, hrg, number_of_bands):
         irradiance = [1858, 1573, 1043, 236]
     toa = rad
     for i in range(number_of_bands):
-        toa[i,:,:] = (numpy.pi * rad[i, :, :]) / (sun_distance * sun_distance * irradiance[i] * numpy.cos((90 - sun_elevation) * numpy.pi / 180))
+        toa[i, :, :] = (numpy.pi * rad[i, :, :]) / (sun_distance * sun_distance * irradiance[i] * numpy.cos((90 - sun_elevation) * numpy.pi / 180))
     return toa
 def calculate_distance_sun_earth_spot5(datestr):
     '''
@@ -44,7 +44,7 @@ def calculate_toa_spot6(rad, sun_distance, sun_elevation, irradiance, number_of_
     irrad = irradiance
     toa = rad
     for i in range(number_of_bands):
-        toa[i,:,:] = (numpy.pi * rad[i,:,:]) / (sun_distance * irrad[i] * numpy.cos(sun_elevation))
+        toa[i, :, :] = (numpy.pi * rad[i, :, :]) / (sun_distance * irrad[i] * numpy.cos(sun_elevation))
     return toa
 def calculate_distance_sun_earth(datestr):
     '''
@@ -56,7 +56,7 @@ def calculate_distance_sun_earth(datestr):
     sun = ephem.Sun()  # @UndefinedVariable
     if isinstance(datestr, str):
         sun.compute(datetime.datetime.strptime(datestr, '%Y-%m-%d').date())
-    elif isinstance(datestr, datetime.datetime ):
+    elif isinstance(datestr, datetime.datetime):
         sun.compute(datestr)
     sun_distance = sun.earth_distance  # needs to be between 0.9832898912 AU and 1.0167103335 AU
     return sun_distance
@@ -73,7 +73,7 @@ def calculate_rad_toa_spot6(data, gain, offset, imaging_date, sun_elevation, irr
     '''
     rad = calculate_rad_spot5(data.astype(numpy.float), gain, offset)
     sun_distance = calculate_distance_sun_earth_spot5(imaging_date)
-    return calculate_toa_spot6(rad, sun_distance, sun_elevation,irradiance, number_of_bands)
+    return calculate_toa_spot6(rad, sun_distance, sun_elevation, irradiance, number_of_bands)
 def calculate_rad_rapideye(data, radiometricScaleFactor=0.009999999776482582, radiometricOffsetValue=0.0):
     '''
     Convert digital number into radiance according to rapideye documentation. Returns 

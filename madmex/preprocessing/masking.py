@@ -20,7 +20,7 @@ FMASK_OUTSIDE = 255
 FMASK_CLOUD_SHADOW = 2
 FMASK_CLOUD = 4
 MORPHING_SIZE = 10
-MORPHING_SIZES = [250, 150, 50] # pixel sizes of structure elements
+MORPHING_SIZES = [250, 150, 50]  # pixel sizes of structure elements
 MAX_ERROR = 10
 
 def filter_median(input_image_raster, filter_size):
@@ -51,10 +51,10 @@ def morphing(image_mask_array, image_array, inbetween, clouds):
     numpy.putmask(image_mask_array, image_array[0, :, :] == 0, FMASK_OUTSIDE)
     m = len(MORPHING_SIZES)
     for MORPHING_SIZE in MORPHING_SIZES:
-        numpy.putmask(image_mask_array, morph_dilation(clouds, MORPHING_SIZE) == 1, FMASK_CLOUD)#*10+m) Multiply by 10 and then sum m?? or not
+        numpy.putmask(image_mask_array, morph_dilation(clouds, MORPHING_SIZE) == 1, FMASK_CLOUD)  # *10+m) Multiply by 10 and then sum m?? or not
         m = m - 1
-        numpy.putmask(image_mask_array, inbetween == 1, FMASK_CLOUD_SHADOW) #This line must be out of the for loop??
-        numpy.putmask(image_mask_array, clouds == 1, FMASK_CLOUD) #This line must be out of the for loop??
+        numpy.putmask(image_mask_array, inbetween == 1, FMASK_CLOUD_SHADOW)  # This line must be out of the for loop??
+        numpy.putmask(image_mask_array, clouds == 1, FMASK_CLOUD)  # This line must be out of the for loop??
     return image_mask_array
 def base_masking_rapideye(top_of_atmosphere_data, basename, solar_zenith, solar_azimuth, geotransform):
     '''
@@ -64,13 +64,13 @@ def base_masking_rapideye(top_of_atmosphere_data, basename, solar_zenith, solar_
     make_plot = True
     cloud_mask = convert_to_fmask(extract_extremes(top_of_atmosphere_data, basename, make_plot))
     clouds = numpy.where(cloud_mask == FMASK_CLOUD, 1, 0)
-    shadows= numpy.where(cloud_mask == FMASK_CLOUD_SHADOW, 1, 0)
+    shadows = numpy.where(cloud_mask == FMASK_CLOUD_SHADOW, 1, 0)
     resolution = geotransform[1]
     shadow_mask = calculate_cloud_shadow(clouds, shadows, solar_zenith, solar_azimuth, resolution) * FMASK_CLOUD_SHADOW
     water_mask = convert_water_to_fmask(calculate_water(top_of_atmosphere_data))
     return combine_mask(cloud_mask, shadow_mask, water_mask)
 def extract_extremes(data, image_file, make_plot, steps=1000):
-    #TODO: the two for and the last one takes too long to finish
+    # TODO: the two for and the last one takes too long to finish
     CENTER = 50
     xtiles = 5000 / steps
     ytiles = 5000 / steps
@@ -80,7 +80,7 @@ def extract_extremes(data, image_file, make_plot, steps=1000):
     for ycount in range(0, 5000, steps):
         for xcount in range(0, 5000, steps):
             subset = data[:, ycount:ycount + steps, xcount:xcount + steps]
-            LOGGER.info("Extent: %dx%d"% (xcount, ycount))
+            LOGGER.info("Extent: %dx%d" % (xcount, ycount))
             z, y, x = subset.shape
             rgb = numpy.zeros((y, x, z))
             for i in range(0, z):
@@ -128,7 +128,7 @@ def extract_extremes(data, image_file, make_plot, steps=1000):
     subset_result = numpy.zeros((3, y, x), dtype=numpy.float)
     total_q = len(global_quant)
     for counter, item in enumerate(global_quant):
-        LOGGER.info("%d: %d, %s" % ( counter, total_q, str(item)))
+        LOGGER.info("%d: %d, %s" % (counter, total_q, str(item)))
         q, value, diff = item
         if diff > MAX_ERROR:
             if q < 50.0:
@@ -141,20 +141,20 @@ def extract_extremes(data, image_file, make_plot, steps=1000):
                 subset_result[2, :, :] = numpy.where(col_space1[ :, :, 2] > value, subset_result[2, :, :] + 1, subset_result[2, :, :])
     return subset_result
 def calculate_water(data):
-    z,y,x = data.shape
-    pot_water = numpy.zeros((y,x))
-    for b in range(z-1,1,-1):
-        pot_water[:,:] = numpy.where(data[b,:,:]<data[b-1,:,:],pot_water+b*1,pot_water)
-    for b in range(z-1,1,-1):
-        pot_water[:,:] = numpy.where(data[b,:,:]>data[b-1,:,:],pot_water-b*1,pot_water)
+    z, y, x = data.shape
+    pot_water = numpy.zeros((y, x))
+    for b in range(z - 1, 1, -1):
+        pot_water[:, :] = numpy.where(data[b, :, :] < data[b - 1, :, :], pot_water + b * 1, pot_water)
+    for b in range(z - 1, 1, -1):
+        pot_water[:, :] = numpy.where(data[b, :, :] > data[b - 1, :, :], pot_water - b * 1, pot_water)
     # NDWI bands
-    b=4
-    pot_water[:,:] = numpy.where(data[b,:,:]>data[b-3,:,:],pot_water-1,pot_water) 
-    #NIR-RE diff to  R-RE aka sun glid
-    dark_nir = numpy.where(data[b,:,:]<0.12,data, data*0 )
-    pot_water[:,:] = numpy.where(numpy.abs(dark_nir[b,:,:]-dark_nir[b-1,:,:]) < abs(dark_nir[b-1,:,:]-dark_nir[b-2,:,:]),pot_water+1.5,pot_water-1.5) 
-    pot_water = signal.medfilt2d(pot_water,kernel_size=5)
-    pot_water = numpy.where(data[0,:,:]==0, -999, pot_water)
+    b = 4
+    pot_water[:, :] = numpy.where(data[b, :, :] > data[b - 3, :, :], pot_water - 1, pot_water) 
+    # NIR-RE diff to  R-RE aka sun glid
+    dark_nir = numpy.where(data[b, :, :] < 0.12, data, data * 0)
+    pot_water[:, :] = numpy.where(numpy.abs(dark_nir[b, :, :] - dark_nir[b - 1, :, :]) < abs(dark_nir[b - 1, :, :] - dark_nir[b - 2, :, :]), pot_water + 1.5, pot_water - 1.5) 
+    pot_water = signal.medfilt2d(pot_water, kernel_size=5)
+    pot_water = numpy.where(data[0, :, :] == 0, -999, pot_water)
     return pot_water
 def calculate_quantiles(band, NA=0):
     quant = list()
@@ -236,17 +236,17 @@ def calculate_cloud_shadow(clouds, shadows, solar_zenith, solar_azimuth, resolut
         y_difference = distance * numpy.sin(numpy.deg2rad(360 - solar_azimuth))
         x_difference = distance * numpy.cos(numpy.deg2rad(360 - solar_azimuth))     
         if solar_azimuth < 180:
-            rows = cloud_row_column[:, 0] - y_difference #/ 5
-            cols = cloud_row_column[:, 1] - x_difference #/ 5
+            rows = cloud_row_column[:, 0] - y_difference  # / 5
+            cols = cloud_row_column[:, 1] - x_difference  # / 5
         else:
-            rows = cloud_row_column[:, 0] + y_difference #/ 5
-            cols = cloud_row_column[:, 1] + x_difference #/ 5
+            rows = cloud_row_column[:, 0] + y_difference  # / 5
+            cols = cloud_row_column[:, 1] + x_difference  # / 5
         rows = rows.astype(numpy.int)
         cols = cols.astype(numpy.int)
         numpy.putmask(rows, rows < 0, 0)
         numpy.putmask(cols, cols < 0, 0)
-        numpy.putmask(rows, rows >= cloud_mask_shape[0] - 1, cloud_mask_shape[0]  - 1)
-        numpy.putmask(cols, cols >= cloud_mask_shape[1]  - 1, cloud_mask_shape[1]  - 1)
+        numpy.putmask(rows, rows >= cloud_mask_shape[0] - 1, cloud_mask_shape[0] - 1)
+        numpy.putmask(cols, cols >= cloud_mask_shape[1] - 1, cloud_mask_shape[1] - 1)
         clouds_projection[rows, cols] = 1  
     in_between = shadows * clouds_projection
     return in_between
@@ -263,8 +263,8 @@ def convert_cloud_to_fmask(raster):
     fmask = numpy.where (raster[0, :, :] < 100, FMASK_CLOUD_SHADOW, fmask)
     fmask = numpy.where (raster[0, :, :] == 0, FMASK_LAND, fmask)
     fmask = numpy.where (raster[0, :, :] == -999.0, FMASK_OUTSIDE, fmask)
-    fmask = signal.medfilt2d(fmask*1.0, kernel_size=3)
-    fmask = signal.medfilt2d(fmask*1.0, kernel_size=5)    
+    fmask = signal.medfilt2d(fmask * 1.0, kernel_size=3)
+    fmask = signal.medfilt2d(fmask * 1.0, kernel_size=5)    
     return fmask
 def convert_water_to_fmask(raster):
     from numpy.core.numerictypes import byte

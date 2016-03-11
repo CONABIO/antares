@@ -42,8 +42,8 @@ class SpotBaseBundle(BaseBundle):
         '''
         if self.output_directory is None:
             destination = getattr(SETTINGS, 'TEST_FOLDER')
-            sensor_name = self.get_sensor().get_attribute(self.get_sensor_module().SENSOR)+self.get_sensor().get_attribute(self.get_sensor_module().PLATFORM)
-            grid_id = '0' #grid_reference in spot6?
+            sensor_name = self.get_sensor().get_attribute(self.get_sensor_module().SENSOR) + self.get_sensor().get_attribute(self.get_sensor_module().PLATFORM)
+            grid_id = '0'  # grid_reference in spot6?
             year = self.get_sensor().get_attribute(self.get_sensor_module().ACQUISITION_DATE).strftime('%Y')
             date = self.get_sensor().get_attribute(self.get_sensor_module().ACQUISITION_DATE).strftime('%Y-%m-%d')
             product_name = self.get_sensor().get_attribute(self.get_sensor_module().PROCESSING_LEVEL)

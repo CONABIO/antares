@@ -47,7 +47,7 @@ class Transformation(BaseTransformation):
         for k in xrange(self.bands):
             image_bands_flattened[k, :] = numpy.ravel(self.image1_array[k, :, :])
             image_bands_flattened[self.bands + k, :] = numpy.ravel(self.image2_array[k, :, :])
-        no_data_value = 0 # TODO: every image needs to have nodata "NA" value set to 0 <-----Discuss if 0 is an appropiate value for NA values
+        no_data_value = 0  # TODO: every image needs to have nodata "NA" value set to 0 <-----Discuss if 0 is an appropiate value for NA values
         index1_no_data = image_bands_flattened[0, :] == no_data_value
         index2_no_data = image_bands_flattened[self.bands, :] == no_data_value
         index_no_data = index1_no_data | index2_no_data
@@ -56,7 +56,7 @@ class Transformation(BaseTransformation):
         self.index_sum = numpy.sum(self.index)
         self.weights = numpy.ones(int(self.index_sum))
         self.delta = 1.0
-        self.max_iterations = (self.bands + 1) * (self.bands+1)
+        self.max_iterations = (self.bands + 1) * (self.bands + 1)
         
     def processing(self):
         '''
@@ -82,22 +82,22 @@ class Transformation(BaseTransformation):
                 s22 = sigma[self.bands:, self.bands:]
                 s12 = sigma[0:self.bands, self.bands:]
                 s21 = sigma[self.bands:, 0:self.bands]
-                aux_1 = linalg.solve(s22,s21)
-                lamda_a,a = linalg.eig(numpy.dot(s12,aux_1),s11)
-                aux_2 = linalg.solve(s11,s12)
-                lamda_b,b = linalg.eig(numpy.dot(s21,aux_2),s22)
-                #sort a
+                aux_1 = linalg.solve(s22, s21)
+                lamda_a, a = linalg.eig(numpy.dot(s12, aux_1), s11)
+                aux_2 = linalg.solve(s11, s12)
+                lamda_b, b = linalg.eig(numpy.dot(s21, aux_2), s22)
+                # sort a
                 sorted_indexes = numpy.argsort(lamda_a)
                 a = a[:, sorted_indexes]
-                #sort b        
+                # sort b        
                 sorted_indexes = numpy.argsort(lamda_b)
                 b = b[:, sorted_indexes]          
-                #canonical correlations        
+                # canonical correlations        
                 rho = numpy.sqrt(numpy.real(lamda_b[sorted_indexes])) 
                 self.delta = numpy.sum(numpy.abs(rho - old_rho))
                 if(not math.isnan(self.delta)):
                     self.outcorrlist.append(rho)
-                    #normalize dispersions  
+                    # normalize dispersions  
                     tmp1 = numpy.dot(numpy.dot(a.T, s11), a)
                     tmp2 = 1. / numpy.sqrt(numpy.diag(tmp1))
                     tmp3 = numpy.tile(tmp2, (self.bands, 1))
@@ -107,14 +107,14 @@ class Transformation(BaseTransformation):
                     tmp2 = 1. / numpy.sqrt(numpy.diag(tmp1))
                     tmp3 = numpy.tile(tmp2, (self.bands, 1))
                     b = numpy.multiply(b, tmp3)
-                    #assure positive correlation
+                    # assure positive correlation
                     tmp = numpy.diag(numpy.dot(numpy.dot(a.T, s12), b))
                     b = numpy.dot(b, numpy.diag(tmp / numpy.abs(tmp)))
-                    #canonical and MAD variates
+                    # canonical and MAD variates
                     U = numpy.dot(a.T, (self.image_bands_flattened[0:self.bands, :] - means[0:self.bands, numpy.newaxis]))    
                     V = numpy.dot(b.T, (self.image_bands_flattened[self.bands:, :] - means[self.bands:, numpy.newaxis]))          
                     self.MAD = U - V  # TODO: is this operation stable?
-                    #new weights        
+                    # new weights        
                     var_mad = numpy.tile(numpy.mat(2 * (1 - rho)).T, (1, self.index_sum))    
                     self.chi_squared = numpy.sum(numpy.multiply(self.MAD, self.MAD) / var_mad, 0)
                     self.weights = numpy.squeeze(1 - numpy.array(stats.chi2._cdf(self.chi_squared, self.bands))) 
@@ -122,7 +122,7 @@ class Transformation(BaseTransformation):
                     LOGGER.info('Processing of iteration %d finished [%f] ...', iteration, numpy.max(self.delta))
                     iteration += 1
                 else:
-                    flag=False
+                    flag = False
                     LOGGER.warning("Processing in iteration %d produced error. Taking last MAD of iteration %d", iteration, (iteration - 1))
             except Exception, error:
                 flag = False

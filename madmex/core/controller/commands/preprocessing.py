@@ -47,7 +47,7 @@ class Command(BaseCommand):
             if os.path.basename(root) in dirs:
                 dirs.remove(os.path.basename(root))
             if name in dirs:
-                path =  os.path.join(root, name)
+                path = os.path.join(root, name)
                 bundle = _get_bundle_from_path(path)
                 if bundle:
                     LOGGER.info('Directory %s is a %s bundle.', path, bundle.get_name())

@@ -40,7 +40,7 @@ class Bundle(SpotBaseBundle):
                         _PREVIEW:None,
                         _ICON:None,
                         _STYLE:None,
-                        _OTHER:None, 
+                        _OTHER:None,
                            }
         self._look_for_files()
     def get_spot_dictionary(self):

@@ -68,14 +68,14 @@ def new_options_for_create_raster_from_reference(reference_metadata, new_option,
         put_in_dictionary(options, new_option, value)
         return options
     put_in_dictionary(options, new_option, value)
-def create_raster_tiff_from_reference(reference_metadata,  output_file, array, options={}, data_type = gdal.GDT_Float32):
+def create_raster_tiff_from_reference(reference_metadata, output_file, array, options={}, data_type=gdal.GDT_Float32):
     '''
     This method creates a raster tif from a given tif file to be used as a
     reference. From the reference file, data such as the width, the height, the
     projection, and the transform will be extracted and used in the new file. 
     '''
     if not options:
-        options =  default_options_for_create_raster_from_reference(reference_metadata)
+        options = default_options_for_create_raster_from_reference(reference_metadata)
     driver = gdal.GetDriverByName(str(GDAL_TIFF))
     width = _get_attribute(CREATE_WITH_WIDTH, options)
     height = _get_attribute(CREATE_WITH_HEIGHT, options)
@@ -109,7 +109,7 @@ class Data(BaseData):
         '''
         super(Data, self).__init__()
         self.image_path = image_path
-        self.metadata ={}
+        self.metadata = {}
         try:
             LOGGER.info("Extracting metadata of driver %s" % gdal_format)
             self.driver = gdal.GetDriverByName(str(gdal_format))
@@ -144,7 +144,7 @@ class Data(BaseData):
         '''
         Extract some raster info from the raster image file using gdal functions.
         '''
-        self.metadata['properties'] ={'projection': None, 'geotransform': None, 'geotransform_from_gcps': None, 'data_shape': None, 'footprint': None}
+        self.metadata['properties'] = {'projection': None, 'geotransform': None, 'geotransform_from_gcps': None, 'data_shape': None, 'footprint': None}
         put_in_dictionary(self.metadata, PROJECTION, self.data_file.GetProjection())
         put_in_dictionary(self.metadata, GEOTRANSFORM, self.data_file.GetGeoTransform())
         put_in_dictionary(self.metadata, DATA_SHAPE, (self.data_file.RasterXSize, self.data_file.RasterYSize, self.data_file.RasterCount))

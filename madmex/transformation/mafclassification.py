@@ -151,7 +151,7 @@ def recode_classes_grid(data, thresholds, tiles=10, NODATA=-999, mode=GLOBAL_MOD
 
     if mode == GLOBAL_MODE:
         class_list = class_split(thresholds)
-        print class_list
+        LOGGER.info('Classification list: %s', class_list)
         for class_label in class_list.keys():
             mode, band_no, thres_value = class_list[class_label]
             LOGGER.info("MAF class recode: class #%d - %s" % (class_label, str(class_list[class_label])))

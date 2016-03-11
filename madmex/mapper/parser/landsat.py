@@ -41,7 +41,7 @@ def _get_usgs_metadata(path, row, sensor, date):
     returned to the caller.
     '''
     print sensor
-    if sensor == 'ETM+' or sensor == 'ETM+':
+    if sensor == 'ETM+' or sensor == 'ETM':
         date_object = datetime.datetime.strptime(date, getattr(SETTINGS, 'DATE_FORMAT'))
         date_lansat_change = datetime.datetime.strptime(
             '2003-04-01',

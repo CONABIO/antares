@@ -107,7 +107,7 @@ def harmonize_images(images, projection, shape):
         geotransforms = numpy.array(geotransforms)
         projections = numpy.array(projections)
         shapes = numpy.array(shapes)
-    
+
         # Intersect boundary coordinates
         # Get upper left coordinates
         ul_x = max(geotransforms[:, 0])
@@ -172,7 +172,6 @@ class Data(BaseData):
         '''
         return _get_attribute(path_to_attribute, self.harmonized_extents)
 
-
 if __name__ == '__main__':
     import raster
     image1 = '/LUSTRE/MADMEX/eodata/etm+/23047/2013/2013-06-24/l1t/LE70230472013175ASN00_B1.TIF'
@@ -183,119 +182,103 @@ if __name__ == '__main__':
     gdal_format = "GTiff"
     image1_data_class =raster.Data(image1, gdal_format)
     image2_data_class = raster.Data(image2, gdal_format)
-    
-    
-    
+
     harmonized_class = Data(image1_data_class, image2_data_class)
     extents = harmonized_class.harmonized_extents
-    print extents
-    
+    LOGGER.debug('Image extents: %s', extents)
+
     x_range = extents['x_range']
     y_range = extents['y_range']
     x_offset = extents['x_offset']
     y_offset = extents['y_offset']
-    
-    
-    print 'x_range : %s' % x_range
-    print 'y_range : %s' % y_range
-    print 'x_offset : %s' % x_offset
-    print 'y_offset : %s' % y_offset
-    
+
+    LOGGER.debug('x_range : %s' % x_range)
+    LOGGER.debug('y_range : %s' % y_range)
+    LOGGER.debug('x_offset : %s' % x_offset)
+    LOGGER.debug('y_offset : %s' % y_offset)
+
     image1_data = image1_data_class.read_data_file_as_array()
     image2_data = image2_data_class.read_data_file_as_array()
 
-    print 'Size of image1 ' , image1_data.shape
-    print 'Size of image2 ' , image2_data.shape
-
+    LOGGER.debug('Size of image1: %s', image1_data.shape)
+    LOGGER.debug('Size of image2: %s', image2_data.shape)
     image1_data_class.close()
     image2_data_class.close()
-    
-    print numpy.unique(image1_data)
-    
-    
+
+    LOGGER.debug(numpy.unique(image1_data))
+
+
     first = int(y_offset[0]) 
     second = int(y_offset[0] + y_range)
     third = int(x_offset[0])
     fourth = int(x_offset[0] + x_range)
-    
-    print [first, second]
-    print [third, fourth]
-    
+
+    LOGGER.debug([first, second])
+    LOGGER.debug([third, fourth])
+
     a = numpy.min(image1_data[first:second, third:fourth],axis=0)
     b = numpy.min(image2_data[int(y_offset[1]):int(y_offset[1] + y_range),int(x_offset[1]):int(x_offset[1] + x_range)],axis=0)
     
     mask_a = numpy.ones((y_range, x_range))
     mask_b = numpy.ones((y_range, x_range))
-    
-#   numpy.putmask(mask_a, a<=0, 0)
-#   numpy.putmask(mask_b, b<=0, 0)
-    
-    mask =  numpy.logical_not(numpy.logical_and(mask_a, mask_b))
-    
-    
 
-    print 'a : %s' % a
-    print 'b : %s' % b
-    print 'hello'
-    
-    
+
+    mask =  numpy.logical_not(numpy.logical_and(mask_a, mask_b))
+
+
+    LOGGER.debug('a : %s', a)
+    LOGGER.debug('b : %s', b)
+
+
     my_data = numpy.random.rand(10,10)
     x = 2
     y = 2
     width = 3
     height = 4
     threshold = .3
-    
+
     subset = my_data[x:x+width, y:y+height]
-    
+
     x_mask = get_image_mask(my_data, threshold)
-    
+
     x_mask_subset = get_image_subset(x,y,width,height,x_mask)
-    
-    print my_data
-    print x_mask
-    
+
+    LOGGER.debug(my_data)
+    LOGGER.debug(x_mask)
+
     x_mask_subset = get_image_mask(subset, threshold)
-                                    
+                           
     subset_x_mask = get_image_subset(x,y,width,height,x_mask)
-    
-    print '*************************'
-    print subset
-    print '*************************'
-    print x_mask_subset
-    print '*************************'
-    print subset_x_mask
-    print '*************************'
-    print get_mask_image_subset(x,y,width,height,my_data,threshold)
-    
-    
-    
-    print 'multiband'
-    
-    
+
+    LOGGER.debug('*************************')
+    LOGGER.debug(subset)
+    LOGGER.debug('*************************')
+    LOGGER.debug(x_mask_subset)
+    LOGGER.debug('*************************')
+    LOGGER.debug(subset_x_mask)
+    LOGGER.debug('*************************')
+    LOGGER.debug(get_mask_image_subset(x,y,width,height,my_data,threshold))
+
+
+
+    LOGGER.debug('multiband')
+
+
     my_data = numpy.random.rand(5,10,10)
     x = 2
     y = 2
     width = 3
     height = 4
     threshold = .3
-    
+
     multi_subset = get_multiband_image_subset(x, y, width, height, my_data)
     multi_mask_subset = get_multiband_image_mask(multi_subset,threshold)
-    
-    
-    print '*************************'
-    print multi_subset
-    print '*************************'
-    print multi_mask_subset
-    print '*************************'
-    print get_mask_multiband_image_subset(x, y, width, height, my_data, threshold)
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+    LOGGER.debug('*************************')
+    LOGGER.debug(multi_subset)
+    LOGGER.debug('*************************')
+    LOGGER.debug(multi_mask_subset)
+    LOGGER.debug('*************************')
+    LOGGER.debug(get_mask_multiband_image_subset(x, y, width, height, my_data, threshold))
     

@@ -10,6 +10,8 @@ from __future__ import unicode_literals
 
 import os
 from os.path import isdir
+import unicodedata
+
 
 def get_last_package_from_name(package):
     '''
@@ -17,6 +19,24 @@ def get_last_package_from_name(package):
     '''
     return package[package.rfind('.') + 1:]
 
+def remove_accents(input_string):
+    '''
+    Returns a string representation without problematic characters.
+    '''
+    nfkd_form = unicodedata.normalize('NFKD', input_string)
+    return ''.join([c for c in nfkd_form if not unicodedata.combining(c)])
+def create_filename_from_string(input_string):
+    '''
+    Returns a formated version of the given string that will not cause
+    problems.
+    '''
+    return remove_accents(input_string
+            .replace(',', '_')
+            .replace(' ', '_')
+            .replace('\'', '_')
+            .replace('.', '_')
+            .replace('__', '_')
+            .replace('___', '_'))
 def format_string(string, spaces, size):
     '''
     This function creates a new string of the given size with the number of

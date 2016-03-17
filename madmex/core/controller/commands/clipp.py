@@ -15,6 +15,17 @@ import osr
 from madmex.core.controller.base import BaseCommand
 from madmex.util import create_filename_from_string, create_file_name, \
     get_files_from_folder
+    
+'''
+#!/bin/bash
+SHPFILE=$1
+BASE=`basename $SHPFILE .shp`
+EXTENT=`ogrinfo -so $SHPFILE $BASE | grep Extent \
+| sed 's/Extent: //g' | sed 's/(//g' | sed 's/)//g' \
+| sed 's/ - /, /g'`
+EXTENT=`echo $EXTENT | awk -F ',' '{print $1 " " $4 " " $3 " " $2}'`
+
+'''    
 
 
 def split_shape_into_features(shape_name, destination_directory, column):

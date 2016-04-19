@@ -23,9 +23,9 @@ GEOTRANSFORM = ['properties', 'geotransform']
 GEOTRANSFORM_FROM_GCPS = ['properties', 'geotransform_from_gcps']
 DATA_SHAPE = ['properties', 'data_shape']
 FOOTPRINT = ['properties', 'footprint']
-CREATE_WITH_NUMBER_OF_BANDS = ['features_of_image_for_create', 'number_of_bands']
-CREATE_WITH_WIDTH = ['features_of_image_for_create', 'width']
-CREATE_WITH_HEIGHT = ['features_of_image_for_create', 'height']
+#CREATE_WITH_NUMBER_OF_BANDS = ['features_of_image_for_create', 'number_of_bands']
+#CREATE_WITH_WIDTH = ['features_of_image_for_create', 'width']
+#CREATE_WITH_HEIGHT = ['features_of_image_for_create', 'height']
 CREATE_WITH_PROJECTION = ['features_of_image_for_create', 'projection']
 CREATE_WITH_GEOTRANSFORM = ['features_of_image_for_create', 'geotransform']
 CREATE_WITH_GEOTRANSFORM_FROM_GCPS = ['features_of_image_for_create', 'create_using_geotransform_from_gcps']
@@ -37,21 +37,21 @@ def default_options_for_create_raster_from_reference(reference_metadata):
     This method will extract the metadata from a given reference file to be used
     in the creation of a new file.
     '''
-    width, height, bands = _get_attribute(DATA_SHAPE, reference_metadata)
+    #width, height, bands = _get_attribute(DATA_SHAPE, reference_metadata)
     geotransform = _get_attribute(GEOTRANSFORM, reference_metadata)
     projection = _get_attribute(PROJECTION, reference_metadata)
     options = {'features_of_image_for_create': None, 'gdal_create_options': None}
     options['features_of_image_for_create'] = {
-        'number_of_bands': None,
-        'width': None,
-        'height': None,
+        #'number_of_bands': None,
+        #'width': None,
+        #'height': None,
         'projection': None,
         'geotransform': None,
         'create_using_geotransform_from_gcps': None
         }
-    put_in_dictionary(options, CREATE_WITH_NUMBER_OF_BANDS, bands)
-    put_in_dictionary(options, CREATE_WITH_WIDTH, width)
-    put_in_dictionary(options, CREATE_WITH_HEIGHT, height)
+    # put_in_dictionary(options, CREATE_WITH_NUMBER_OF_BANDS, bands)
+    # put_in_dictionary(options, CREATE_WITH_WIDTH, width)
+    # put_in_dictionary(options, CREATE_WITH_HEIGHT, height)
     put_in_dictionary(options, CREATE_WITH_PROJECTION, projection)
     put_in_dictionary(options, CREATE_WITH_GEOTRANSFORM, geotransform)
     put_in_dictionary(options, CREATE_WITH_GEOTRANSFORM_FROM_GCPS, False)
@@ -77,9 +77,18 @@ def create_raster_tiff_from_reference(reference_metadata, output_file, array, op
     if not options:
         options = default_options_for_create_raster_from_reference(reference_metadata)
     driver = gdal.GetDriverByName(str(GDAL_TIFF))
-    width = _get_attribute(CREATE_WITH_WIDTH, options)
-    height = _get_attribute(CREATE_WITH_HEIGHT, options)
-    bands = _get_attribute(CREATE_WITH_NUMBER_OF_BANDS, options)
+    #width = _get_attribute(CREATE_WITH_WIDTH, options)
+    #height = _get_attribute(CREATE_WITH_HEIGHT, options)
+    #bands = _get_attribute(CREATE_WITH_NUMBER_OF_BANDS, options)
+    shape = array.shape
+    if len(shape) == 2:
+        bands = 1
+        width = shape[1]
+        height = shape[0]
+    else:
+        bands = shape[0]   
+        width = shape[2]
+        height = shape[1]
     gdal_options = _get_attribute(GDAL_CREATE_OPTIONS, options)
     data = driver.Create(output_file, width, height, bands, data_type, gdal_options)
     projection = _get_attribute(CREATE_WITH_PROJECTION, options)

@@ -140,6 +140,21 @@ class Test(unittest.TestCase):
         self.assertFalse(os.path.isfile(action.new_file))
         os.remove(name)
     @unittest.skip("testing skipping")
+    def test_calculate_ndvi(self):
+        from madmex.util import get_parent
+        from madmex.mapper.data import raster
+        from madmex.processing.raster import calculate_ndvi
+        import numpy
+        image = "/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/5_Clasificacion/rapideyemapgrid/folder_test/rapideye/1649125/2014/2014-01-23/L3A/1649125_2014-01-23_RE4_3A_301519.tif"
+        gdal_format = "GTiff"
+        data_class = raster.Data(image, gdal_format)
+        array = data_class.read_data_file_as_array()
+        width, height, bands = data_class.get_attribute(raster.DATA_SHAPE)
+        feature_bands = numpy.zeros([2, width, height])
+        feature_bands[0, :, :] = calculate_ndvi(array[4, :, :], array[2, :, :])
+        feature_bands[1, :, :] = calculate_ndvi(array[3, :, :], array[2, :, :])
+        out = get_parent(image) + 'result_ndvi'
+        raster.create_raster_tiff_from_reference(data_class.metadata, out, feature_bands)
     def test_new_way_of_create_image_from_reference(self):
         from madmex.mapper.data import raster
         from madmex.mapper.data.raster import default_options_for_create_raster_from_reference

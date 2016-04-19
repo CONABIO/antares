@@ -2,31 +2,22 @@
 Created on Mar 14, 2016
 
 @author: agutierrez
-'''
+'''   
+
 from __future__ import unicode_literals
 
-from fileinput import filename
+import logging
 import os
 
 import gdal
 from osgeo import ogr
-import osr
 
 from madmex.core.controller.base import BaseCommand
 from madmex.util import create_filename_from_string, create_file_name, \
-    get_files_from_folder
-    
-'''
-#!/bin/bash
-SHPFILE=$1
-BASE=`basename $SHPFILE .shp`
-EXTENT=`ogrinfo -so $SHPFILE $BASE | grep Extent \
-| sed 's/Extent: //g' | sed 's/(//g' | sed 's/)//g' \
-| sed 's/ - /, /g'`
-EXTENT=`echo $EXTENT | awk -F ',' '{print $1 " " $4 " " $3 " " $2}'`
+    create_directory_path
 
-'''    
 
+LOGGER = logging.getLogger(__name__)
 
 def split_shape_into_features(shape_name, destination_directory, column):
     '''
@@ -40,49 +31,49 @@ def split_shape_into_features(shape_name, destination_directory, column):
     layer = shape.GetLayer()
     layer_name = layer.GetName()
     spatial_reference = layer.GetSpatialRef()
-    
     in_feature = layer.GetNextFeature()
-    
+
     while in_feature:
         encoding = 'utf-8'
         in_feature_name = create_filename_from_string(in_feature.GetField(column).decode(encoding))
-        output_name = create_file_name(destination_directory, in_feature_name + '.shp')
-        
+
+        final_path = destination_directory + str(in_feature.GetField(0))
+        create_directory_path(final_path)
+        output_name = create_file_name(final_path, in_feature_name + '.shp')
+
         if os.path.exists(output_name):
             driver.DeleteDataSource(output_name)
         datasource = driver.CreateDataSource(output_name)
-    
+
         outLayer = datasource.CreateLayer(layer_name, spatial_reference, geom_type=ogr.wkbPolygon)
-    
+
         inLayerDefn = layer.GetLayerDefn()
         for i in range(0, inLayerDefn.GetFieldCount()):
             fieldDefn = inLayerDefn.GetFieldDefn(i)
+            LOGGER.debug(fieldDefn.GetName())
             outLayer.CreateField(fieldDefn)
         
         outLayerDefn = outLayer.GetLayerDefn()
-        
-        
-        
         geometry = in_feature.GetGeometryRef()
-        
+
         out_feature = ogr.Feature(outLayerDefn)
         out_feature.SetGeometry(geometry)
-        
+
         for i in range(0, outLayerDefn.GetFieldCount()):
             out_feature.SetField(outLayerDefn.GetFieldDefn(i).GetNameRef(), in_feature.GetField(i))
-            
+  
         outLayer.CreateFeature(out_feature)
         out_feature.Destroy()
         in_feature.Destroy()
         in_feature = layer.GetNextFeature()
     shape.Destroy()
     datasource.Destroy()
-    
+
 def world_to_pixel(geotransform, x, y):
-    """
+    '''
     Uses a gdal geomatrix (gdal.GetGeoTransform()) to calculate
     the pixel location of a geospatial coordinate
-    """
+    '''
     ulX = geotransform[0]
     ulY = geotransform[3]
     xDist = geotransform[1]
@@ -105,7 +96,7 @@ class Command(BaseCommand):
         parser.add_argument('--shape', nargs='*', help='This is a stub for the, \
             change detection command, right now all it does is sum numbers in \
             the list.')
-        parser.add_argument('--raster', nargs='*', help='This is a stub for the, \
+        parser.add_argument('--dest', nargs='*', help='This is a stub for the, \
             change detection command, right now all it does is sum numbers in \
             the list.')
     def handle(self, **options):
@@ -114,42 +105,10 @@ class Command(BaseCommand):
         added up and the result is printed in the screen.
         '''
         shape_name = options['shape'][0]
-        raster = options['raster'][0]
+        destination = options['dest'][0]
 
-        print os.path.exists(shape_name)
-        print raster
+        if os.path.exists(shape_name):
+            LOGGER.info('The file %s was found.' % shape_name)
 
-        srcImage = gdal.Open(raster)
-        geotransform = srcImage.GetGeoTransform()
-        
-        print geotransform
-        
-        (success, inv_geometrix) = gdal.InvGeoTransform(geotransform)
-        
-        if success:
-            print inv_geometrix
-        
-        split_shape_into_features(shape_name,'/Users/amaury/Documents/anp/splited/', 2)
-        
-        files = get_files_from_folder('/Users/amaury/Documents/anp/splited/')
-        
-        for filename in files:
-            if filename.endswith('shp'):
-                print filename
-                driver = ogr.GetDriverByName(str('ESRI Shapefile'))
-                shape = driver.Open('/Users/amaury/Documents/anp/splited/' + filename, 0)
-                layer = shape.GetLayer()
-                print layer.GetExtent()
-                
-                minX, maxX, minY, maxY = layer.GetExtent()
-                ulX, ulY = world_to_pixel(inv_geometrix, minX, maxY)
-                lrX, lrY = world_to_pixel(inv_geometrix, maxX, minY)
-                
-                print ulX, ulY
-                print lrX, lrY
-                
-                
-                  
-                
-        
-            
+
+        split_shape_into_features(shape_name, destination, 2)

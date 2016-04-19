@@ -1,5 +1,8 @@
 # Ubuntu 14.04 Trusty Tahyr
-#docker run -v <path to directory with ancilliary data>:/opt/ledaps -v <path to local directory with data>:/data -v $(pwd):/results name_image <path to ancilliary data in docker> <path to source data in docker/L*.*.tar.bz> <path to destiny results in docker>
+#docker run --rm -v <path to directory with ancilliary data>:/opt/ledaps -v <path to local directory with data>:/data \
+ -v <path to directory for results>:/results name_image \
+  <path to ancilliary data in docker> <path to source data in docker/L*.*.tar.bz> <path to destiny results in docker>
+  
 #Example:
 #docker run -v /Users/ledaps_anc:/opt/ledaps -v /Users/data:/data -v /Users/results:/results name_image /opt/ledaps /data/LE70210481999203AGS00.tar.bz /results
 
@@ -69,7 +72,7 @@ RUN cd /usr/local/bin/ledapsSrc/src && make install
 RUN cd $BIN && chmod gou+x lndsrbm.ksh
 
 
-VOLUME ["/opt/ledaps", "/results"]
+VOLUME ["/opt/ledaps", "/data", "/results"]
 
 RUN cp $BIN/do_ledaps.csh /opt/ledaps/
 

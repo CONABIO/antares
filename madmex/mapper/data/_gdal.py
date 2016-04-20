@@ -148,3 +148,54 @@ def create_raster(image_path,
                 data.GetRasterBand(band + 1).WriteArray(array[band, :, :])
         data.FlushCache()
         LOGGER.debug('Raster file was successfully created on %s.', image_path)
+def warp_raster_from_reference(input_path, reference_path, output_path, data_type=gdal.GDT_Float32):
+    '''
+    This function will warp the given image to a new one using the reference
+    projection and size.
+    '''
+    reference_dataset = gdal.Open(reference_path, GA_ReadOnly)
+    reference_projection = _get_projection(reference_dataset)
+    reference_geotransform = _get_geotransform(reference_dataset)
+    reference_driver_type = _get_driver(reference_dataset)
+    
+    reference_columns = reference_dataset.RasterXSize
+    reference_rows = reference_dataset.RasterYSize
+    reference_bands = reference_dataset.RasterCount
+    
+    LOGGER.debug('Projection from reference: %s', reference_projection)
+    LOGGER.debug('Geotransform from reference: %s', reference_geotransform)
+    LOGGER.debug('Driver from reference: %s', reference_driver_type)
+    reference_dataset = None
+    
+    input_dataset = gdal.Open(input_path, GA_ReadOnly)
+    
+    input_columns = input_dataset.RasterXSize
+    input_rows = input_dataset.RasterYSize
+    input_bands = input_dataset.RasterCount
+    
+    input_driver_type = _get_driver(reference_dataset)
+
+    input_dataset = None
+    
+    resampling = gdal.GRA_NearestNeighbour
+    error_threshold = 0.125
+    
+    
+    tmp_ds = gdal.AutoCreateWarpedVRT( input_dataset,
+                                   None, # src_wkt : left to default value --> will use the one from source
+                                   reference_projection,
+                                   resampling,
+                                   error_threshold )
+    
+    # Create the final warped raster
+    dst_ds = gdal.GetDriverByName('GTiff').CreateCopy(output_path, tmp_ds)
+    dst_ds = None
+    
+    LOGGER.info('Image warping was successful.')
+    
+def warp_raster():
+    '''
+    '''
+    pass
+
+    

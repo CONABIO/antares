@@ -8,6 +8,8 @@ from __future__ import unicode_literals
 import logging
 
 from madmex.core.controller.base import BaseCommand
+from madmex.mapper.data._gdal import warp_raster_from_reference
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -30,6 +32,14 @@ class Command(BaseCommand):
         '''
         shape_name = options['satellite'][0]
         
+        source = options['source'][0]
+        reference = options['reference'][0]
+        dest = options['dest'][0]
+        
         LOGGER.info('The %s classification process will be started.' % shape_name)
 
+
+        
+        
+        warp_raster_from_reference(source, reference, dest)
         

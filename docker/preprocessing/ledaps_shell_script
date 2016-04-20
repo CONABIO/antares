@@ -1,4 +1,5 @@
 #!/bin/bash
+#This shell_script must be executable, if not do a chmod
 if [ "$#" -ne 3 ]; then
 echo "Usage: bash shell_script <path to ancilliary data in docker> <path to source data in docker/L*.*.tar.bz> <path to destiny results in docker>"
 	exit
@@ -7,8 +8,8 @@ else
 	basename=$(echo $name|sed -n 's/\(L*.*\).tar.bz/\1/;p')
 	dir=$3/$basename
 	mkdir $dir
-	cp -r $2 $dir
-	year=$(echo $name|sed -n 's/L[A-Z][5-7][0-9][0-9][0-9][0-9][0-9][0-9]\([0-9][0-9][0-9][0-9]\).*.tar.bz/\1/p')
+	cp $2 $dir
+	year=$(echo $name|sed -nE 's/L[A-Z][5-7][0-9]{3}[0-9]{3}([0-9]{4}).*.tar.bz/\1/p')
 	cp $1/CMGDEM.hdf $dir
 	mkdir $dir/EP_TOMS && cp -r $1/EP_TOMS/ozone_$year $dir/EP_TOMS
 	mkdir $dir/REANALYSIS && cp -r $1/REANALYSIS/RE_$year $dir/REANALYSIS

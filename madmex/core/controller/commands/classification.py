@@ -25,6 +25,18 @@ class Command(BaseCommand):
         parser.add_argument('--satellite', nargs='*', help='The type of satellite \
             that generated the images for this process, right now this supports \
             rapideye and landsat.')
+        
+        parser.add_argument('--source', nargs='*', help='The type of satellite \
+            that generated the images for this process, right now this supports \
+            rapideye and landsat.')
+        
+        parser.add_argument('--reference', nargs='*', help='The type of satellite \
+            that generated the images for this process, right now this supports \
+            rapideye and landsat.')
+        
+        parser.add_argument('--dest', nargs='*', help='The type of satellite \
+            that generated the images for this process, right now this supports \
+            rapideye and landsat.')
 
     def handle(self, **options):
         '''
@@ -37,6 +49,10 @@ class Command(BaseCommand):
         dest = options['dest'][0]
         
         LOGGER.info('The %s classification process will be started.' % shape_name)
+
+        LOGGER.info('source: %s' % source)
+        LOGGER.info('reference: %s' % reference)
+        LOGGER.info('dest: %s' % dest)
 
 
         

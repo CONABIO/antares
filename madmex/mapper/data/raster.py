@@ -83,8 +83,10 @@ def create_raster_tiff_from_reference(reference_metadata, output_file, array, op
         geotransform = _get_attribute(GEOTRANSFORM_FROM_GCPS, reference_metadata)
     else:
         geotransform = _get_attribute(CREATE_WITH_GEOTRANSFORM, options)
-    data.SetProjection(projection)
-    data.SetGeoTransform(geotransform)
+    if projection:
+        data.SetProjection(projection)
+    if geotransform:
+        data.SetGeoTransform(geotransform)
     if bands != 1:
         for band in range(bands):
             data.GetRasterBand(band + 1).WriteArray(array[band, :, :])
@@ -215,3 +217,4 @@ class Data(BaseData):
         Returns the attribute that is found in the given path.
         '''
         return _get_attribute(path_to_attribute, self.metadata)
+    

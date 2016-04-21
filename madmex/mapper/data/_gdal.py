@@ -166,6 +166,7 @@ def warp_raster_from_reference(input_path, reference_path, output_path, data_typ
                                       str(reference_projection),
                                       resampling,
                                       error_threshold)
+
     input_dataset = None
     # Create the final warped raster
     dst_ds = gdal.GetDriverByName(str('GTiff')).CreateCopy(output_path, tmp_ds)

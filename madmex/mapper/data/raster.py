@@ -23,9 +23,6 @@ GEOTRANSFORM = ['properties', 'geotransform']
 GEOTRANSFORM_FROM_GCPS = ['properties', 'geotransform_from_gcps']
 DATA_SHAPE = ['properties', 'data_shape']
 FOOTPRINT = ['properties', 'footprint']
-#CREATE_WITH_NUMBER_OF_BANDS = ['features_of_image_for_create', 'number_of_bands']
-#CREATE_WITH_WIDTH = ['features_of_image_for_create', 'width']
-#CREATE_WITH_HEIGHT = ['features_of_image_for_create', 'height']
 CREATE_WITH_PROJECTION = ['features_of_image_for_create', 'projection']
 CREATE_WITH_GEOTRANSFORM = ['features_of_image_for_create', 'geotransform']
 CREATE_WITH_GEOTRANSFORM_FROM_GCPS = ['features_of_image_for_create', 'create_using_geotransform_from_gcps']
@@ -37,21 +34,14 @@ def default_options_for_create_raster_from_reference(reference_metadata):
     This method will extract the metadata from a given reference file to be used
     in the creation of a new file.
     '''
-    #width, height, bands = _get_attribute(DATA_SHAPE, reference_metadata)
     geotransform = _get_attribute(GEOTRANSFORM, reference_metadata)
     projection = _get_attribute(PROJECTION, reference_metadata)
     options = {'features_of_image_for_create': None, 'gdal_create_options': None}
     options['features_of_image_for_create'] = {
-        #'number_of_bands': None,
-        #'width': None,
-        #'height': None,
         'projection': None,
         'geotransform': None,
         'create_using_geotransform_from_gcps': None
         }
-    # put_in_dictionary(options, CREATE_WITH_NUMBER_OF_BANDS, bands)
-    # put_in_dictionary(options, CREATE_WITH_WIDTH, width)
-    # put_in_dictionary(options, CREATE_WITH_HEIGHT, height)
     put_in_dictionary(options, CREATE_WITH_PROJECTION, projection)
     put_in_dictionary(options, CREATE_WITH_GEOTRANSFORM, geotransform)
     put_in_dictionary(options, CREATE_WITH_GEOTRANSFORM_FROM_GCPS, False)
@@ -71,15 +61,12 @@ def new_options_for_create_raster_from_reference(reference_metadata, new_option,
 def create_raster_tiff_from_reference(reference_metadata, output_file, array, options={}, data_type=gdal.GDT_Float32):
     '''
     This method creates a raster tif from a given tif file to be used as a
-    reference. From the reference file, data such as the width, the height, the
-    projection, and the transform will be extracted and used in the new file. 
+    reference. From the reference file, data such as , the
+    projection, and the geotransform will be extracted and used in the new file. 
     '''
     if not options:
         options = default_options_for_create_raster_from_reference(reference_metadata)
     driver = gdal.GetDriverByName(str(GDAL_TIFF))
-    #width = _get_attribute(CREATE_WITH_WIDTH, options)
-    #height = _get_attribute(CREATE_WITH_HEIGHT, options)
-    #bands = _get_attribute(CREATE_WITH_NUMBER_OF_BANDS, options)
     shape = array.shape
     if len(shape) == 2:
         bands = 1
@@ -96,9 +83,10 @@ def create_raster_tiff_from_reference(reference_metadata, output_file, array, op
         geotransform = _get_attribute(GEOTRANSFORM_FROM_GCPS, reference_metadata)
     else:
         geotransform = _get_attribute(CREATE_WITH_GEOTRANSFORM, options)
-    data.SetProjection(projection)
-    data.SetGeoTransform(geotransform)
-    
+    if projection:
+        data.SetProjection(projection)
+    if geotransform:
+        data.SetGeoTransform(geotransform)
     if bands != 1:
         for band in range(bands):
             data.GetRasterBand(band + 1).WriteArray(array[band, :, :])
@@ -229,3 +217,4 @@ class Data(BaseData):
         Returns the attribute that is found in the given path.
         '''
         return _get_attribute(path_to_attribute, self.metadata)
+    

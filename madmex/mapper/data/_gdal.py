@@ -173,9 +173,7 @@ def warp_raster_from_reference(input_path, reference_path, output_path, data_typ
     input_rows = input_dataset.RasterYSize
     input_bands = input_dataset.RasterCount
     
-    input_driver_type = _get_driver(reference_dataset)
-
-    input_dataset = None
+    input_driver_type = _get_driver(input_dataset)
     
     resampling = gdal.GRA_NearestNeighbour
     error_threshold = 0.125
@@ -183,12 +181,12 @@ def warp_raster_from_reference(input_path, reference_path, output_path, data_typ
     
     tmp_ds = gdal.AutoCreateWarpedVRT( input_dataset,
                                    None, # src_wkt : left to default value --> will use the one from source
-                                   reference_projection,
+                                   str(reference_projection),
                                    resampling,
-                                   error_threshold )
-    
+                                   error_threshold)
+    input_dataset = None
     # Create the final warped raster
-    dst_ds = gdal.GetDriverByName('GTiff').CreateCopy(output_path, tmp_ds)
+    dst_ds = gdal.GetDriverByName(str('GTiff')).CreateCopy(output_path, tmp_ds)
     dst_ds = None
     
     LOGGER.info('Image warping was successful.')

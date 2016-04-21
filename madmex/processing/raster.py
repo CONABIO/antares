@@ -9,6 +9,7 @@ import numexpr
 def calculate_ndvi(band4, band3, mode=numpy.int16):
     '''
     Calculate the normalized differenced vegetation index of a raster image
+    Returns an image of two bands
     '''
     spectralindex = numexpr.evaluate("100 * (1.*(band4 - band3) / (band4 + band3))")
     spectralindex[numpy.where(band4 - band3 == 0)] = 0

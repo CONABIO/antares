@@ -42,9 +42,9 @@ CAN_USE_TABLE = Table(
     'can_use',
     BASE.metadata,
     Column(
-        'user',
+        'group',
         Integer,
-        ForeignKey('user.pk_id'),
+        ForeignKey('group.pk_id'),
         primary_key=True),
     Column(
         'license',
@@ -65,6 +65,21 @@ HAS_SENSOR = Table(
         'sensor',
         Integer,
         ForeignKey('sensor.pk_id'),
+        primary_key=True)
+)
+
+HAS_PRODUCT = Table(
+    'has_product',
+    BASE.metadata,
+    Column(
+        'product',
+        Integer,
+        ForeignKey('product.pk_id'),
+        primary_key=True),
+    Column(
+        'petition',
+        Integer,
+        ForeignKey('petition.pk_id'),
         primary_key=True)
 )
 
@@ -160,6 +175,67 @@ class Unit(BASE):
     pk_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     unit = Column(String, unique=True)
+class Temporal(BASE):
+    '''
+    This table stores the temporal location of images to be distributed. This
+    can be deleted over time, but it keeps track of what has been made available
+    through an ftp 
+    '''
+    __tablename__ = 'temporal'
+    pk_id = Column(Integer, primary_key=True)
+    external_url =  Column(String)
+    internal_path = Column(String)
+    init_date = Column(DateTime())
+    end_date = Column(DateTime())
+class License(BASE):
+    '''
+    This table stores the possible license that an image can have.
+    '''
+    __tablename__ = 'license'
+    pk_id = Column(Integer, primary_key=True)
+    name = Column(String)
+    description = Column(String)
+    use = Column(String)
+    distribution = Column(String)
+    product = relationship('Product')
+class Group(BASE):
+    '''
+    This table stores information for the groups available for the users. 
+    '''
+    __tablename__ = 'group'
+    pk_id = Column(Integer, primary_key=True)
+    name = Column(String)
+    user = relationship('User')
+    can_use = relationship(
+        'License',
+        secondary=CAN_USE_TABLE)
+    
+class User(BASE):
+    '''
+    This table stores information for the users of the system. 
+    '''
+    __tablename__ = 'user'
+    pk_id = Column(Integer, primary_key=True)
+    name = Column(String)
+    last_name_1 = Column(String)
+    last_name_2 = Column(String)
+    role = Column(String)
+    phone = Column(String)
+    email = Column(String)
+    cellphone = Column(String)
+    password = Column(String) 
+    job_position = Column(String)
+    rfc = Column(String)
+    creation_date = Column(DateTime())
+    organization_id = Column(Integer, ForeignKey('organization.pk_id'))
+    organization = relationship('Organization')
+    petition = relationship('Petition')    
+    group_id = Column(Integer, ForeignKey('group.pk_id'))
+    group = relationship('Group')
+
+
+
+
 class Band(BASE):
     '''
     Sensors can measure different intensities of the parts of the light
@@ -168,6 +244,7 @@ class Band(BASE):
     '''
     __tablename__ = 'band'
     pk_id = Column(Integer, primary_key=True)
+    band_name = Column(String)
     sensor_id = Column(Integer, ForeignKey('sensor.pk_id'))
     unit_id = Column(Integer, ForeignKey('unit.pk_id'))
     bit_depth = Column(Integer)
@@ -204,34 +281,7 @@ class Information(BASE):
     elevation_angle = Column(Float)
     resolution = Column(Float)
     product = relationship('Product')
-class License(BASE):
-    '''
-    This table stores the possible license that an image can have.
-    '''
-    __tablename__ = 'license'
-    pk_id = Column(Integer, primary_key=True)
-    name = Column(String)
-    description = Column(String)
-    use = Column(String)
-    distribution = Column(String)
-    product = relationship('Product')
-class User(BASE):
-    '''
-    This table stores information for the users of the system. 
-    '''
-    __tablename__ = 'user'
-    pk_id = Column(Integer, primary_key=True)
-    name = Column(String)
-    last_name_1 = Column(String)
-    last_name_2 = Column(String)
-    role = Column(String)
-    phone = Column(String)
-    email = Column(String)
-    cellphone = Column(String)
-    password = Column(String)
-    can_use = relationship(
-        'License',
-        secondary=CAN_USE_TABLE)
+
 class ProductType(BASE):
     '''
     This table has information about the different types of product that the
@@ -256,7 +306,8 @@ class Product(BASE):
     pk_id = Column(Integer, primary_key=True)
     acquisition_date = Column(DateTime())
     ingest_date = Column(DateTime())
-    path = Column(String, unique=True)
+    product_path = Column(String, unique=True)
+    thumbnail_path = Column(String, unique=True)
     legend = Column(Integer, ForeignKey('legend.pk_id'))
     information_id = Column(Integer, ForeignKey('information.pk_id'))
     information = relationship('Information')
@@ -298,6 +349,20 @@ class ProcessedProduct(Product):
         'polymorphic_identity':'processed'
     }
     processing_date = Column(DateTime())
+class Petition(BASE):
+    '''
+    This table represents a petition from an external party for a set of images. The
+    images are made available through a service such as ftp.
+    '''
+    __tablename__ = 'petition'
+    pk_id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.pk_id'))
+    user = relationship('User')
+    temporal_id =  Column(Integer, ForeignKey('temporal.pk_id'))
+    temporal = relationship('Temporal')
+    has_product = relationship(
+        'Product',
+        secondary=HAS_PRODUCT)
 class Host(BASE):
     '''
     This table has information about the different host in which jobs can be

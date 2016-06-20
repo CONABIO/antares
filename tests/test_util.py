@@ -155,23 +155,24 @@ class Test(unittest.TestCase):
         feature_bands[1, :, :] = calculate_ndvi(array[3, :, :], array[2, :, :])
         out = get_parent(image) + 'result_ndvi'
         raster.create_raster_tiff_from_reference(data_class.metadata, out, feature_bands)
-    def test_new_way_of_create_image_from_reference(self):
-        from madmex.mapper.data import raster
-        from madmex.mapper.data.raster import default_options_for_create_raster_from_reference
-        from madmex.mapper.data.raster import create_raster_tiff_from_reference
-        from madmex.mapper.data.raster import new_options_for_create_raster_from_reference
-        image =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/1447720_2013-02-11_RE3_3A_182802.tif'
-        gdal_format = "GTiff"
-        data_class = raster.Data(image, gdal_format)
-        options_to_create = default_options_for_create_raster_from_reference(data_class.metadata)
-        output_file = image + '/result_new_create.TIF'
-        array = data_class.read_data_file_as_array()
-        create_raster_tiff_from_reference(data_class.metadata, output_file, array)
-        output_file = image + '/result_new_options.TIF'
-        #options_to_create = new_options_for_create_raster_from_reference(data_class.metadata, raster.CREATE_WITH_NUMBER_OF_BANDS, 1, {})
-        new_options_for_create_raster_from_reference(data_class.metadata, raster.CREATE_WITH_GEOTRANSFORM_FROM_GCPS, True, options_to_create)
-        new_options_for_create_raster_from_reference(data_class.metadata, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], options_to_create)
-        create_raster_tiff_from_reference(data_class.metadata, output_file, array, options_to_create)      
+#     def test_new_way_of_create_image_from_reference(self):
+#         from madmex.mapper.data import raster
+#         from madmex.mapper.data.raster import default_options_for_create_raster_from_reference
+#         from madmex.mapper.data.raster import create_raster_tiff_from_reference
+#         from madmex.mapper.data.raster import new_options_for_create_raster_from_reference
+#         image =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/1447720_2013-02-11_RE3_3A_182802.tif'
+#         gdal_format = "GTiff"
+#         data_class = raster.Data(image, gdal_format)
+#         options_to_create = default_options_for_create_raster_from_reference(data_class.metadata)
+#         output_file = image + '/result_new_create.TIF'
+#         array = data_class.read_data_file_as_array()
+#         create_raster_tiff_from_reference(data_class.metadata, output_file, array)
+#         output_file = image + '/result_new_options.TIF'
+#         #options_to_create = new_options_for_create_raster_from_reference(data_class.metadata, raster.CREATE_WITH_NUMBER_OF_BANDS, 1, {})
+#         new_options_for_create_raster_from_reference(data_class.metadata, raster.CREATE_WITH_GEOTRANSFORM_FROM_GCPS, True, options_to_create)
+#         new_options_for_create_raster_from_reference(data_class.metadata, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], options_to_create)
+#         create_raster_tiff_from_reference(data_class.metadata, output_file, array, options_to_create)
+ 
 #     def test_some_sqlalchemy_functions(self):
 #         from madmex.persistence.database.connection import SESSION_MAKER, RawProduct, Information
 #         from sqlalchemy import tuple_

@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 
 import logging
 import matplotlib
+import matplotlib.pyplot as plt
 matplotlib.use('Agg')
 import numpy as np
 import scipy.optimize as so
@@ -37,7 +38,7 @@ def calc_threshold_grid(image_array, pdf_image, tiles=10, bins=55):
     # Discuss if 0 is an appropriate value for NA values
     no_data_value = 0 
     bands, rows, columns = image_array.shape
-    figure, axarr = matplotlib.pyplot.subplots(tiles, tiles)
+    figure, axarr = plt.subplots(tiles, tiles)
     figure.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.5, hspace=0.9)
     for band_combination in [USED_COMPONENTS]:
         res = list()
@@ -72,7 +73,7 @@ def calc_threshold_grid(image_array, pdf_image, tiles=10, bins=55):
                 xcount += 1
             ycount += 1
         if pdf_image != None:
-            matplotlib.pyplot.savefig(pdf_image, dpi=DPI, transparent=True, bbox_inches='tight')
+            plt.savefig(pdf_image, dpi=DPI, transparent=True, bbox_inches='tight')
     return res
 
 def density_contour(xdata, ydata, nbins_x, nbins_y, labeltext=None, ax=None, pdf_image=None, **contour_kwargs):
@@ -109,7 +110,7 @@ def density_contour(xdata, ydata, nbins_x, nbins_y, labeltext=None, ax=None, pdf
     X, Y = 0.5 * (xedges[1:] + xedges[:-1]), 0.5 * (yedges[1:] + yedges[:-1])
     Z = pdf.T
     if ax == None:
-        ax = matplotlib.pyplot.subplot() 
+        ax = plt.subplot() 
     for label in (ax.get_xticklabels() + ax.get_yticklabels()):
         label.set_fontsize(4)
     ax.get_yaxis().set_tick_params(which='both', direction='out', pad=1)

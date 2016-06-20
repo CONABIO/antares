@@ -161,7 +161,6 @@ class Test(unittest.TestCase):
         from madmex.mapper.data.raster import create_raster_tiff_from_reference
         from madmex.mapper.data.raster import new_options_for_create_raster_from_reference
         image =  '/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/1447720_2013-02-11_RE3_3A_182802.tif'
-        image = '/Users/erickpalacios/Documents/CONABIO/Tareas/4_RedisenioMadmex/2_Preprocesamiento/Tarea11/spot/SinNubes/E55582961409182J1A00001/SCENE01'
         gdal_format = "GTiff"
         data_class = raster.Data(image, gdal_format)
         options_to_create = default_options_for_create_raster_from_reference(data_class.metadata)
@@ -173,17 +172,17 @@ class Test(unittest.TestCase):
         new_options_for_create_raster_from_reference(data_class.metadata, raster.CREATE_WITH_GEOTRANSFORM_FROM_GCPS, True, options_to_create)
         new_options_for_create_raster_from_reference(data_class.metadata, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], options_to_create)
         create_raster_tiff_from_reference(data_class.metadata, output_file, array, options_to_create)      
-    def test_some_sqlalchemy_functions(self):
-        from madmex.persistence.database.connection import SESSION_MAKER, RawProduct, Information
-        from sqlalchemy import tuple_
-        from datetime import datetime
-        session = SESSION_MAKER()
-        start_date = datetime.strptime('2000-01-01', '%Y-%m-%d')
-        end_date = datetime.strptime('2020-01-01', '%Y-%m-%d')
-        print session.query(RawProduct.path, Information.resolution).join(RawProduct.information).all()
-        print session.query(RawProduct.path, Information.resolution).join(RawProduct.information).all()
-        print session.query(RawProduct.ingest_date, Information.resolution).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , RawProduct.pk_id == 1).all()
-        session.close()
+#     def test_some_sqlalchemy_functions(self):
+#         from madmex.persistence.database.connection import SESSION_MAKER, RawProduct, Information
+#         from sqlalchemy import tuple_
+#         from datetime import datetime
+#         session = SESSION_MAKER()
+#         start_date = datetime.strptime('2000-01-01', '%Y-%m-%d')
+#         end_date = datetime.strptime('2020-01-01', '%Y-%m-%d')
+#         print session.query(RawProduct.path, Information.resolution).join(RawProduct.information).all()
+#         print session.query(RawProduct.path, Information.resolution).join(RawProduct.information).all()
+#         print session.query(RawProduct.ingest_date, Information.resolution).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , RawProduct.pk_id == 1).all()
+#         session.close()
 
     def test_create_raster_in_memory(self):
         '''
@@ -193,35 +192,35 @@ class Test(unittest.TestCase):
         folder=''
         image = raster.Data(folder, '')
         image.create_raster_in_memory()
-    def test_maf_classification(self):
-        '''
-        Perform classification of maf result
-        '''
-        import numpy
-        from madmex.mapper.data import raster
-        from madmex.transformation.mafclassification import calc_threshold_grid
-        from madmex.transformation.mafclassification import recode_classes_grid
-        from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode
-        #image_maf = '/Users/erickpalacios/test_imad_pair_images/result_maf.tif'
-        image_maf = '/LUSTRE/MADMEX/staging/antares_test/test_imad_pair_images/result_maf_prueba.tif'
-        gdal_format = 'GTiff'
-        image_maf_class = raster.Data(image_maf, gdal_format)
-        
-        pdf_file = get_parent(image_maf) + '/result_maf_pdf.png'
-
-        thresholds = calc_threshold_grid(image_maf_class.read_data_file_as_array(), pdf_file)
-        
-        result = recode_classes_grid(image_maf_class.read_data_file_as_array(), thresholds)
-        
-        image_maf_class_output = get_parent(image_maf) + '/result_maf_class.tif'
-        
-        width, height, bands = image_maf_class.get_attribute(raster.DATA_SHAPE)
-        geotransform = image_maf_class.get_attribute(raster.GEOTRANSFORM)
-        projection = image_maf_class.get_attribute(raster.PROJECTION)
-        
-        image_maf_class_result = image_maf_class.create_from_reference(image_maf_class_output, width , height , 1, geotransform, projection, data_type = NumericTypeCodeToGDALTypeCode(numpy.int16))
-        
-        image_maf_class.write_array(image_maf_class_result, result)    
+#     def test_maf_classification(self):
+#         '''
+#         Perform classification of maf result
+#         '''
+#         import numpy
+#         from madmex.mapper.data import raster
+#         from madmex.transformation.mafclassification import calc_threshold_grid
+#         from madmex.transformation.mafclassification import recode_classes_grid
+#         from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode
+#         #image_maf = '/Users/erickpalacios/test_imad_pair_images/result_maf.tif'
+#         image_maf = '/LUSTRE/MADMEX/staging/antares_test/test_imad_pair_images/result_maf_prueba.tif'
+#         gdal_format = 'GTiff'
+#         image_maf_class = raster.Data(image_maf, gdal_format)
+#         
+#         pdf_file = get_parent(image_maf) + '/result_maf_pdf.png'
+# 
+#         thresholds = calc_threshold_grid(image_maf_class.read_data_file_as_array(), pdf_file)
+#         
+#         result = recode_classes_grid(image_maf_class.read_data_file_as_array(), thresholds)
+#         
+#         image_maf_class_output = get_parent(image_maf) + '/result_maf_class.tif'
+#         
+#         width, height, bands = image_maf_class.get_attribute(raster.DATA_SHAPE)
+#         geotransform = image_maf_class.get_attribute(raster.GEOTRANSFORM)
+#         projection = image_maf_class.get_attribute(raster.PROJECTION)
+#         
+#         image_maf_class_result = image_maf_class.create_from_reference(image_maf_class_output, width , height , 1, geotransform, projection, data_type = NumericTypeCodeToGDALTypeCode(numpy.int16))
+#         
+#         image_maf_class.write_array(image_maf_class_result, result)    
     def test_maf_image(self):
         '''
         Perform a maf transformation with the result of imad transformation

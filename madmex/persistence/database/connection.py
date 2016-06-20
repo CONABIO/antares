@@ -11,7 +11,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.sql.schema import Table
+from sqlalchemy.sql.schema import Table, UniqueConstraint
 from sqlalchemy.sql.sqltypes import DateTime, Float, Boolean
 
 from madmex.configuration import SETTINGS
@@ -35,23 +35,31 @@ CAN_TRAIN_TABLE = Table(
         'algorithm',
         Integer,
         ForeignKey('algorithm.pk_id'),
-        primary_key=True)
+        primary_key=True),
+    UniqueConstraint(
+        'product', 
+        'algorithm', 
+        name='can_train_id')
 )
 
-CAN_USE_TABLE = Table(
-    'can_use',
-    BASE.metadata,
-    Column(
-        'group',
-        Integer,
-        ForeignKey('group.pk_id'),
-        primary_key=True),
-    Column(
-        'license',
-        Integer,
-        ForeignKey('license.pk_id'),
-        primary_key=True)
-)
+# CAN_USE_TABLE = Table(
+#     'can_use',
+#     BASE.metadata,
+#     Column(
+#         'group',
+#         Integer,
+#         ForeignKey('group.pk_id'),
+#         primary_key=True),
+#     Column(
+#         'license',
+#         Integer,
+#         ForeignKey('license.pk_id'),
+#         primary_key=True),
+#     UniqueConstraint(
+#         'group', 
+#         'license', 
+#         name='can_use_id')
+# )
 
 HAS_SENSOR = Table(
     'has_sensor',
@@ -65,23 +73,32 @@ HAS_SENSOR = Table(
         'sensor',
         Integer,
         ForeignKey('sensor.pk_id'),
-        primary_key=True)
+        primary_key=True),
+    UniqueConstraint(
+        'satellite', 
+        'sensor', 
+        name='has_sensor_id')
 )
 
-HAS_PRODUCT = Table(
-    'has_product',
-    BASE.metadata,
-    Column(
-        'product',
-        Integer,
-        ForeignKey('product.pk_id'),
-        primary_key=True),
-    Column(
-        'petition',
-        Integer,
-        ForeignKey('petition.pk_id'),
-        primary_key=True)
-)
+# HAS_PRODUCT = Table(
+#     'has_product',
+#     BASE.metadata,
+#     Column(
+#         'product',
+#         Integer,
+#         ForeignKey('product.pk_id'),
+#         primary_key=True),
+#     Column(
+#         'petition',
+#         Integer,
+#         ForeignKey('petition.pk_id'),
+#         primary_key=True),
+#     UniqueConstraint(
+#         'product', 
+#         'petition', 
+#         name='has_product_id')
+# 
+# )
 
 '''
 PRODUCT_INPUT_TABLE = Table(
@@ -165,28 +182,20 @@ class Legend(BASE):
     name = Column(String, unique=True)
     styled_layer_descriptor = Column(String)
     path = Column(String)
-class Unit(BASE):
-    '''
-    Units are the different fixed units in which the world is measured. In the
-    case of this system this will be the units in which wavelengths are
-    measured.
-    '''
-    __tablename__ = 'unit'
-    pk_id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
-    unit = Column(String, unique=True)
-class Temporal(BASE):
-    '''
-    This table stores the temporal location of images to be distributed. This
-    can be deleted over time, but it keeps track of what has been made available
-    through an ftp 
-    '''
-    __tablename__ = 'temporal'
-    pk_id = Column(Integer, primary_key=True)
-    external_url =  Column(String)
-    internal_path = Column(String)
-    init_date = Column(DateTime())
-    end_date = Column(DateTime())
+
+
+# class Temporal(BASE):
+#     '''
+#     This table stores the temporal location of images to be distributed. This
+#     can be deleted over time, but it keeps track of what has been made available
+#     through an ftp 
+#     '''
+#     __tablename__ = 'temporal'
+#     pk_id = Column(Integer, primary_key=True)
+#     external_url =  Column(String)
+#     internal_path = Column(String)
+#     init_date = Column(DateTime())
+#     end_date = Column(DateTime())
 class License(BASE):
     '''
     This table stores the possible license that an image can have.
@@ -198,40 +207,41 @@ class License(BASE):
     use = Column(String)
     distribution = Column(String)
     product = relationship('Product')
-class Group(BASE):
-    '''
-    This table stores information for the groups available for the users. 
-    '''
-    __tablename__ = 'group'
-    pk_id = Column(Integer, primary_key=True)
-    name = Column(String)
-    user = relationship('User')
-    can_use = relationship(
-        'License',
-        secondary=CAN_USE_TABLE)
     
-class User(BASE):
-    '''
-    This table stores information for the users of the system. 
-    '''
-    __tablename__ = 'user'
-    pk_id = Column(Integer, primary_key=True)
-    name = Column(String)
-    last_name_1 = Column(String)
-    last_name_2 = Column(String)
-    role = Column(String)
-    phone = Column(String)
-    email = Column(String)
-    cellphone = Column(String)
-    password = Column(String) 
-    job_position = Column(String)
-    rfc = Column(String)
-    creation_date = Column(DateTime())
-    organization_id = Column(Integer, ForeignKey('organization.pk_id'))
-    organization = relationship('Organization')
-    petition = relationship('Petition')    
-    group_id = Column(Integer, ForeignKey('group.pk_id'))
-    group = relationship('Group')
+# class Group(BASE):
+#     '''
+#     This table stores information for the groups available for the users. 
+#     '''
+#     __tablename__ = 'group'
+#     pk_id = Column(Integer, primary_key=True)
+#     name = Column(String)
+#     user = relationship('User')
+#     can_use = relationship(
+#         'License',
+#         secondary=CAN_USE_TABLE)
+    
+# class User(BASE):
+#     '''
+#     This table stores information for the users of the system. 
+#     '''
+#     __tablename__ = 'user'
+#     pk_id = Column(Integer, primary_key=True)
+#     name = Column(String)
+#     last_name_1 = Column(String)
+#     last_name_2 = Column(String)
+#     role = Column(String)
+#     phone = Column(String)
+#     email = Column(String)
+#     cellphone = Column(String)
+#     password = Column(String) 
+#     job_position = Column(String)
+#     rfc = Column(String)
+#     creation_date = Column(DateTime())
+#     organization_id = Column(Integer, ForeignKey('organization.pk_id'))
+#     organization = relationship('Organization')
+#     petition = relationship('Petition')    
+#     group_id = Column(Integer, ForeignKey('group.pk_id'))
+#     group = relationship('Group')
 
 
 
@@ -246,13 +256,13 @@ class Band(BASE):
     pk_id = Column(Integer, primary_key=True)
     band_name = Column(String)
     sensor_id = Column(Integer, ForeignKey('sensor.pk_id'))
-    unit_id = Column(Integer, ForeignKey('unit.pk_id'))
     bit_depth = Column(Integer)
     band = Column(Integer)
     minimum_wavelength = Column(Float)
     maximum_wavelength = Column(Float)
     sensor = relationship('Sensor')
-    unit = relationship('Unit')
+    name = Column(String, unique=True)
+    abrevation = Column(String, unique=True)
 class Description(BASE):
     '''
     This table is a link between organizations and products. It provides
@@ -349,20 +359,20 @@ class ProcessedProduct(Product):
         'polymorphic_identity':'processed'
     }
     processing_date = Column(DateTime())
-class Petition(BASE):
-    '''
-    This table represents a petition from an external party for a set of images. The
-    images are made available through a service such as ftp.
-    '''
-    __tablename__ = 'petition'
-    pk_id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('user.pk_id'))
-    user = relationship('User')
-    temporal_id =  Column(Integer, ForeignKey('temporal.pk_id'))
-    temporal = relationship('Temporal')
-    has_product = relationship(
-        'Product',
-        secondary=HAS_PRODUCT)
+# class Petition(BASE):
+#     '''
+#     This table represents a petition from an external party for a set of images. The
+#     images are made available through a service such as ftp.
+#     '''
+#     __tablename__ = 'petition'
+#     pk_id = Column(Integer, primary_key=True)
+#     user_id = Column(Integer, ForeignKey('user.pk_id'))
+#     user = relationship('User')
+#     temporal_id =  Column(Integer, ForeignKey('temporal.pk_id'))
+#     temporal = relationship('Temporal')
+#     has_product = relationship(
+#         'Product',
+#         secondary=HAS_PRODUCT)
 class Host(BASE):
     '''
     This table has information about the different host in which jobs can be

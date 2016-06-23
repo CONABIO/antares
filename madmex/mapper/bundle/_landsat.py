@@ -28,9 +28,6 @@ class LandsatBaseBundle(BaseBundle):
         self.output_directory = None
         self.file_dictionary = None
         self.get_landsat_files()
-        
-        print self.file_dictionary
-        
         self._look_for_files()
     def get_landsat_files(self):
         '''
@@ -84,7 +81,7 @@ class LandsatBaseBundle(BaseBundle):
                                         band_1:None
                                         }
         self._look_for_files()
-        self.get_thumbnail()
+        #self.get_thumbnail()
     def get_mission(self):
         '''
         Implementers should override this method to provide access to the mission

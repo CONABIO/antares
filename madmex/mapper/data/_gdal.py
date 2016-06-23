@@ -14,6 +14,7 @@ import osr
 
 
 GTIFF = 'GTiff'
+JPEG = 'JPEG'
 
 LOGGER = logging.getLogger(__name__)
 

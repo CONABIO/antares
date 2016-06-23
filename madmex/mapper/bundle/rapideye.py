@@ -62,7 +62,7 @@ class Bundle(BaseBundle):
         self.sensor = None
         self.raster = None
         self.output_directory = None
-        self.get_thumbnail() 
+        #self.get_thumbnail() 
     def get_information_object(self):
         information = Information(
                     grid_id=self.get_sensor().get_attribute(rapideye.TILE_ID),
@@ -219,7 +219,7 @@ if __name__ == '__main__':
     #print bundle.can_identify()
     
     
-    image = "/Users/amaury/Documents/rapideye/df/1447813/2012/2012-03-14/l3a/2012-03-14T182106_RE2_3A-NAC_11040070_149070.tif"
+    image = "/Users/agutierrez/Documents/rapideye/df/1447813/2012/2012-03-14/l3a/2012-03-14T182106_RE2_3A-NAC_11040070_149070.tif"
     gdal_format = "GTiff"
     data_class = raster.Data(image, gdal_format)
     array = data_class.read_data_file_as_array()

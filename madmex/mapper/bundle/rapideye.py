@@ -7,7 +7,9 @@ from __future__ import unicode_literals
 
 import logging
 
+import dateutil
 import numpy
+import osgeo
 from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode
 
 from madmex.configuration import SETTINGS
@@ -18,13 +20,12 @@ from madmex.mapper.sensor.rapideye import TILE_ID
 import madmex.mapper.sensor.rapideye as rapideye
 from madmex.persistence import driver
 from madmex.persistence.database.connection import Information
-from madmex.preprocessing import maskingwithreference
 from madmex.preprocessing import masking
+from madmex.preprocessing import maskingwithreference
 from madmex.preprocessing.topofatmosphere import calculate_distance_sun_earth, \
     calculate_toa_rapideye, calculate_rad_rapideye
 from madmex.util import get_path_from_list, create_file_name, \
     create_directory_path, get_base_name, get_parent
-
 
 FORMAT = 'GTiff'
 ANOMALY_DETECTION = 1
@@ -61,6 +62,7 @@ class Bundle(BaseBundle):
         self.sensor = None
         self.raster = None
         self.output_directory = None
+        self.get_thumbnail() 
     def get_information_object(self):
         information = Information(
                     grid_id=self.get_sensor().get_attribute(rapideye.TILE_ID),
@@ -132,6 +134,20 @@ class Bundle(BaseBundle):
                 product_name
                 ])
         return self.output_directory
+    def get_thumbnail(self):
+        '''
+        Creates a thumbnail for the scene in true color.
+        '''
+        from subprocess import call
+        parent_directory = get_parent(self.path)
+        thumnail_directory = create_file_name(parent_directory, 'thumbnail')
+        create_directory_path(thumnail_directory)
+        parent_directory
+        filename = self.file_dictionary[_BROWSE]
+        thumbnail = create_file_name(thumnail_directory, 'thumbnail.jpg')
+        resize_command = ['/Library/Frameworks/GDAL.framework/Programs/gdal_translate', filename, '-of', 'JPEG', thumbnail]
+        call(resize_command)
+
     # TODO: The next couple of methods can be abstracted in a base class and
     # inheritance.
     def anomaly_detection_cloud_mask(self, top_of_atmosphere_data, cloud_output_file, solar_zenith, solar_azimuth, geotransform):
@@ -195,3 +211,26 @@ class Bundle(BaseBundle):
                      data_type=NumericTypeCodeToGDALTypeCode(numpy.float32)
                      )
         LOGGER.info('Cloud mask was created.')
+
+if __name__ == '__main__':
+    #path = '/Users/amaury/Documents/rapideye/df/1447813/2012/2012-03-14/l3a'
+    #bundle = Bundle(path)
+    #print bundle.get_files()
+    #print bundle.can_identify()
+    
+    
+    image = "/Users/amaury/Documents/rapideye/df/1447813/2012/2012-03-14/l3a/2012-03-14T182106_RE2_3A-NAC_11040070_149070.tif"
+    gdal_format = "GTiff"
+    data_class = raster.Data(image, gdal_format)
+    array = data_class.read_data_file_as_array()
+    width, height, bands = data_class.get_attribute(raster.DATA_SHAPE)
+    feature_bands = numpy.zeros([2, width, height])
+    from madmex.processing.raster import calculate_ndvi
+    feature_bands[0, :, :] = calculate_ndvi(array[4, :, :], array[2, :, :])
+    feature_bands[1, :, :] = calculate_ndvi(array[3, :, :], array[2, :, :])
+    
+    out1 = get_parent(image) + 'result_ndvi_1.tif'
+    out2 = get_parent(image) + 'result_ndvi_2.tif'
+    create_raster_from_reference(out1, feature_bands[0, :, :], image)
+    create_raster_from_reference(out2, feature_bands[1, :, :], image)
+    print 'Done'

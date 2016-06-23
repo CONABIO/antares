@@ -13,7 +13,11 @@ import os
 import re
 import uuid
 
+import geoalchemy2
+print geoalchemy2.__file__
+
 from geoalchemy2.elements import WKTElement
+
 import ogr
 import osr
 from madmex.persistence.database.connection import RawProduct, Information

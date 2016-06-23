@@ -5,12 +5,18 @@ Created on Aug 26, 2015
 '''
 from __future__ import unicode_literals
 
+import numpy
+
 from madmex.configuration import SETTINGS
 from madmex.mapper.base import BaseBundle
 from madmex.mapper.data import raster
+from madmex.mapper.data._gdal import create_raster, JPEG
+from madmex.mapper.data.raster import GDAL_TIFF
+from madmex.util import get_parent, create_directory_path, create_file_name
 
 
-_BASE = r'L%s[0-9]?[0-9]{3}[0-9]{3}_[0-9]{3}[0-9]{4}[0-9]{2}[0-9]{2}_%s'
+#_BASE = r'L%s[0-9]?[0-9]{3}[0-9]{3}_[0-9]{3}[0-9]{4}[0-9]{2}[0-9]{2}_%s'
+_BASE = r'L%s.*_%s'
 
 class LandsatBaseBundle(BaseBundle):
     def __init__(self, path):
@@ -77,6 +83,8 @@ class LandsatBaseBundle(BaseBundle):
                 self.file_dictionary = {
                                         band_1:None
                                         }
+        self._look_for_files()
+        self.get_thumbnail()
     def get_mission(self):
         '''
         Implementers should override this method to provide access to the mission
@@ -113,3 +121,21 @@ class LandsatBaseBundle(BaseBundle):
         if self.raster is None:
             self.raster = raster.Data(self.file_dictionary[self.get_image_file()], self.get_format_file())
         return self.raster
+    def get_thumbnail(self):
+        '''
+        Creates a thumbnail for the scene in true color.
+        '''
+        from subprocess import call
+        file_1 = self.file_dictionary[_BASE % (self.get_mission(), 'B1[0-9].TIF')]
+        file_2 = self.file_dictionary[_BASE % (self.get_mission(), 'B2[0-9].TIF')]
+        file_3 = self.file_dictionary[_BASE % (self.get_mission(), 'B3[0-9].TIF')]
+        parent_directory = get_parent(self.path)
+        thumnail_directory = create_file_name(parent_directory, 'thumbnail')
+        create_directory_path(thumnail_directory)
+        parent_directory
+        filename = create_file_name(thumnail_directory, 'vrt.tif')
+        merge_command = ['/Library/Frameworks/GDAL.framework/Programs/gdalbuildvrt', '-separate', '-o', filename, file_3, file_2, file_1]
+        call(merge_command)
+        thumbnail = create_file_name(thumnail_directory, 'thumbnail.jpg')
+        resize_command = ['/Library/Frameworks/GDAL.framework/Programs/gdal_translate', filename, '-of', 'JPEG', '-outsize', '5%', '5%', thumbnail]
+        call(resize_command)

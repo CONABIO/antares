@@ -8,7 +8,9 @@ from __future__ import unicode_literals
 
 import logging
 
+import gdal
 import numpy
+import ogr
 
 from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands import get_bundle_from_path
@@ -42,6 +44,32 @@ def open_handle(filename):
     data.close()
     return data_array
     
+def get_mask(filename):
+    vector_fn = filename
+    # Define pixel_size and NoData value of new raster
+    pixel_size = 30
+    NoData_value = -9999
+        
+    # Open the data source and read in the extent
+    source_ds = ogr.Open(vector_fn)
+    source_layer = source_ds.GetLayer()
+    source_srs = source_layer.GetSpatialRef()
+    x_min, x_max, y_min, y_max = source_layer.GetExtent()
+        
+    # Create the destination data source
+    x_res = int((x_max - x_min) / pixel_size)
+    y_res = int((y_max - y_min) / pixel_size)
+    target_ds = gdal.GetDriverByName(str('MEM')).Create('', x_res, y_res, gdal.GDT_Byte)
+    target_ds.SetGeoTransform((x_min, pixel_size, 0, y_max, 0, -pixel_size))
+    band = target_ds.GetRasterBand(1)
+    band.SetNoDataValue(NoData_value)
+        
+    # Rasterize
+    gdal.RasterizeLayer(target_ds, [1], source_layer, burn_values=[1])
+        
+    # Read as array
+    array = band.ReadAsArray()
+    return array
 
 class Command(BaseCommand):
     '''
@@ -57,7 +85,8 @@ class Command(BaseCommand):
         parser.add_argument('--shape', nargs='*')
     def handle(self, **options):
         '''
-        This is the code that does the ingestion.
+        This is the code that does the ingestion.        
+        indexes --path /LUSTRE/MADMEX/staging/2016_tasks/Humedales_for_ctroche/LT/Landsat_2000_2008/L5_021_047_2000_022_sr/ --shape /LUSTRE/MADMEX/staging/2016_tasks/Humedales_for_ctroche/LT/AE_LT_new.shp
         '''
         LOGGER.info('Calculating indexes for Landsat scenes.')
         
@@ -102,15 +131,26 @@ class Command(BaseCommand):
             ndwig_array = calculate_index(nir_array, swir_array)
             ndwim_array = calculate_index(green_array, nir_array)
             
+            print numpy.amax(ndvi_array), numpy.amin(ndvi_array)
+            
+            print numpy.unique(ndvi_array), numpy.amin(ndvi_array), numpy.amax(ndvi_array)
+            print numpy.unique(mndwi_array), numpy.amin(mndwi_array), numpy.amax(mndwi_array)
+            print numpy.unique(ndwig_array), numpy.amin(ndwig_array), numpy.amax(ndvi_array)
+            print numpy.unique(ndwim_array), numpy.amin(ndwim_array), numpy.amax(ndwim_array)
+            
             ndvi_array[cloud_mask] = -999
             mndwi_array[cloud_mask] = -999
             ndwig_array[cloud_mask] = -999
             ndwim_array[cloud_mask] = -999
             
-            print numpy.unique(ndvi_array)
-            print numpy.unique(mndwi_array)
-            print numpy.unique(ndwig_array)
-            print numpy.unique(ndwim_array)
+            
+            
+            
+            
+            ndvi_final_file = create_file_name(final_path, 'ndvi_final.tif')
+            mndwi_final_file = create_file_name(final_path, 'mndwi_final.tif')
+            ndwig_final_file = create_file_name(final_path, 'ndwig_final.tif')
+            ndwim_final_file = create_file_name(final_path, 'ndwim_final.tif')
             
             ndvi_clipped_file = create_file_name(final_path, 'ndvi_clipped.tif')
             mndwi_clipped_file = create_file_name(final_path, 'mndwi_clipped.tif')
@@ -124,16 +164,24 @@ class Command(BaseCommand):
             
             files = [ndvi_file, mndwi_file, ndwig_file, ndwim_file]
             clipped_files = [ndvi_clipped_file, mndwi_clipped_file, ndwig_clipped_file, ndwim_clipped_file]
+            final_files = [ndvi_final_file, mndwi_final_file, ndwig_final_file, ndwim_final_file]
             
             create_raster_from_reference(ndvi_file, ndvi_array, green_file)
             create_raster_from_reference(mndwi_file, mndwi_array, green_file)
             create_raster_from_reference(ndwig_file, ndwig_array, green_file)
             create_raster_from_reference(ndwim_file, ndwim_array, green_file)
             
+            del ndvi_array
+            del mndwi_array
+            del ndwig_array
+            del ndwim_array
+            del cloud_array
+            
             
         from subprocess import call
         rgb_file = create_file_name(final_path, 'rgb.tif')
         merge_command = ['/Library/Frameworks/GDAL.framework/Programs/gdalbuildvrt', '-separate', '-o', rgb_file, red_file, green_file, blue_file]
+        print ' '.join(merge_command)
         call(merge_command)
         
         shape = options['shape'][0]
@@ -142,4 +190,18 @@ class Command(BaseCommand):
         for i in range(4):
             clip_command = ['/Library/Frameworks/GDAL.framework/Programs/gdalwarp', '-crop_to_cutline', '-cutline', shape, files[i], clipped_files[i]]
             call(clip_command)
+        
+        
+        
+        
+        shape_array = get_mask(shape)
+        
+        print shape_array
+        
+        for i in range(4):
+            aux_array = open_handle(clipped_files[i])
+            aux_array[(aux_array == 0)] = -9999
+            create_raster_from_reference(final_files[i], aux_array, ndvi_clipped_file)
+        
         print 'Done'
+        

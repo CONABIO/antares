@@ -6,7 +6,9 @@ Created on Jun 23, 2016
 
 from __future__ import unicode_literals
 
+import glob
 import logging
+import os
 
 import gdal
 import numpy
@@ -83,99 +85,113 @@ class Command(BaseCommand):
         '''
         parser.add_argument('--path', nargs='*')
         parser.add_argument('--shape', nargs='*')
+        parser.add_argument('--output', nargs='*')
     def handle(self, **options):
         '''
         This is the code that does the ingestion.        
         indexes --path /LUSTRE/MADMEX/staging/2016_tasks/Humedales_for_ctroche/LT/Landsat_2000_2008/L5_021_047_2000_022_sr/ --shape /LUSTRE/MADMEX/staging/2016_tasks/Humedales_for_ctroche/LT/AE_LT_new.shp
         '''
+        
+        path = options['path'][0]
+        
+        for mask_file in os.listdir(path):
+            if mask_file.endswith('*_cfmask.tif'):
+                print mask_file
+                basename = mask_file.replace('_cfmask.tif', '')
+                print basename
+        
+        
+        
         LOGGER.info('Calculating indexes for Landsat scenes.')
         
-        band_name = 'LT50210472000022AAA02_sr_band%s.tif'
+        band_name = basename + '_sr_band%s.tif'
         
-        result = '/Users/agutierrez/Documents/humedales'
-        final_path = create_file_name(result, 'indexes2')
+        result = options['output'][0]
+        final_path = create_file_name(result, 'indexes5')
         create_directory_path(final_path)
         
         
-        for path in options['path']:
-            cloud_file = create_file_name(path, 'LT50210472000022AAA02_cfmask.tif')
-            cloud_array = open_handle(cloud_file)
-            print cloud_array
-            print numpy.amin(cloud_array), numpy.amax(cloud_array)
-            print numpy.unique(cloud_array)
+        
+        
+        
+        cloud_file = create_file_name(path, 'LT50210472000022AAA02_cfmask.tif')
+        cloud_array = open_handle(cloud_file)
+        print cloud_array
+        print numpy.amin(cloud_array), numpy.amax(cloud_array)
+        print numpy.unique(cloud_array)
             
-            cloud_mask = (cloud_array == 4)
+        cloud_mask = (cloud_array == 4)
             
             
-            blue_file = create_file_name(path, band_name % BLUE)
-            green_file = create_file_name(path, band_name % GREEN)
-            red_file = create_file_name(path, band_name % RED)
-            nir_file = create_file_name(path, band_name % NIR)
-            swir_file = create_file_name(path, band_name % SWIR)
+        blue_file = create_file_name(path, band_name % BLUE)
+        green_file = create_file_name(path, band_name % GREEN)
+        red_file = create_file_name(path, band_name % RED)
+        nir_file = create_file_name(path, band_name % NIR)
+        swir_file = create_file_name(path, band_name % SWIR)
             
-            LOGGER.info('Loading bands of interest.')
-            print green_file
-            print red_file
-            print nir_file
-            print swir_file
+        LOGGER.info('Loading bands of interest.')
+        print green_file
+        print red_file
+        print nir_file
+        print swir_file
             
 
-            green_array = open_handle(green_file)
-            red_array = open_handle(red_file)
-            nir_array = open_handle(nir_file)
-            swir_array = open_handle(swir_file)
+        green_array = open_handle(green_file)
+        red_array = open_handle(red_file)
+        nir_array = open_handle(nir_file)
+        swir_array = open_handle(swir_file)
             
             
-            ndvi_array = calculate_index(nir_array, red_array)
-            mndwi_array = calculate_index(green_array, swir_array)
-            ndwig_array = calculate_index(nir_array, swir_array)
-            ndwim_array = calculate_index(green_array, nir_array)
+        ndvi_array = calculate_index(nir_array, red_array)
+        mndwi_array = calculate_index(green_array, swir_array)
+        ndwig_array = calculate_index(nir_array, swir_array)
+        ndwim_array = calculate_index(green_array, nir_array)
             
-            print numpy.amax(ndvi_array), numpy.amin(ndvi_array)
+        print numpy.amax(ndvi_array), numpy.amin(ndvi_array)
             
-            print numpy.unique(ndvi_array), numpy.amin(ndvi_array), numpy.amax(ndvi_array)
-            print numpy.unique(mndwi_array), numpy.amin(mndwi_array), numpy.amax(mndwi_array)
-            print numpy.unique(ndwig_array), numpy.amin(ndwig_array), numpy.amax(ndvi_array)
-            print numpy.unique(ndwim_array), numpy.amin(ndwim_array), numpy.amax(ndwim_array)
+        print numpy.unique(ndvi_array), numpy.amin(ndvi_array), numpy.amax(ndvi_array)
+        print numpy.unique(mndwi_array), numpy.amin(mndwi_array), numpy.amax(mndwi_array)
+        print numpy.unique(ndwig_array), numpy.amin(ndwig_array), numpy.amax(ndvi_array)
+        print numpy.unique(ndwim_array), numpy.amin(ndwim_array), numpy.amax(ndwim_array)
             
-            ndvi_array[cloud_mask] = -999
-            mndwi_array[cloud_mask] = -999
-            ndwig_array[cloud_mask] = -999
-            ndwim_array[cloud_mask] = -999
-            
-            
+        ndvi_array[cloud_mask] = -999
+        mndwi_array[cloud_mask] = -999
+        ndwig_array[cloud_mask] = -999
+        ndwim_array[cloud_mask] = -999
             
             
             
-            ndvi_final_file = create_file_name(final_path, 'ndvi_final.tif')
-            mndwi_final_file = create_file_name(final_path, 'mndwi_final.tif')
-            ndwig_final_file = create_file_name(final_path, 'ndwig_final.tif')
-            ndwim_final_file = create_file_name(final_path, 'ndwim_final.tif')
             
-            ndvi_clipped_file = create_file_name(final_path, 'ndvi_clipped.tif')
-            mndwi_clipped_file = create_file_name(final_path, 'mndwi_clipped.tif')
-            ndwig_clipped_file = create_file_name(final_path, 'ndwig_clipped.tif')
-            ndwim_clipped_file = create_file_name(final_path, 'ndwim_clipped.tif')
             
-            ndvi_file = create_file_name(final_path, 'ndvi.tif')
-            mndwi_file = create_file_name(final_path, 'mndwi.tif')
-            ndwig_file = create_file_name(final_path, 'ndwig.tif')
-            ndwim_file = create_file_name(final_path, 'ndwim.tif')
+        ndvi_final_file = create_file_name(final_path, 'ndvi_final.tif')
+        mndwi_final_file = create_file_name(final_path, 'mndwi_final.tif')
+        ndwig_final_file = create_file_name(final_path, 'ndwig_final.tif')
+        ndwim_final_file = create_file_name(final_path, 'ndwim_final.tif')
             
-            files = [ndvi_file, mndwi_file, ndwig_file, ndwim_file]
-            clipped_files = [ndvi_clipped_file, mndwi_clipped_file, ndwig_clipped_file, ndwim_clipped_file]
-            final_files = [ndvi_final_file, mndwi_final_file, ndwig_final_file, ndwim_final_file]
+        ndvi_clipped_file = create_file_name(final_path, 'ndvi_clipped.tif')
+        mndwi_clipped_file = create_file_name(final_path, 'mndwi_clipped.tif')
+        ndwig_clipped_file = create_file_name(final_path, 'ndwig_clipped.tif')
+        ndwim_clipped_file = create_file_name(final_path, 'ndwim_clipped.tif')
             
-            create_raster_from_reference(ndvi_file, ndvi_array, green_file)
-            create_raster_from_reference(mndwi_file, mndwi_array, green_file)
-            create_raster_from_reference(ndwig_file, ndwig_array, green_file)
-            create_raster_from_reference(ndwim_file, ndwim_array, green_file)
+        ndvi_file = create_file_name(final_path, 'ndvi.tif')
+        mndwi_file = create_file_name(final_path, 'mndwi.tif')
+        ndwig_file = create_file_name(final_path, 'ndwig.tif')
+        ndwim_file = create_file_name(final_path, 'ndwim.tif')
             
-            del ndvi_array
-            del mndwi_array
-            del ndwig_array
-            del ndwim_array
-            del cloud_array
+        files = [ndvi_file, mndwi_file, ndwig_file, ndwim_file]
+        clipped_files = [ndvi_clipped_file, mndwi_clipped_file, ndwig_clipped_file, ndwim_clipped_file]
+        final_files = [ndvi_final_file, mndwi_final_file, ndwig_final_file, ndwim_final_file]
+            
+        create_raster_from_reference(ndvi_file, ndvi_array, green_file)
+        create_raster_from_reference(mndwi_file, mndwi_array, green_file)
+        create_raster_from_reference(ndwig_file, ndwig_array, green_file)
+        create_raster_from_reference(ndwim_file, ndwim_array, green_file)
+            
+        del ndvi_array
+        del mndwi_array
+        del ndwig_array
+        del ndwim_array
+        del cloud_array
             
             
         from subprocess import call

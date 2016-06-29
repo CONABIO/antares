@@ -89,7 +89,7 @@ class Command(BaseCommand):
     def handle(self, **options):
         '''
         This is the code that does the ingestion.        
-        indexes --path /LUSTRE/MADMEX/staging/2016_tasks/Humedales_for_ctroche/LT/Landsat_2000_2008/L5_021_047_2000_022_sr/ --shape /LUSTRE/MADMEX/staging/2016_tasks/Humedales_for_ctroche/LT/AE_LT_new.shp
+        indexes --path /LUSTRE/MADMEX/staging/2016_tasks/Humedales_for_ctroche/LT/Landsat_2000_2008/L5_021_047_2000_022_sr/ --shape /LUSTRE/MADMEX/staging/2016_tasks/Humedales_for_ctroche/LT/AE_LT_new.shp --output 
         '''
         
         path = options['path'][0]
@@ -165,20 +165,20 @@ class Command(BaseCommand):
             
             
             
-        ndvi_final_file = create_file_name(final_path, basename + 'ndvi_final.tif')
-        mndwi_final_file = create_file_name(final_path, basename + 'mndwi_final.tif')
-        ndwig_final_file = create_file_name(final_path, basename + 'ndwig_final.tif')
-        ndwim_final_file = create_file_name(final_path, basename + 'ndwim_final.tif')
+        ndvi_final_file = create_file_name(final_path, basename + '_ndvi.tif')
+        mndwi_final_file = create_file_name(final_path, basename + '_mndwi.tif')
+        ndwig_final_file = create_file_name(final_path, basename + '_ndwig.tif')
+        ndwim_final_file = create_file_name(final_path, basename + '_ndwim.tif')
             
-        ndvi_clipped_file = create_file_name(final_path, basename + 'ndvi_clipped.tif')
-        mndwi_clipped_file = create_file_name(final_path, basename + 'mndwi_clipped.tif')
-        ndwig_clipped_file = create_file_name(final_path, basename + 'ndwig_clipped.tif')
-        ndwim_clipped_file = create_file_name(final_path, basename + 'ndwim_clipped.tif')
+        ndvi_clipped_file = create_file_name(final_path, basename + '_ndvi_clipped.tif')
+        mndwi_clipped_file = create_file_name(final_path, basename + '_mndwi_clipped.tif')
+        ndwig_clipped_file = create_file_name(final_path, basename + '_ndwig_clipped.tif')
+        ndwim_clipped_file = create_file_name(final_path, basename + '_ndwim_clipped.tif')
             
-        ndvi_file = create_file_name(final_path, basename + 'ndvi.tif')
-        mndwi_file = create_file_name(final_path, basename + 'mndwi.tif')
-        ndwig_file = create_file_name(final_path, basename + 'ndwig.tif')
-        ndwim_file = create_file_name(final_path, basename + 'ndwim.tif')
+        ndvi_file = create_file_name(final_path, basename + '_ndvi_pre.tif')
+        mndwi_file = create_file_name(final_path, basename + '_mndwi_pre.tif')
+        ndwig_file = create_file_name(final_path, basename + '_ndwig_pre.tif')
+        ndwim_file = create_file_name(final_path, basename + '_ndwim_pre.tif')
             
         files = [ndvi_file, mndwi_file, ndwig_file, ndwim_file]
         clipped_files = [ndvi_clipped_file, mndwi_clipped_file, ndwig_clipped_file, ndwim_clipped_file]
@@ -197,7 +197,7 @@ class Command(BaseCommand):
             
             
         from subprocess import call
-        rgb_file = create_file_name(final_path, basename + 'rgb.tif')
+        rgb_file = create_file_name(final_path, basename + '_rgb.tif')
         merge_command = ['/Library/Frameworks/GDAL.framework/Programs/gdalbuildvrt', '-separate', '-o', rgb_file, red_file, green_file, blue_file]
         print ' '.join(merge_command)
         call(merge_command)

@@ -165,20 +165,20 @@ class Command(BaseCommand):
             
             
             
-        ndvi_final_file = create_file_name(final_path, 'ndvi_final.tif')
-        mndwi_final_file = create_file_name(final_path, 'mndwi_final.tif')
-        ndwig_final_file = create_file_name(final_path, 'ndwig_final.tif')
-        ndwim_final_file = create_file_name(final_path, 'ndwim_final.tif')
+        ndvi_final_file = create_file_name(final_path, basename + 'ndvi_final.tif')
+        mndwi_final_file = create_file_name(final_path, basename + 'mndwi_final.tif')
+        ndwig_final_file = create_file_name(final_path, basename + 'ndwig_final.tif')
+        ndwim_final_file = create_file_name(final_path, basename + 'ndwim_final.tif')
             
-        ndvi_clipped_file = create_file_name(final_path, 'ndvi_clipped.tif')
-        mndwi_clipped_file = create_file_name(final_path, 'mndwi_clipped.tif')
-        ndwig_clipped_file = create_file_name(final_path, 'ndwig_clipped.tif')
-        ndwim_clipped_file = create_file_name(final_path, 'ndwim_clipped.tif')
+        ndvi_clipped_file = create_file_name(final_path, basename + 'ndvi_clipped.tif')
+        mndwi_clipped_file = create_file_name(final_path, basename + 'mndwi_clipped.tif')
+        ndwig_clipped_file = create_file_name(final_path, basename + 'ndwig_clipped.tif')
+        ndwim_clipped_file = create_file_name(final_path, basename + 'ndwim_clipped.tif')
             
-        ndvi_file = create_file_name(final_path, 'ndvi.tif')
-        mndwi_file = create_file_name(final_path, 'mndwi.tif')
-        ndwig_file = create_file_name(final_path, 'ndwig.tif')
-        ndwim_file = create_file_name(final_path, 'ndwim.tif')
+        ndvi_file = create_file_name(final_path, basename + 'ndvi.tif')
+        mndwi_file = create_file_name(final_path, basename + 'mndwi.tif')
+        ndwig_file = create_file_name(final_path, basename + 'ndwig.tif')
+        ndwim_file = create_file_name(final_path, basename + 'ndwim.tif')
             
         files = [ndvi_file, mndwi_file, ndwig_file, ndwim_file]
         clipped_files = [ndvi_clipped_file, mndwi_clipped_file, ndwig_clipped_file, ndwim_clipped_file]
@@ -197,7 +197,7 @@ class Command(BaseCommand):
             
             
         from subprocess import call
-        rgb_file = create_file_name(final_path, 'rgb.tif')
+        rgb_file = create_file_name(final_path, basename + 'rgb.tif')
         merge_command = ['/Library/Frameworks/GDAL.framework/Programs/gdalbuildvrt', '-separate', '-o', rgb_file, red_file, green_file, blue_file]
         print ' '.join(merge_command)
         call(merge_command)

@@ -94,8 +94,10 @@ class Command(BaseCommand):
         
         path = options['path'][0]
         
+        print path
+        
         for mask_file in os.listdir(path):
-            if mask_file.endswith('*_cfmask.tif'):
+            if mask_file.endswith('_cfmask.tif'):
                 print mask_file
                 basename = mask_file.replace('_cfmask.tif', '')
                 print basename

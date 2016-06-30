@@ -11,10 +11,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker
-try:
-    from sqlalchemy.sql.schema import Table, UniqueConstraint
-except:
-    pass
+from sqlalchemy.sql.schema import Table, UniqueConstraint
 from sqlalchemy.sql.sqltypes import DateTime, Float, Boolean
 
 from madmex.configuration import SETTINGS

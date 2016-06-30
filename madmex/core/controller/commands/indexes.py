@@ -86,6 +86,7 @@ class Command(BaseCommand):
         parser.add_argument('--path', nargs='*')
         parser.add_argument('--shape', nargs='*')
         parser.add_argument('--output', nargs='*')
+        parser.add_argument('--debug')
     def handle(self, **options):
         '''
         This is the code that does the ingestion.        
@@ -94,6 +95,8 @@ class Command(BaseCommand):
         
         path = options['path'][0]
         
+
+        
         print path
         
         for mask_file in os.listdir(path):
@@ -101,6 +104,7 @@ class Command(BaseCommand):
                 print mask_file
                 basename = mask_file.replace('_cfmask.tif', '')
                 print basename
+                cloud_file_name = mask_file
         
         
         
@@ -109,14 +113,14 @@ class Command(BaseCommand):
         band_name = basename + '_sr_band%s.tif'
         
         result = options['output'][0]
-        final_path = create_file_name(result, 'indexes5')
+        final_path = create_file_name(result, basename)
         create_directory_path(final_path)
         
         
         
         
         
-        cloud_file = create_file_name(path, 'LT50210472000022AAA02_cfmask.tif')
+        cloud_file = create_file_name(path, cloud_file_name)
         cloud_array = open_handle(cloud_file)
         print cloud_array
         print numpy.amin(cloud_array), numpy.amax(cloud_array)
@@ -220,6 +224,19 @@ class Command(BaseCommand):
             aux_array = open_handle(clipped_files[i])
             aux_array[(aux_array == 0)] = -9999
             create_raster_from_reference(final_files[i], aux_array, ndvi_clipped_file)
+        
+        if not options['debug']:
+            os.remove(ndvi_clipped_file)
+            os.remove(mndwi_clipped_file)
+            os.remove(ndwig_clipped_file)
+            os.remove(ndwim_clipped_file)
+            
+            os.remove(ndvi_file)
+            os.remove(mndwi_file)
+            os.remove(ndwig_file)
+            os.remove(ndwim_file)
+            
+            os.remove(rgb_file)
         
         print 'Done'
         

@@ -20,7 +20,11 @@ from geoalchemy2.elements import WKTElement
 
 import ogr
 import osr
-from madmex.persistence.database.connection import RawProduct, Information
+try:
+    from madmex.persistence.database.connection import RawProduct, Information
+except:
+    pass 
+
 from madmex.util import get_files_from_folder, create_file_name
 import xml.dom.minidom as dom
 import gdal

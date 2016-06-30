@@ -95,7 +95,8 @@ def create_raster_from_reference(image_path, array, reference_path, data_type=gd
     uses the reference path to extract the geotransform and the projection from
     it.
     '''
-    dataset = gdal.Open(reference_path, GA_ReadOnly)
+    reference_path_encoded = reference_path.encode('utf-8')
+    dataset = gdal.Open(reference_path_encoded, GA_ReadOnly)
     projection = _get_projection(dataset)
     geotransform = _get_geotransform(dataset)
     driver_type = _get_driver(dataset)

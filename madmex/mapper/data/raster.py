@@ -134,6 +134,7 @@ class Data(BaseData):
         '''
         try:
             LOGGER.debug('Open raster file: %s' % self.image_path)
+            self.image_path = self.image_path.encode('utf-8')
             return gdal.Open(self.image_path, mode)
         except RuntimeError:
             LOGGER.error('Unable to open raster file %s', self.image_path)

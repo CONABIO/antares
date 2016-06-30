@@ -6,7 +6,6 @@ Created on Jun 23, 2016
 
 from __future__ import unicode_literals
 
-import glob
 import logging
 import os
 
@@ -18,7 +17,6 @@ from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands import get_bundle_from_path
 from madmex.mapper.data import raster
 from madmex.mapper.data._gdal import GTIFF, create_raster_from_reference
-from madmex.persistence.driver import persist_bundle
 from madmex.processing.raster import calculate_index
 from madmex.util import create_file_name, create_directory_path
 

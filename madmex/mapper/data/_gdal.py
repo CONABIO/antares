@@ -134,11 +134,12 @@ def create_raster(image_path,
             bands = shape[0]   
             width = shape[2]
             height = shape[1]
+        data_type_string = str(data_type)
         data = gdal.GetDriverByName(str(GTIFF)).Create(image_path,
                                                        width,
                                                        height,
                                                        bands,
-                                                       data_type.encode('utf-8'))
+                                                       data_type_string)
         if geotransform:
             data.SetGeoTransform(geotransform)
         if projection:

@@ -11,11 +11,9 @@ import os
 from subprocess import call
 
 import gdal
-import numpy
 import ogr
 
 from madmex.core.controller.base import BaseCommand
-from madmex.core.controller.commands import get_bundle_from_path
 from madmex.mapper.data import raster
 from madmex.mapper.data._gdal import GTIFF, create_raster_from_reference
 from madmex.processing.raster import calculate_index

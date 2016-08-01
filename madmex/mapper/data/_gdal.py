@@ -89,6 +89,27 @@ def _get_geotransform(dataset):
     '''
     geotransform = dataset.GetGeoTransform()
     return geotransform
+def create_empty_raster_from_reference(image_path, reference_path, data_type=gdal.GDT_Float32, bands=1):
+    '''
+    This function creates an empty raster using the metadata found in the original
+    raster.
+    '''
+    reference_path_encoded = reference_path.encode('utf-8') 
+    dataset = gdal.Open(reference_path_encoded, GA_ReadOnly)
+    projection = _get_projection(dataset)
+    geotransform = _get_geotransform(dataset)
+    
+    new_dataset = gdal.GetDriverByName(str(GTIFF)).Create(image_path,
+                                                         dataset.RasterXSize,
+                                                         dataset.RasterYSize,
+                                                         bands,
+                                                         gdal.GDT_Float32)
+    if geotransform:
+        new_dataset.SetGeoTransform(geotransform)
+    if projection:   
+        new_dataset.SetProjection(str(projection))
+    LOGGER.debug('Done with dataset creation.')
+    return new_dataset
 def create_raster_from_reference(image_path, array, reference_path, data_type=gdal.GDT_Float32):
     '''
     This function creates a raster image with the info in the given array. It

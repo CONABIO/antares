@@ -16,7 +16,7 @@ from madmex.util import get_parent, create_directory_path, create_file_name
 
 
 #_BASE = r'L%s[0-9]?[0-9]{3}[0-9]{3}_[0-9]{3}[0-9]{4}[0-9]{2}[0-9]{2}_%s'
-_BASE = r'L%s.*_%s'
+_BASE = r'L%s?%s.*_%s'
 
 class LandsatBaseBundle(BaseBundle):
     def __init__(self, path):
@@ -35,25 +35,30 @@ class LandsatBaseBundle(BaseBundle):
         to identify the files that this bundle represent.
         '''
         mission = self.get_mission()
+        letter = self.get_letter()
         if not self.file_dictionary:
-            band_1 = _BASE % (mission, 'B1[0-9].TIF')
-            band_2 = _BASE % (mission, 'B2[0-9].TIF')
-            band_3 = _BASE % (mission, 'B3[0-9].TIF')
-            band_4 = _BASE % (mission, 'B4[0-9].TIF')
-            band_5 = _BASE % (mission, 'B5[0-9].TIF')
-            band_6 = _BASE % (mission, 'B6[0-9].TIF')
-            band_61 = _BASE % (mission, 'B61.TIF')
-            band_62 = _BASE % (mission, 'B62.TIF')
-            band_7 = _BASE % (mission, 'B7[0-9].TIF')
-            band_8 = _BASE % (mission, 'B7[0-9].TIF')
-            gcp = _BASE % (mission, 'GCP.txt')
-            metadata = _BASE % (mission, 'MTL.txt')
+            band_1 = _BASE % (letter, mission, 'B1.TIF')
+            band_2 = _BASE % (letter, mission, 'B2[0-9]?.TIF')
+            band_3 = _BASE % (letter, mission, 'B3[0-9]?.TIF')
+            band_4 = _BASE % (letter, mission, 'B4[0-9]?.TIF')
+            band_5 = _BASE % (letter, mission, 'B5[0-9]?.TIF')
+            band_6 = _BASE % (letter, mission, 'B6[0-9]?.TIF')
+            band_61 = _BASE % (letter, mission, 'B61.TIF')
+            band_62 = _BASE % (letter, mission, 'B62.TIF')
+            band_7 = _BASE % (letter, mission, 'B7[0-9]?.TIF')
+            band_8 = _BASE % (letter, mission, 'B8[0-9]?.TIF')
+            band_9 = _BASE % (letter, mission, 'B9[0-9]?.TIF')
+            band_10 =  _BASE % (letter, mission, 'B10.TIF')
+            band_11 = _BASE % (letter, mission , 'B11.TIF')
+            band_BQA = _BASE % (letter, mission, 'BQA.TIF')
+            gcp = _BASE % (letter, mission, 'GCP.txt')
+            metadata = _BASE % (letter, mission, 'MTL.txt')
             
             self.file_dictionary = {}
                 
             if mission == '5':
                 self.file_dictionary = {
-                                        band_1:None,
+                                        band_10:None,
                                         band_2:None,
                                         band_3:None,
                                         band_4:None,
@@ -64,7 +69,7 @@ class LandsatBaseBundle(BaseBundle):
                                         }
             if mission == '7':
                 self.file_dictionary = {
-                                        band_1:None,
+                                        band_10:None,
                                         band_2:None,
                                         band_3:None,
                                         band_4:None,
@@ -78,7 +83,19 @@ class LandsatBaseBundle(BaseBundle):
                                         }
             if mission == '8':
                 self.file_dictionary = {
-                                        band_1:None
+                                        band_1:None,
+                                        band_2:None,
+                                        band_3:None,
+                                        band_4:None,
+                                        band_5:None,
+                                        band_6:None,
+                                        band_7:None,
+                                        band_8:None,
+                                        band_9:None,
+                                        band_10:None,
+                                        band_11:None,
+                                        band_BQA:None,
+                                        metadata:None
                                         }
         self._look_for_files()
         #self.get_thumbnail()

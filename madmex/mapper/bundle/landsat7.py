@@ -12,6 +12,7 @@ from madmex.mapper.sensor import etmplus
 FORMAT = 'GTiff'
 _MISSION = '7'
 _NAME = 'Landsat 7'
+_LETTER = 'E'
 
 class Bundle(LandsatBaseBundle):
     '''
@@ -39,6 +40,12 @@ class Bundle(LandsatBaseBundle):
         Returns the name of the bundle.
         '''
         return _NAME
+    def get_letter(self):
+        '''
+        Files after 2012 have a letter to distinguish the different sensors
+        In the case of landsat7,  letter E
+        '''
+        return _LETTER
 if __name__ == '__main__':
     path = '/LUSTRE/MADMEX/eodata/etm+/36041/2005/2005-12-22/l1t'
     bundle = Bundle(path)

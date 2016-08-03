@@ -12,6 +12,7 @@ from madmex.mapper.sensor import tm
 FORMAT = 'GTiff'
 _MISSION = '5'
 _NAME = 'Landsat 5'
+_LETTER = 'T'
 
 class Bundle(LandsatBaseBundle):
     '''
@@ -39,12 +40,18 @@ class Bundle(LandsatBaseBundle):
         Returns the name of the bundle.
         '''
         return _NAME
+    def get_letter(self):
+        '''
+        Files after 2012 have a letter to distinguish the different sensors
+        In the case of landsat5  letter T
+        '''
+        return _LETTER
 if __name__ == '__main__':
 
     bundle = Bundle('/LUSTRE/MADMEX/eodata/tm/10052/2000/2000-08-20/l1g')
     print bundle.get_files()
     print bundle.can_identify()
-    from madmex.mapper.data import raster
-    print bundle.get_raster().get_attribute(raster.FOOTPRINT)
+    #from madmex.mapper.data import raster
+    #print bundle.get_raster().get_attribute(raster.FOOTPRINT)
     
     

@@ -53,9 +53,7 @@ class LandsatBaseBundle(BaseBundle):
             band_BQA = _BASE % (letter, mission, 'BQA.TIF')
             gcp = _BASE % (letter, mission, 'GCP.txt')
             metadata = _BASE % (letter, mission, 'MTL.txt')
-            
             self.file_dictionary = {}
-                
             if mission == '5':
                 self.file_dictionary = {
                                         band_10:None,

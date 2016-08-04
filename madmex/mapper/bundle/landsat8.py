@@ -84,8 +84,6 @@ class Bundle(LandsatBaseBundle):
                     elevation_angle = 0.0,
                     resolution = self.get_raster().get_attribute(raster.GEOTRANSFORM)[1]
                     )
-
-
         return information
     def get_output_directory(self):
         '''

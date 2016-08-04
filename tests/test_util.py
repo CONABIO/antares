@@ -184,7 +184,17 @@ class Test(unittest.TestCase):
 #         print session.query(RawProduct.path, Information.resolution).join(RawProduct.information).all()
 #         print session.query(RawProduct.ingest_date, Information.resolution).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , RawProduct.pk_id == 1).all()
 #         session.close()
-
+    def test_sqlalchemy_function_find_datasets(self):
+        from datetime import datetime
+        from madmex.persistence.driver import find_datasets
+        start_date = datetime.strptime('2015-01-01', "%Y-%m-%d")
+        end_date = datetime.strptime( '2015-12-31', "%Y-%m-%d")
+        image_paths = find_datasets(start_date, end_date, 12, 1, 10, '21048')
+        print image_paths
+    def test_sqlalchemy_function_acquisitions_by_mapgrid(self):
+        from madmex.persistence.driver import acquisitions_by_mapgrid_and_date
+        images_paths = acquisitions_by_mapgrid_and_date('2013-12-31', 15462121, 100)
+        print images_paths
     def test_create_raster_in_memory(self):
         '''
         Create a raster in memory

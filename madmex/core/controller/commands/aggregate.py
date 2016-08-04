@@ -19,15 +19,9 @@ from madmex.mapper.data._gdal import create_empty_raster_from_reference, \
     create_raster_from_reference
 
 
-INITIAL_ARRAY = [[1,2,3,8,9,10,11,12,13,16],
-               [4,5,6,7,17,18,19,21,22,23],
-               [14,15,20,24,25,26],
-               [27],
-               [28],
-               [29],
-               [30],
-               [31]]
-FINAL_ARRAY = [1,2,3,4,5,6,7,8]
+INITIAL_ARRAY = [[1,2,3,8,9,10,11,12,13,16,14,15,20,24,25,26],
+               [4,5,6,7,17,18,19,21,22,23,27,28,29,30,31]]
+FINAL_ARRAY = [1,2]
 
 class Command(BaseCommand):
     '''
@@ -81,6 +75,9 @@ class Command(BaseCommand):
             del outputLine
                 
     def method_two(self, options):
+        '''
+        This method replaces the incidences of the given list with the final list.
+        '''
         path = options['path'][0]
         output = options['output'][0]
         

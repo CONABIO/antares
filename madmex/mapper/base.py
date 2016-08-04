@@ -162,10 +162,10 @@ class BaseBundle(object):
         return RawProduct(
                 acquisition_date=self.get_aquisition_date(),
                 ingest_date=datetime.now(),
-                path=self.get_output_directory(),
+                product_path=self.get_output_directory(),
                 legend=None,
                 information=information_object,
-                sensor=self.get_sensor_object(),
+                satellite=self.get_sensor_object(),
                 product_type=None,
                 type='raw'
                 )

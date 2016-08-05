@@ -10,7 +10,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-#from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.schema import Table, UniqueConstraint
 from sqlalchemy.sql.sqltypes import DateTime, Float, Boolean
 
@@ -20,7 +20,7 @@ BASE = declarative_base()
 
 ENGINE = create_engine(getattr(SETTINGS, 'ANTARES_DATABASE'))
 
-#SESSION_MAKER = sessionmaker(ENGINE, autoflush=False)
+SESSION_MAKER = sessionmaker(ENGINE, autoflush=False)
 
 CAN_TRAIN_TABLE = Table(
     'can_train',

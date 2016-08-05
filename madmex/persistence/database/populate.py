@@ -3,19 +3,21 @@ Created on Jun 2, 2016
 
 @author: agutierrez
 '''
-from sqlalchemy.orm.session import sessionmaker
-
-from madmex.persistence.database.connection import ENGINE, Unit, Organization, \
+from madmex.persistence.database.connection import Unit, Organization, \
     Legend, Algorithm, Satellite, Band, Description, ProductType, Host, Command, \
-    Sensor
+    Sensor, BASE, ENGINE
+from sqlalchemy.orm.session import sessionmaker
+from madmex.configuration import SETTINGS
+#from sqlalchemy import create_engine
 
+#ENGINE = create_engine(getattr(SETTINGS, 'ANTARES_DATABASE'))
 
 def populate_database():
     '''
     This method populates the database with the information that won't change
     over time. It is possible to create a fresh copy of the database.
     '''
-    klass = sessionmaker(bind=ENGINE)
+    klass = sessionmaker(bind=ENGINE, autoflush=False)
     session = klass()
     units_array = [
         {
@@ -148,7 +150,7 @@ def populate_database():
         },
         {
             'name':'OLI_TIRS',
-            'reference_name':None,
+            'reference_name':'oli_tirs',
             'description':'OLI TIRS'
         },
         {
@@ -1268,7 +1270,7 @@ def populate_database():
         {
             'short_name':'LS-8',
             'name':'Landsat 8',
-            'sensor':'ETM+',
+            'sensor':'OLI_TIRS',
             'organization':'NASA'
         },
         {
@@ -1597,5 +1599,43 @@ def populate_database():
     session.commit()
     session.close_all()
 
+def create_database():
+    '''
+    This method creates the database model in the database engine.
+    '''
+    BASE.metadata.create_all(ENGINE)
+def delete_database():
+    '''
+    This method deletes the database model in the database engine.
+    '''
+    BASE.metadata.drop_all(ENGINE)
+
+# a => \u00E1
+# e => \u00E9
+# i => \u00ED
+# o => \u00F3
+# u => \u00FA
+
+
+def create_vector_tables(path_query):
+    klass = sessionmaker(bind=ENGINE)
+    session = klass()
+    file_open = open(path_query, 'r')
+    sql = " ".join(file_open.readlines())
+    session.execute(sql)
+
 if __name__ == '__main__':
-    pass
+    CREATE = 1
+    if CREATE:
+        delete_database()
+        print 'database deleted'
+        path_query = getattr(SETTINGS, 'RAPIDEYE_FOOTPRINTS_MEXICO_OLD')
+        create_vector_tables(path_query)
+        print 'vector tables created'
+        create_database()
+        print 'database created'
+        populate_database()
+        print 'database populated'
+    else:
+        delete_database()
+        print 'database deleted'

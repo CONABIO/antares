@@ -10,7 +10,7 @@ from unittest import result
 from sqlalchemy import tuple_
 from madmex.persistence.database.connection import SESSION_MAKER, \
     Product, Host, Command, RawProduct, Information, Sensor, \
-    RapidEyeFootPrintsMexicoOld
+    RapidEyeFootPrintsMexicoOld, Satellite, ProductType
 import madmex.persistence.database.operations as database
 import madmex.persistence.filesystem.operations as filesystem
 from madmex.util import create_directory_path
@@ -132,6 +132,27 @@ def get_sensor_object(sensor_name):
     finally:
         session.close()
     return sensor_object 
+def get_satellite_object(sensor_name):
+    session = SESSION_MAKER()
+    try:
+        satellite_object = session.query(Satellite).filter(Satellite.name == sensor_name).first()
+    except Exception:
+        LOGGER.error('Not expected error in host insertion.')
+        raise
+    finally:
+        session.close()
+    return satellite_object 
+def get_product_type_object(product_type):
+    session = SESSION_MAKER()
+    try:
+        product_type_object = session.query(ProductType).filter(ProductType.name == product_type).first()
+    except Exception:
+        LOGGER.error('Not expected error in host insertion.')
+        raise
+    finally:
+        session.close()
+    return product_type_object 
+    
 if __name__ == '__main__':
     #images_paths = acquisitions_by_mapgrid_and_date('2013-12-31', 15462121, 100)
     #print images_paths

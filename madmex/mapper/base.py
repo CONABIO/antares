@@ -165,8 +165,8 @@ class BaseBundle(object):
                 product_path=self.get_output_directory(),
                 legend=None,
                 information=information_object,
-                satellite=self.get_sensor_object(),
-                product_type=None,
+                satellite=self.get_satellite_object(),
+                product_type=self.get_product_type_object(),
                 type='raw'
                 )
     def get_information_object(self):

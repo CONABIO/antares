@@ -123,6 +123,13 @@ class Bundle(LandsatBaseBundle):
         Returns the data in which this image was aquired.
         '''
         return self.get_sensor().get_attribute(olitirs.SENSOR_NAME)
+    def get_satellite_object(self):
+        '''
+        Returns the database object that represents this sensor.
+        '''
+        return driver.get_satellite_object(self.get_name())
+    def get_product_type_object(self):
+        return driver.get_product_type_object(self.get_sensor().get_attribute(olitirs.DATA_TYPE))
 
 if __name__ == '__main__':
     path = '/LUSTRE/MADMEX/eodata/oli_tirs/21048/2013/2013-04-15/l1t/'

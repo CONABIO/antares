@@ -36,7 +36,7 @@ def persist_bundle(bundle):
     actions = []
     session = SESSION_MAKER()
     try:
-        if not session.query(Product).filter(Product.path == bundle.get_database_object().path).count():
+        if not session.query(Product).filter(Product.product_path == bundle.get_database_object().product_path).count():
             for file_name in bundle.get_files():
                 actions.append(filesystem.InsertAction(file_name, destination))
             actions.append(database.InsertAction(
@@ -111,7 +111,7 @@ def find_datasets(start_date, end_date, sensor_id, product_id, cloud_cover, tile
     Get the rows in DB that fulfill the condition in the orm-query 
     '''
     session = SESSION_MAKER()
-    images_references_paths = session.query(RawProduct.path).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , Information.cloud_percentage <= cloud_cover, Information.grid_id == tile_id).all()
+    images_references_paths = session.query(RawProduct.product_path).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , Information.cloud_percentage <= cloud_cover, Information.grid_id == tile_id).all()
     # images_references_paths = session.query(RawProduct.path, Information.sensor).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , RawProduct.product_type == product_id, Information.sensor == sensor_id, Information.cloud_percentage <= cloud_cover).all()
     session.close()
     return [tuples[0] for tuples in images_references_paths]
@@ -119,7 +119,8 @@ def acquisitions_by_mapgrid_and_date(date, mapgrid_target, day_buffer):
     from sqlalchemy import Integer, func, Date
     from sqlalchemy.sql.expression import cast
     session = SESSION_MAKER()
-    images_paths = session.query(RawProduct.path, RapidEyeFootPrintsMexicoOld.code, RapidEyeFootPrintsMexicoOld.mapgrid2).distinct().join(RawProduct.information).filter(RawProduct.sensor_id == 1, RapidEyeFootPrintsMexicoOld.mapgrid2 == mapgrid_target, cast(RapidEyeFootPrintsMexicoOld.code, Integer) == cast(Information.grid_id, Integer), func.abs(cast(RawProduct.acquisition_date, Date) - date) < day_buffer).all()
+    images_paths = session.query(RawProduct.product_path, RapidEyeFootPrintsMexicoOld.code, RapidEyeFootPrintsMexicoOld.mapgrid2).distinct().join(RawProduct.information).filter(RawProduct.satellite_id == 1, RapidEyeFootPrintsMexicoOld.mapgrid2 == mapgrid_target, cast(RapidEyeFootPrintsMexicoOld.code, Integer) == cast(Information.grid_id, Integer), func.abs(cast(RawProduct.acquisition_date, Date) - date) < day_buffer).all()
+    #RawProduct.sensor_id
     return images_paths
 def get_sensor_object(sensor_name):
     session = SESSION_MAKER()
@@ -132,6 +133,11 @@ def get_sensor_object(sensor_name):
         session.close()
     return sensor_object 
 if __name__ == '__main__':
-    images_paths = acquisitions_by_mapgrid_and_date('2013-12-31', 15462121, 100)
-    print images_paths
-    print len(images_paths)
+    #images_paths = acquisitions_by_mapgrid_and_date('2013-12-31', 15462121, 100)
+    #print images_paths
+    #print len(images_paths)
+    from datetime import datetime
+    start_date = datetime.strptime('2015-01-01', "%Y-%m-%d")
+    end_date = datetime.strptime( '2015-12-31', "%Y-%m-%d")
+    image_paths = find_datasets(start_date, end_date, 12, 1, 10, '21048')
+    print image_paths

@@ -10,18 +10,17 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from sqlalchemy.orm import sessionmaker
+#from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.schema import Table, UniqueConstraint
 from sqlalchemy.sql.sqltypes import DateTime, Float, Boolean
 
 from madmex.configuration import SETTINGS
 
-
 BASE = declarative_base()
 
 ENGINE = create_engine(getattr(SETTINGS, 'ANTARES_DATABASE'))
 
-SESSION_MAKER = sessionmaker(ENGINE)
+#SESSION_MAKER = sessionmaker(ENGINE, autoflush=False)
 
 CAN_TRAIN_TABLE = Table(
     'can_train',
@@ -170,6 +169,11 @@ class Algorithm(BASE):
     description = Column(String)
     command = Column(String(30))
     is_supervised = Column(Boolean)
+class Unit(BASE):
+    __tablename__ = 'unit'
+    pk_id = Column(Integer, primary_key = True)
+    name  = Column(String)
+    unit = Column(String) 
 class Legend(BASE):
     '''
     This table holds the information for the Styled Layer Description. This
@@ -263,6 +267,9 @@ class Band(BASE):
     sensor = relationship('Sensor')
     name = Column(String, unique=True)
     abrevation = Column(String, unique=True)
+    #unit = Column(String)
+    unit_id = Column(Integer, ForeignKey('unit.pk_id'))
+    unit = relationship("Unit")
 class Description(BASE):
     '''
     This table is a link between organizations and products. It provides
@@ -396,11 +403,6 @@ class Command(BASE):
     command = Column(String, unique=True)
     queue = Column(String)
     host = relationship('Host')
-    
-
-    
-
-    
 
 class RapidEyeFootPrintsMexicoOld(BASE):
     # TODO: this is just an example of three columns in the table and two columns mapped
@@ -413,19 +415,19 @@ class RapidEyeFootPrintsMexicoOld(BASE):
     code = __table__.c.code
     mapgrid = __table__.c.mapgrid
     mapgrid2 = __table__.c.mapgrid2
-    
+
 
 
 def create_database():
     '''
-    This method creates the database model in the database engine.
+    #This method creates the database model in the database engine.
     '''
-    BASE.metadata.create_all(ENGINE)
+    #BASE.metadata.create_all(ENGINE)
 def delete_database():
     '''
-    This method deletes the database model in the database engine.
+    #This method deletes the database model in the database engine.
     '''
-    BASE.metadata.drop_all(ENGINE)
+    #BASE.metadata.drop_all(ENGINE)
 
 # a => \u00E1
 # e => \u00E9
@@ -434,15 +436,17 @@ def delete_database():
 # u => \u00FA
 
 
-def create_vector_tables(path_query):
-    klass = sessionmaker(bind=ENGINE)
-    session = klass()
-    file_open = open(path_query, 'r')
-    sql = " ".join(file_open.readlines())
-    session.execute(sql)
+#def create_vector_tables(path_query):
+    #klass = sessionmaker(bind=ENGINE)
+    #session = klass()
+    #file_open = open(path_query, 'r')
+    #sql = " ".join(file_open.readlines())
+    #session.execute(sql)
+    
+
 
 if __name__ == '__main__':
-    CREATE = 1
+    CREATE = 0
     if CREATE:
         # path_query = getattr(SETTINGS, 'RAPIDEYE_FOOTPRINTS_MEXICO_OLD')
         # create_vector_tables(path_query)
@@ -451,6 +455,8 @@ if __name__ == '__main__':
         print 'vector tables created'
         create_database()
         print 'database created'
+        #populate_database()
+        print 'database populated'
     else:
         delete_database()
         print 'database deleted'

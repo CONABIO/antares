@@ -77,6 +77,8 @@ class Command(BaseCommand):
     def method_two(self, options):
         '''
         This method replaces the incidences of the given list with the final list.
+        
+        This is a new part of the comment.
         '''
         path = options['path'][0]
         output = options['output'][0]
@@ -96,6 +98,20 @@ class Command(BaseCommand):
             new_array[found_idx] = FINAL_ARRAY[i]
         print output
         create_raster_from_reference(output, new_array.reshape(original_shape), path)
+ 
+    def method_three(self, options):
+        '''
+        This method replaces the incidences of the given list with the final list.
+        
+        This is a new part of the comment.
+        '''
+        path = options['path'][0]
+        output = options['output'][0]
+        
+        print path
+        
+        data_array = open_handle(path)
+        create_raster_from_reference(output, data_array, path)
         
         
     
@@ -108,8 +124,13 @@ class Command(BaseCommand):
         #print("--- %s seconds ---" % (time.time() - start_time))
         
         
+        #start_time = time.time()
+        #self.method_two(options)
+        #print("--- %s seconds ---" % (time.time() - start_time))
+        
         start_time = time.time()
-        self.method_two(options)
+        self.method_three(options)
         print("--- %s seconds ---" % (time.time() - start_time))
+        
         print 'Dataset was written.'
         

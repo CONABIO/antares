@@ -169,6 +169,14 @@ class BaseBundle(object):
                 product_type=self.get_product_type_object(),
                 type='raw'
                 )
+    def get_product_type_object(self):
+        '''
+        Subclasses must implement a method to create the information object
+        that will be persisted in the database.
+        '''
+        raise NotImplementedError(
+            'Subclasses must implement a method to create the information object'
+            'that will be persisted in the database.')
     def get_information_object(self):
         '''
         Subclasses must implement a method to create the information object

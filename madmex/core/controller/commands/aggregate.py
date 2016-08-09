@@ -6,22 +6,40 @@ Created on Jul 29, 2016
 
 from __future__ import unicode_literals
 
+import os
 import struct
 import sys
 
 import gdal
 import gdalconst
 import numpy
+import ogr
+import osr
 
 from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands.indexes import open_handle
 from madmex.mapper.data._gdal import create_empty_raster_from_reference, \
     create_raster_from_reference
+from madmex.util import get_base_name, create_file_name
 
 
 INITIAL_ARRAY = [[1,2,3,8,9,10,11,12,13,16,14,15,20,24,25,26],
-               [4,5,6,7,17,18,19,21,22,23,27,28,29,30,31]]
+               [4,5,6,7,17,18,19,21,22,23,27,28,29,30,31,32]]
 FINAL_ARRAY = [1,2]
+
+def dictionary_from_list(key_list, value_list):
+    new_dict = {}
+    for i in range(len(key_list)):
+        for j in range(len(key_list[i])):
+            new_dict[key_list[i][j]] = value_list[i]
+    return new_dict
+
+def replace_in_array(data_array, dictionary):
+    for key, value in dictionary.iteritems():
+        print key, value
+        data_array[(data_array==key)] = value
+    return data_array
+
 
 class Command(BaseCommand):
     '''
@@ -45,7 +63,7 @@ class Command(BaseCommand):
         print FINAL_ARRAY
         #data_array = open_handle(path)
         
-        outDataset = create_empty_raster_from_reference(output, path)
+        outDataset = create_empty_raster_from_reference(output + "one.tif", path)
         
         print 'back from dataset creation.'
         
@@ -95,8 +113,41 @@ class Command(BaseCommand):
             print(FINAL_ARRAY[i])
             new_array[found_idx] = FINAL_ARRAY[i]
         print output
-        create_raster_from_reference(output, new_array.reshape(original_shape), path)
+        create_raster_from_reference(output + "two.tif", new_array.reshape(original_shape), path)
         
+    def method_three(self, options):
+        '''
+        This method replaces the incidences of the given list with the final list.
+        '''
+        path = options['path'][0]
+        output = options['output'][0]
+        
+        print path
+        
+        data_array = open_handle(path)
+        
+        my_dictionary = dictionary_from_list(INITIAL_ARRAY, FINAL_ARRAY)
+        
+        to_vector_array = replace_in_array(data_array, my_dictionary)
+        
+        
+        
+        create_raster_from_reference(output + "three.tif", to_vector_array, path, gdal.GDT_Byte)
+        
+        
+    
+    def method_four(self, options):
+        '''
+        This method replaces the incidences of the given list with the final list.
+        '''
+        path = options['path'][0]
+        output = options['output'][0]
+        
+        print path
+        
+        data_array = open_handle(path)
+
+        create_raster_from_reference(output + "four.tif", data_array, path)
         
     
     
@@ -108,8 +159,17 @@ class Command(BaseCommand):
         #print("--- %s seconds ---" % (time.time() - start_time))
         
         
+        #start_time = time.time()
+        #self.method_two(options)
+        #print("--- %s seconds ---" % (time.time() - start_time))
+        #print 'Dataset was written.'
+        
         start_time = time.time()
-        self.method_two(options)
+        self.method_three(options)
         print("--- %s seconds ---" % (time.time() - start_time))
         print 'Dataset was written.'
         
+        #start_time = time.time()
+        #self.method_four(options)
+        #print("--- %s seconds ---" % (time.time() - start_time))
+        #print 'Dataset was written.'

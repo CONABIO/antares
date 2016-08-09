@@ -95,6 +95,8 @@ class Command(BaseCommand):
     def method_two(self, options):
         '''
         This method replaces the incidences of the given list with the final list.
+        
+        This is a new part of the comment.
         '''
         path = options['path'][0]
         output = options['output'][0]
@@ -113,6 +115,7 @@ class Command(BaseCommand):
             print(FINAL_ARRAY[i])
             new_array[found_idx] = FINAL_ARRAY[i]
         print output
+
         create_raster_from_reference(output + "two.tif", new_array.reshape(original_shape), path)
         
     def method_three(self, options):
@@ -125,6 +128,7 @@ class Command(BaseCommand):
         print path
         
         data_array = open_handle(path)
+
         
         my_dictionary = dictionary_from_list(INITIAL_ARRAY, FINAL_ARRAY)
         
@@ -162,11 +166,13 @@ class Command(BaseCommand):
         #start_time = time.time()
         #self.method_two(options)
         #print("--- %s seconds ---" % (time.time() - start_time))
+
         #print 'Dataset was written.'
         
         start_time = time.time()
         self.method_three(options)
         print("--- %s seconds ---" % (time.time() - start_time))
+        
         print 'Dataset was written.'
         
         #start_time = time.time()

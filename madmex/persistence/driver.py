@@ -145,7 +145,7 @@ def get_satellite_object(sensor_name):
 def get_product_type_object(product_type):
     session = SESSION_MAKER()
     try:
-        product_type_object = session.query(ProductType).filter(ProductType.name == product_type).first()
+        product_type_object = session.query(ProductType).filter(ProductType.short_name == product_type).first()
     except Exception:
         LOGGER.error('Not expected error in host insertion.')
         raise

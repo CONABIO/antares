@@ -129,7 +129,7 @@ class Bundle(LandsatBaseBundle):
         '''
         return driver.get_satellite_object(self.get_name())
     def get_product_type_object(self):
-        return driver.get_product_type_object(self.get_sensor().get_attribute(olitirs.DATA_TYPE))
+        return driver.get_product_type_object(self.get_sensor().get_attribute(olitirs.DATA_TYPE).upper())
 
 if __name__ == '__main__':
     path = '/LUSTRE/MADMEX/eodata/oli_tirs/21048/2013/2013-04-15/l1t/'
@@ -147,11 +147,12 @@ if __name__ == '__main__':
     print "sun"
     print bundle.get_sensor().get_attribute(olitirs.SUN_ELEVATION)
     print "data type"
-    print bundle.get_sensor().get_attribute(olitirs.DATA_TYPE)
+    print driver.get_product_type_object(bundle.get_sensor().get_attribute(olitirs.DATA_TYPE).upper())
     print bundle.get_raster().get_attribute(raster.FOOTPRINT)
     print "path metadata"
     print bundle.file_dictionary[_BASE % (bundle.get_letter(), bundle.get_mission(), 'MTL.txt')]
     print "row"
     print bundle.get_sensor().get_attribute(olitirs.ROW)
+    print driver.get_satellite_object(bundle.get_name())
 
     #print bundle.get_sensor().parser.metadata

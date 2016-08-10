@@ -10,7 +10,7 @@ from sqlalchemy.orm.session import sessionmaker
 from madmex.configuration import SETTINGS
 from madmex.persistence.database.connection import Unit, Organization, \
     Legend, Algorithm, Satellite, Band, Description, ProductType, Host, Command, \
-    Sensor, BASE, ENGINE
+    Sensor, BASE, ENGINE, HAS_SENSOR
 
 
 #from sqlalchemy import create_engine
@@ -1636,6 +1636,33 @@ def populate_database():
             'queue':'workers.q'        
         },
     ]
+    # Define dictionary to express many to many relationship between sensor and satellite.
+    has_sensor_array = {
+        'RE':['REIS'], 
+        'SENTINEL2A':['MSI'], 
+        'SPOT1':['HRV'], 
+        'SPOT2':['HRV'], 
+        'SPOT3':['HRV'], 
+        'SPOT4':['HRVIR','VEGETATION'], 
+        'SPOT5':['HRS','VEGETATION2'], 
+        'SPOT6':[], 
+        'SPOT7':[], 
+        'LS1':['MSS','RBV'], 
+        'LS2':['MSS','RBV'], 
+        'LS3':['MSS','RBV'], 
+        'LS4':['MSS','TM'], 
+        'LS5':['MSS','TM'], 
+        'LS6':[], 
+        'LS7':['ETM+'], 
+        'LS8':['OLI','TIRS'], 
+        'TERRA':['ASTER','CERES','MISR','MODIS','MOPITT'], 
+        'AQUA':['AMSR-E','MODIS','AMSU-A','HSB','CERES','AIRS'], 
+        'IRS-P6':[], 
+        'WV1':[], 
+        'WV2':[], 
+        'WV3':[]
+    }
+    
     units = [Unit(
         name=x['name'],
         unit=x['unit']) for x in units_array]
@@ -1704,6 +1731,18 @@ def populate_database():
         queue=x['queue']) for x in commands_array]
     session.add_all(commands)
     session.commit()
+    
+    
+    for key, values in has_sensor_array.items():
+        satellite = session.query(Satellite).filter(Satellite.short_name == key).first()
+        for value in values:
+            sensor = session.query(Sensor).filter(Sensor.name == value).first()
+            satellite.has_sensor.append(sensor)
+            session.add(satellite)
+            print satellite, sensor
+            if sensor:
+                session.commit()    
+    
     session.close_all()
 
 def create_database():

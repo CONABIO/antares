@@ -3,15 +3,18 @@ Created on Jun 2, 2016
 
 @author: agutierrez
 '''
+import datetime
+
+from sqlalchemy.orm.session import sessionmaker
+
+from madmex.configuration import SETTINGS
 from madmex.persistence.database.connection import Unit, Organization, \
     Legend, Algorithm, Satellite, Band, Description, ProductType, Host, Command, \
     Sensor, BASE, ENGINE
-from sqlalchemy.orm.session import sessionmaker
-from madmex.configuration import SETTINGS
+
+
 #from sqlalchemy import create_engine
-
 #ENGINE = create_engine(getattr(SETTINGS, 'ANTARES_DATABASE'))
-
 def populate_database():
     '''
     This method populates the database with the information that won't change
@@ -1203,98 +1206,165 @@ def populate_database():
     ]
     satellites_array = [
         {
-            'short_name':'RE1',
-            'name':'RapidEye 1 (Tachys)',
-            'sensor':'RE',
+            'short_name':'RE',
+            'name':'RapidEye',
+            'launching_date':'2008-08-29',
+            'terminated':None,
             'organization':'BlackBridge'
         },
         {
-            'short_name':'RE2',
-            'name':'RapidEye 2 (Mati)',
-            'sensor':'RE',
-            'organization':'BlackBridge'
+            'short_name':'SENTINEL2A',
+            'name':'Sentinel 2A',
+            'launching_date':'2015-06-23',
+            'terminated':None,
+            'organization':'Spot Image'
+        },                
+                        
+        {
+            'short_name':'SPOT1',
+            'name':'SPOT 1',
+            'launching_date':'1986-02-22',
+            'terminated':'1990-12-31',
+            'organization':'Spot Image'
         },
         {
-            'short_name':'RE3',
-            'name':'RapidEye 3 (Choma)',
-            'sensor':'RE',
-            'organization':'BlackBridge'
+            'short_name':'SPOT2',
+            'name':'SPOT 2',
+            'launching_date':'1990-01-22',
+            'terminated':'2009-07-01',
+            'organization':'Spot Image'
+        },                        
+        {
+            'short_name':'SPOT3',
+            'name':'SPOT 3',
+            'launching_date':'1993-09-26',
+            'terminated':'1997-11-14',
+            'organization':'Spot Image'
         },
         {
-            'short_name':'RE4',
-            'name':'RapidEye 4 (Choros)',
-            'sensor':'RE',
-            'organization':'BlackBridge'},
+            'short_name':'SPOT4',
+            'name':'SPOT 4',
+            'launching_date':'1998-03-24',
+            'terminated':'2013-07-01',
+            'organization':'Spot Image'
+        },                        
         {
-            'short_name':'RE5',
-            'name':'RapidEye 5 (Trochia)',
-            'sensor':'RE',
-            'organization':'BlackBridge'
-        },
-        {
-            'short_name':'SPOT-5',
+            'short_name':'SPOT5',
             'name':'SPOT 5',
-            'sensor':'SPOT-5',
+            'launching_date':'2002-05-04',
+            'terminated':'2015-03-31',
             'organization':'Spot Image'
         },
         {
-            'short_name':'SPOT-6',
-            'name':'SPOT-6',
-            'sensor':'SPOT-6',
+            'short_name':'SPOT6',
+            'name':'SPOT 6',
+            'launching_date':'2012-09-09',
+            'terminated':None,
             'organization':'Spot Image'
         },
         {
-            'short_name':'LS-4',
+            'short_name':'SPOT7',
+            'name':'SPOT 7',
+            'launching_date':'2014-06-30',
+            'terminated':None,
+            'organization':'Spot Image'
+        },
+        {
+            'short_name':'LS1',
+            'name':'Landsat 1',
+            'launching_date':'1972-07-23',
+            'terminated':'1978-01-06',
+            'organization':'NASA'
+        },
+        {
+            'short_name':'LS2',
+            'name':'Landsat 2',
+            'launching_date':'1975-01-22',
+            'terminated':'1982-02-25',
+            'organization':'NASA'
+        },
+        {
+            'short_name':'LS3',
+            'name':'Landsat 3',
+            'launching_date':'1978-03-05',
+            'terminated':'1983-03-31',
+            'organization':'NASA'
+        },                        
+        {
+            'short_name':'LS4',
             'name':'Landsat 4',
-            'sensor':'TM',
+            'launching_date':'1982-07-16',
+            'terminated':'1993-12-04',
             'organization':'NASA'
         },
         {
-            'short_name':'LS-5',
+            'short_name':'LS5',
             'name':'Landsat 5',
-            'sensor':'TM',
+            'launching_date':'1984-03-01',
+            'terminated':'2013-06-05',
             'organization':'NASA'
         },
         {
-            'short_name':'LS-6',
+            'short_name':'LS6',
             'name':'Landsat 6',
-            'sensor':'ETM+',
+            'launching_date':'1993-10-05',
+            'terminated':'1993-10-05',
             'organization':'NASA'
         },
         {
-            'short_name':'LS-7',
+            'short_name':'LS7',
             'name':'Landsat 7',
-            'sensor':'ETM+',
+            'launching_date':'1999-04-15',
+            'terminated':None,
             'organization':'NASA'
         },
         {
-            'short_name':'LS-8',
+            'short_name':'LS8',
             'name':'Landsat 8',
-            'sensor':'OLI_TIRS',
+            'launching_date':'2013-02-11',
+            'terminated':None,
             'organization':'NASA'
         },
         {
-            'short_name':'Terra',
-            'name':'Terra (EOS AM)',
-            'sensor':'MODIS',
+            'short_name':'TERRA',
+            'name':'Earth Observing System AM-1',
+            'launching_date':'2008-08-29',
+            'terminated':None,
             'organization':'NASA'
         },
         {
-            'short_name':'Aqua',
-            'name':'Aqua (EOS PM)',
-            'sensor':'MODIS',
+            'short_name':'AQUA',
+            'name':'Earth Observing System PM-1',
+            'launching_date':'2008-08-29',
+            'terminated':None,
             'organization':'NASA'
         },
         {
-            'short_name':'P6',
-            'name':'ResourceSat-1',
-            'sensor':'IRS-P6',
+            'short_name':'IRS-P6',
+            'name':'RESOURCESAT-1',
+            'launching_date':'2008-08-29',
+            'terminated':None,
             'organization':'ISRO'
         },
         {
-            'short_name':'WV02',
-            'name':'WV02',
-            'sensor':'WV02',
+            'short_name':'WV1',
+            'name':'World View 1',
+            'launching_date':'2007-09-18',
+            'terminated':None,
+            'organization':'Digital Globe'
+        },
+        {
+            'short_name':'WV2',
+            'name':'World View 2',
+            'launching_date':'2009-10-08',
+            'terminated':None,
+            'organization':'Digital Globe'
+        },
+        {
+            'short_name':'WV3',
+            'name':'World View 3',
+            'launching_date':'2014-08-13',
+            'terminated':None,
             'organization':'Digital Globe'
         },
     ]
@@ -1558,6 +1628,8 @@ def populate_database():
     satellites = [Satellite(
         name=x['name'],
         short_name=x['short_name'],
+        launching_date=datetime.datetime.strptime(x['launching_date'], "%Y-%m-%d"),
+        terminated=datetime.datetime.strptime(x['terminated'], "%Y-%m-%d") if x['terminated'] else None,
         organization=session.query(Organization).filter(
             Organization.name == x['organization']).first()) for x in satellites_array]
     session.add_all(satellites)

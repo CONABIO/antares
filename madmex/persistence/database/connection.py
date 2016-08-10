@@ -136,7 +136,6 @@ class Sensor(BASE):
     __tablename__ = 'sensor'
     pk_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
-    reference_name = Column(String)
     description = Column(String)
 class Satellite(BASE):
     '''

@@ -102,65 +102,101 @@ def populate_database():
     ]
     sensors_array = [
         {
-            'name':'RE',
-            'reference_name':'rapideye',
-            'description':'RapidEye'
+            'name':'AIRS',
+            'description':'Atmospheric Infrared Sounder'
         },
         {
-            'name':'SPOT-5',
-            'reference_name':None,
-            'description':'SPOT 5 HRG Multispectral.'
+            'name':'AMSR-E',
+            'description':'Advanced Microwave Scanning Radiometer-EOS'
         },
         {
-            'name':'SPOT-5-P',
-            'reference_name':None,
-            'description':'SPOT 5 HRG Panchromatic.'
+            'name':'AMSU-A',
+            'description':'Advanced Microwave Sounding Unit'
         },
         {
-            'name':'SPOT-6',
-            'reference_name':None,
-            'description':'SPOT-6'
+            'name':'ASTER',
+            'description':'Advanced Spaceborne Thermal Emission and Reflection Radiometer'
         },
         {
-            'name':'TM',
-            'reference_name':None,
+            'name':'BGIS2000',
             'description':'Thematic Mapper.'
         },
         {
+            'name':'CERES',
+            'description':'Clouds and the Earth\'s Radiant Energy System'
+        },
+        {
             'name':'ETM+',
-            'reference_name':None,
-            'description':'Enhanced Thematic Mapper Plus.'
+            'description':'Enhanced Thematic Mapper Plus'
+        },
+        {
+            'name':'HRG',
+            'description':'High Resolution Geometrical'
+        },
+        {
+            'name':'HRS',
+            'description':'High Resolution Visible'
+        },
+        {
+            'name':'HRVIR',
+            'description':'High Resolution Visible IR'
+        },
+        {
+            'name':'HSB',
+            'description':'Humidity Sounder for Brazil'
+        },
+        {
+            'name':'MISR',
+            'description':'Multi-angle Imaging SpectroRadiometer'
         },
         {
             'name':'MODIS',
-            'reference_name':None,
-            'description':'Moderate-resolution Imaging Spectroradiometer'
+            'description':'Moderate-Resolution Imaging Spectroradiometer'
         },
         {
-            'name':'AWF',
-            'reference_name':None,
-            'description':'AWF'
+            'name':'MOPITT',
+            'description':'Measurements of Pollution in the Troposphere'
         },
         {
-            'name':'L-3',
-            'reference_name':None,
-            'description':'L-3'
+            'name':'MSI',
+            'description':'Multi-spectral instrument'
         },
         {
-            'name':'WV02',
-            'reference_name':None,
-            'description':'WorldView-2'
+            'name':'MSS',
+            'description':'Multi-spectral scanner'
         },
         {
-            'name':'OLI_TIRS',
-            'reference_name':'oli_tirs',
-            'description':'OLI TIRS'
+            'name':'OLI',
+            'description':'Operational Land Imager'
         },
         {
-            'name':'IRS-P6',
-            'reference_name':None,
-            'description':'Indian Remote-Sensing Satellite P6'
+            'name':'RBV',
+            'description':'Return Beam Vidicons'
         },
+        {
+            'name':'REIS',
+            'description':'RapidEye Earth Imaging System'
+        },
+        {
+            'name':'TIRS',
+            'description':'Thermal Infrared Sensor'
+        },
+        {
+            'name':'TM',
+            'description':'Thematic Mapper'
+        },
+        {
+            'name':'VEGETATION',
+            'description':'Vegetation'
+        },
+        {
+            'name':'VEGETATION2',
+            'description':'Vegetation'
+        },
+        {
+            'name':'WV110',
+            'description':'World View'
+        }
     ]
     legends_array = [
         {
@@ -1612,7 +1648,6 @@ def populate_database():
     session.add_all(organizations)
     sensors = [Sensor(
         name=x['name'],
-        reference_name=x['reference_name'],
         description=x['description']) for x in sensors_array]
     session.add_all(sensors)
     legends = [Legend(

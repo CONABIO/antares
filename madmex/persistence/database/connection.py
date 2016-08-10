@@ -151,6 +151,8 @@ class Satellite(BASE):
     pk_id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     short_name = Column(String, unique=True)
+    launching_date = Column(DateTime())
+    terminated = Column(DateTime())
     organization_id = Column(Integer, ForeignKey('organization.pk_id'))
     organization = relationship('Organization')
     has_sensor = relationship(

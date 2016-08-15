@@ -6,13 +6,15 @@ Created on Aug 15, 2016
 
 from __future__ import unicode_literals
 
+import gdal
 import numpy
 
 from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands.indexes import open_handle
 from madmex.mapper.data._gdal import create_raster_from_reference
 
-NO_VALUE = -9999
+
+NO_DATA = 0
 
 class Command(BaseCommand):
     '''
@@ -50,24 +52,20 @@ class Command(BaseCommand):
             
         size = arrays[paths[0]].shape
         
-        result = numpy.full(size,NO_VALUE)
-        
-        print size
+
         start_time = time.time()
-        for i in range(size[0]):
-            for j in range(size[1]):
-                pixel = True
-                for p in range(1, len(paths)):
-                    pixel = pixel and (arrays[paths[0]][i][j] == arrays[paths[p]][i][j])
-                if pixel :
-                    result[i][j] = arrays[paths[0]][i][j]
+        result = numpy.full(size, NO_DATA)       
+        mask = numpy.equal(arrays[paths[0]],arrays[paths[1]])
+        for p in range(2, len(paths)):
+            mask = numpy.logical_and(mask, numpy.equal(arrays[paths[0]],arrays[paths[p]]))
+        result[mask] = numpy.array(arrays[paths[0]])[mask]
                     
         for path in paths:
             del arrays[path]
         print("--- %s seconds ---" % (time.time() - start_time))
         
         start_time = time.time()
-        create_raster_from_reference(output, result, paths[0])
+        create_raster_from_reference(output, result, paths[0], data_type=gdal.GDT_Byte)
         print("--- %s seconds ---" % (time.time() - start_time))            
                 
     

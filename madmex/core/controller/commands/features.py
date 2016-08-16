@@ -27,6 +27,18 @@ class Command(BaseCommand):
         path = options['path'][0]
         print path
         
-        data_array = open_handle(path)
+        #data_array = open_handle(path)
+        #for i in range(data_array.shape[0]):
+            #print 'band: %s' % (i + 1)
+            #print numpy.mean(data_array[i,:,:])
+            #print numpy.nanpercentile(data_array[i,:,:],25)
+            #print numpy.nanpercentile(data_array[i,:,:],50)
+            #print numpy.nanpercentile(data_array[i,:,:],75)
+            #print numpy.nanpercentile(data_array[i,:,:],90)
+            
+        import random
         
-        print numpy.unique(data_array)
+        
+        
+        
+        #print numpy.nanpercentile(data_array,25,axis=0)

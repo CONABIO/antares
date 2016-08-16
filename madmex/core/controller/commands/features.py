@@ -5,10 +5,15 @@ Created on Aug 8, 2016
 '''
 from __future__ import unicode_literals
 
+import datetime
+
 import numpy
 
 from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands.indexes import open_handle
+from madmex.mapper.bundle.rapideye import Bundle
+from madmex.mapper.data._gdal import get_geotransform
+from madmex.util import get_parent
 
 
 class Command(BaseCommand):
@@ -26,19 +31,23 @@ class Command(BaseCommand):
         print 'hello'
         path = options['path'][0]
         print path
+        features_array = []
+        data_array = open_handle(path)
+        for i in range(data_array.shape[0]):
+            print 'band: %s' % (i + 1)
+            features_array.append(numpy.mean(data_array[i,:,:]))
+            features_array.append(numpy.nanpercentile(data_array[i,:,:],25))
+            features_array.append(numpy.nanpercentile(data_array[i,:,:],50))
+            features_array.append(numpy.nanpercentile(data_array[i,:,:],75))
+            features_array.append(numpy.nanpercentile(data_array[i,:,:],90))
+        geotransform = get_geotransform(path)
         
-        #data_array = open_handle(path)
-        #for i in range(data_array.shape[0]):
-            #print 'band: %s' % (i + 1)
-            #print numpy.mean(data_array[i,:,:])
-            #print numpy.nanpercentile(data_array[i,:,:],25)
-            #print numpy.nanpercentile(data_array[i,:,:],50)
-            #print numpy.nanpercentile(data_array[i,:,:],75)
-            #print numpy.nanpercentile(data_array[i,:,:],90)
-            
-        import random
+        features_array.append(geotransform[0])
+        features_array.append(geotransform[3])
         
-        
-        
-        
-        #print numpy.nanpercentile(data_array,25,axis=0)
+        bundle = Bundle(get_parent(path))
+        features_array.append((bundle.get_aquisition_date() - datetime.datetime(1970, 1, 1)).total_seconds())
+
+
+        print features_array
+        print len(features_array)

@@ -405,6 +405,44 @@ class Command(BASE):
     command = Column(String, unique=True)
     queue = Column(String)
     host = relationship('Host')
+    
+class RapideyeFeatures(BASE):
+    '''
+    This table holds information on which command can be executed by each host.
+    '''
+    __tablename__ = 'rapideye_features'
+    pk_id = Column(Integer, primary_key=True)
+    band_1_quant_25 = Column(Float)
+    band_2_quant_25 = Column(Float)
+    band_3_quant_25 = Column(Float)
+    band_4_quant_25 = Column(Float)
+    band_5_quant_25 = Column(Float)
+    band_1_quant_50 = Column(Float)
+    band_2_quant_50 = Column(Float)
+    band_3_quant_50 = Column(Float)
+    band_4_quant_50 = Column(Float)
+    band_5_quant_50 = Column(Float)
+    band_1_quant_75 = Column(Float)
+    band_2_quant_75 = Column(Float)
+    band_3_quant_75 = Column(Float)
+    band_4_quant_75 = Column(Float)
+    band_5_quant_75 = Column(Float)
+    band_1_quant_90 = Column(Float)
+    band_2_quant_90 = Column(Float)
+    band_3_quant_90 = Column(Float)
+    band_4_mean = Column(Float)
+    band_5_mean = Column(Float)
+    band_1_mean = Column(Float)
+    band_2_mean = Column(Float)
+    band_3_mean = Column(Float)
+    band_4_mean = Column(Float)
+    band_5_mean = Column(Float)    
+    top = Column(Float)
+    left = Column(Float)
+    time = Column(Float)
+    footprint = Column(Integer)
+    path = Column(String, unique=True)
+
 
 class RapidEyeFootPrintsMexicoOld(BASE):
     # TODO: this is just an example of three columns in the table and two columns mapped

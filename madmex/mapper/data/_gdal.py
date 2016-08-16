@@ -159,7 +159,8 @@ def create_raster(image_path,
                                                        width,
                                                        height,
                                                        bands,
-                                                       data_type)
+                                                       data_type,
+                                                       ['COMPRESS=LZW'])
         if geotransform:
             data.SetGeoTransform(geotransform)
         if projection:

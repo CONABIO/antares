@@ -38,12 +38,6 @@ class Command(BaseCommand):
         
         import time
 
-
-        
-        
-        
-        print 'Dataset was written.'
-        
         for path in paths:
             start_time = time.time()
             arrays[path] = open_handle(path)
@@ -67,5 +61,3 @@ class Command(BaseCommand):
         start_time = time.time()
         create_raster_from_reference(output, result, paths[0], data_type=gdal.GDT_Byte)
         print("--- %s seconds ---" % (time.time() - start_time))            
-                
-    

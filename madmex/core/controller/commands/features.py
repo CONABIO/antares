@@ -12,7 +12,7 @@ from sqlalchemy.orm.session import sessionmaker
 
 from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands.indexes import open_handle
-from madmex.mapper.bundle.rapideye import Bundle
+from madmex.mapper.bundle.rapideye import Bundle, _IMAGE
 from madmex.mapper.data._gdal import get_geotransform
 from madmex.mapper.sensor.rapideye import TILE_ID
 from madmex.persistence.database.connection import RapideyeFeatures, ENGINE
@@ -37,7 +37,12 @@ class Command(BaseCommand):
         path = options['path'][0]
         print path
         features_array = []
-        data_array = open_handle(path)
+        
+        bundle = Bundle(path)
+        
+        raster_path = bundle.file_dictionary[_IMAGE]
+        
+        data_array = open_handle(raster_path)
         for i in range(data_array.shape[0]):
             print 'band: %s' % (i + 1)
             features_array.append(numpy.mean(data_array[i,:,:]))
@@ -45,13 +50,14 @@ class Command(BaseCommand):
             features_array.append(numpy.nanpercentile(data_array[i,:,:],50))
             features_array.append(numpy.nanpercentile(data_array[i,:,:],75))
             features_array.append(numpy.nanpercentile(data_array[i,:,:],90))
-        geotransform = get_geotransform(path)
+        geotransform = get_geotransform(raster_path)
         
         features_array.append(geotransform[0])
         features_array.append(geotransform[3])
         
-        raster_path = get_parent(path)
-        bundle = Bundle(raster_path)
+        
+        
+        
         features_array.append((bundle.get_aquisition_date() - datetime.datetime(1970, 1, 1)).total_seconds())
         tile_id =  bundle.get_sensor().get_attribute(TILE_ID)
         

@@ -412,6 +412,11 @@ class RapideyeFeatures(BASE):
     '''
     __tablename__ = 'rapideye_features'
     pk_id = Column(Integer, primary_key=True)
+    band_1_quant_10 = Column(Float)
+    band_2_quant_10 = Column(Float)
+    band_3_quant_10 = Column(Float)
+    band_4_quant_10 = Column(Float)
+    band_5_quant_10 = Column(Float)
     band_1_quant_25 = Column(Float)
     band_2_quant_25 = Column(Float)
     band_3_quant_25 = Column(Float)

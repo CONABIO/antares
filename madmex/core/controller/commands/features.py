@@ -45,19 +45,21 @@ class Command(BaseCommand):
         
         data_array = open_handle(raster_path)
         data_array = numpy.array(data_array)
-        data_array = data_array.ravel()
+        
         print data_array, len(data_array)
         
-        print data_array[data_array!=0], len(data_array[data_array!=0])
+        print len(data_array[data_array!=0])
         
         for i in range(data_array.shape[0]):
             print 'band: %s' % (i + 1)
-            
-            features_array.append(numpy.nanpercentile(data_array[i,:,:],25))
-            features_array.append(numpy.nanpercentile(data_array[i,:,:],50))
-            features_array.append(numpy.nanpercentile(data_array[i,:,:],75))
-            features_array.append(numpy.nanpercentile(data_array[i,:,:],90))
-            features_array.append(numpy.mean(data_array[i,:,:]))
+            band = data_array[i,:,:].ravel()
+            band = band[band!=0]
+            features_array.append(numpy.nanpercentile(band,10))
+            features_array.append(numpy.nanpercentile(band,25))
+            features_array.append(numpy.nanpercentile(band,50))
+            features_array.append(numpy.nanpercentile(band,75))
+            features_array.append(numpy.nanpercentile(band,90))
+            features_array.append(numpy.mean(band))
         geotransform = get_geotransform(raster_path)
         
         features_array.append(geotransform[0])
@@ -71,11 +73,11 @@ class Command(BaseCommand):
         tile_id =  bundle.get_sensor().get_attribute(TILE_ID)
         
 
-        features = RapideyeFeatures(band_1_quant_25=features_array[0],
-                         band_2_quant_25=features_array[5],
-                         band_3_quant_25=features_array[10],
-                         band_4_quant_25=features_array[15],
-                         band_5_quant_25=features_array[20],
+        features = RapideyeFeatures(band_1_quant_10=features_array[0],
+                         band_2_quant_10=features_array[5],
+                         band_3_quant_10=features_array[10],
+                         band_4_quant_10=features_array[15],
+                         band_5_quant_10=features_array[20],
                          band_1_quant_50=features_array[1],
                          band_2_quant_50=features_array[6],
                          band_3_quant_50=features_array[11],

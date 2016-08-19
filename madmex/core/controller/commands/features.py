@@ -18,6 +18,7 @@ from madmex.mapper.sensor.rapideye import TILE_ID
 from madmex.persistence.database.connection import RapideyeFeatures, ENGINE
 from madmex.util import get_parent
 
+NO_VALUE = 0
 
 class Command(BaseCommand):
     '''
@@ -43,19 +44,27 @@ class Command(BaseCommand):
         raster_path = bundle.file_dictionary[_IMAGE]
         
         data_array = open_handle(raster_path)
+        data_array = numpy.array(data_array)
+        data_array = data_array.ravel()
+        print data_array, len(data_array)
+        
+        print data_array[data_array!=0], len(data_array[data_array!=0])
+        
         for i in range(data_array.shape[0]):
             print 'band: %s' % (i + 1)
-            features_array.append(numpy.mean(data_array[i,:,:]))
+            
             features_array.append(numpy.nanpercentile(data_array[i,:,:],25))
             features_array.append(numpy.nanpercentile(data_array[i,:,:],50))
             features_array.append(numpy.nanpercentile(data_array[i,:,:],75))
             features_array.append(numpy.nanpercentile(data_array[i,:,:],90))
+            features_array.append(numpy.mean(data_array[i,:,:]))
         geotransform = get_geotransform(raster_path)
         
         features_array.append(geotransform[0])
         features_array.append(geotransform[3])
         
         
+        print features_array
         
         
         features_array.append((bundle.get_aquisition_date() - datetime.datetime(1970, 1, 1)).total_seconds())
@@ -92,6 +101,8 @@ class Command(BaseCommand):
                          time=features_array[27],
                          footprint=tile_id,
                          path=raster_path)
+        
+        
         klass = sessionmaker(bind=ENGINE, autoflush=False)
         session = klass()
         

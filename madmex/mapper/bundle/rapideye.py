@@ -138,15 +138,25 @@ class Bundle(BaseBundle):
         '''
         Creates a thumbnail for the scene in true color.
         '''
-        from subprocess import call
         parent_directory = get_parent(self.path)
-        thumnail_directory = create_file_name(parent_directory, 'thumbnail')
+        self.get_thumbnail_with_path(parent_directory)
+    def get_thumbnail_with_path(self, thumbnail_path):
+        '''
+        Creates a thumbnail for the scene in true color.
+        '''
+        from subprocess import call
+        print thumbnail_path
+        thumnail_directory = create_file_name(thumbnail_path, 'thumbnail')
+        print thumnail_directory
         create_directory_path(thumnail_directory)
-        parent_directory
         filename = self.file_dictionary[_BROWSE]
-        thumbnail = create_file_name(thumnail_directory, 'thumbnail.jpg')
+        
+        thumbnail = create_file_name(thumnail_directory, '%s.jpg' % get_base_name(filename))
+        
+        print thumbnail
         resize_command = ['/Library/Frameworks/GDAL.framework/Programs/gdal_translate', filename, '-of', 'JPEG', thumbnail]
         call(resize_command)
+
 
     # TODO: The next couple of methods can be abstracted in a base class and
     # inheritance.

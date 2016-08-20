@@ -60,6 +60,8 @@ class Command(BaseCommand):
             features_array.append(numpy.nanpercentile(band,75))
             features_array.append(numpy.nanpercentile(band,90))
             features_array.append(numpy.mean(band))
+            features_array.append(numpy.min(band) * 1.0)
+            features_array.append(numpy.max(band) * 1.0)
         geotransform = get_geotransform(raster_path)
         
         features_array.append(geotransform[0])

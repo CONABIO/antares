@@ -97,7 +97,7 @@ class Bundle(BaseBundle):
         Returns level of processing of this product.
         '''
         type_name = self.get_sensor().get_attribute(rapideye.PRODUCT_NAME)
-        return driver.get_type_object(type_name)
+        return driver.get_product_type_object(type_name)
     
     def get_aquisition_date(self):
         '''

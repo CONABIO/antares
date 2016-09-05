@@ -136,18 +136,11 @@ def get_sensor_object(sensor_name):
     finally:
         session.close()
     return sensor_object
-def get_type_object(type_name):
-    session = SESSION_MAKER()
-    try:
-        print type_name
-        type_object = session.query(ProductType).filter(ProductType.short_name == type_name).first()
-    except Exception:
-        LOGGER.error('Not expected error in host insertion.')
-        raise
-    finally:
-        session.close()
-    return type_object
 def get_satellite_object(satellite_name):
+    '''
+    Will query the database looking for a satellite object with the name given, in case 
+    the 
+    '''
     session = SESSION_MAKER()
     try:
         satellite_object = session.query(Satellite).filter(Satellite.name == satellite_name).first()
@@ -158,6 +151,10 @@ def get_satellite_object(satellite_name):
         session.close()
     return satellite_object
 def get_product_type_object(product_type):
+    '''
+    This method will query the database, and return the object representing the product 
+    type short name given. In case no object with that name None is returned.
+    '''
     session = SESSION_MAKER()
     try:
         product_type_object = session.query(ProductType).filter(ProductType.short_name == product_type).first()

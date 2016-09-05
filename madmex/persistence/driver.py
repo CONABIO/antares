@@ -18,7 +18,7 @@ from madmex.util import create_directory_path
 
 LOGGER = logging.getLogger(__name__)
 
-def persist_bundle(bundle):
+def persist_bundle(bundle, keep=False):
     '''
     This function persist a bundle in both the database and the file system. It
     is responsibility of the bundle to provide information about which files
@@ -37,13 +37,16 @@ def persist_bundle(bundle):
     session = SESSION_MAKER()
     try:
         if not session.query(Product).filter(Product.product_path == bundle.get_database_object().product_path).count():
-            for file_name in bundle.get_files():
-                actions.append(filesystem.InsertAction(file_name, destination))
+            if not keep:
+                LOGGER.debug('This process will move the files to a new destination.')
+                for file_name in bundle.get_files():
+                    actions.append(filesystem.InsertAction(file_name, destination))
+            else:
+                LOGGER.debug('This process will keep the original path for the files.')
             actions.append(database.InsertAction(
                 bundle.get_database_object(),
                 session)
                 )
-    
             def do_result(action):
                 '''
                 Lambda function to perform an action and return the result.

@@ -91,11 +91,29 @@ class Bundle(BaseBundle):
         if not self.sensor:
             self.sensor = rapideye.Sensor(self.file_dictionary[_METADATA])
         return self.sensor
+    
+    def get_product_type_object(self):
+        '''
+        Returns level of processing of this product.
+        '''
+        type_object = self.get_sensor().get_attribute(rapideye.PRODUCT_NAME)
+        return driver.get_satellite_object(type_object)
+    
     def get_aquisition_date(self):
         '''
         Returns the data in which this image was aquired.
         '''
         return self.get_sensor().get_attribute(rapideye.ACQUISITION_DATE)
+    def get_satellite_name(self):
+        '''
+        Returns the database object that represents this sensor.
+        '''
+        return self.get_sensor().get_attribute(rapideye.SATELLITE_NAME)
+    def get_satellite_object(self):
+        '''
+        Returns the database object that represents this sensor.
+        '''
+        return driver.get_satellite_object(self.get_satellite_name())
     def get_sensor_name(self):
         '''
         Returns the data in which this image was aquired.

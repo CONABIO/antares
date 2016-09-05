@@ -34,14 +34,18 @@ class Command(BaseCommand):
         be ingested.
         '''
         parser.add_argument('--path', nargs='*')
+        parser.add_argument('--keep', action='store_true')
     def handle(self, **options):
         '''
         This is the code that does the ingestion.
         '''
+        keep = options['keep']
+        
         for path in options['path']:
             bundle = _get_bundle_from_path(path)
             if bundle:
                 LOGGER.info('Directory %s is a %s bundle.', path, bundle.get_name())
-                persist_bundle(bundle)
+                persist_bundle(bundle, keep)
+                
             else:
                 LOGGER.info('No bundle was able to identify the directory: %s.', path)

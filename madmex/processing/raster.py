@@ -70,7 +70,7 @@ def calculate_ndvi_2(array, type_satellite):
     if type_satellite == LANDSAT_8:
         band_a = array[NIR_L8-1, :, :]
         band_b = array[RED_L8-1, :, :]
-        spectral_index = numexpr.evaluate("100.0 * (band_a - band_b) / (band_a + band_b)")
+        spectral_index = numexpr.evaluate("1.0 * (band_a - band_b) / (band_a + band_b)")
         #spectral_index[numpy.where(numpy.logical_or(math.frexp(band_a-band_b) - math.frexp(band_a + band_b) >= 1024 , band_a + band_b == 0))] == -9999
         spectral_index[numpy.where(numpy.logical_or(band_a == -9999, band_b == -9999))] = -9999
     return spectral_index
@@ -82,7 +82,7 @@ def calculate_sr(array, type_satellite):
     if type_satellite == LANDSAT_8:
         band_a = array[NIR_L8-1, :, :]
         band_b = array[RED_L8-1, :, :]
-    spectralindex = numexpr.evaluate("100.0 * (1.*band_a / band_b)")
+    spectralindex = numexpr.evaluate("1.0 * (1.*band_a / band_b)")
     return spectralindex
 def calculate_evi(array, type_satellite):
     '''
@@ -93,7 +93,7 @@ def calculate_evi(array, type_satellite):
         band_a = array[NIR_L8-1, :, :]
         band_b = array[RED_L8-1, :, :]
         band_c = array[BLUE_L8-1, :, :]
-    spectralindex = numexpr.evaluate("100.0 * (2.5 * (band_a - band_b) / (band_a + 6.0 * band_b - 7.5 * band_c + 1))")
+    spectralindex = numexpr.evaluate("1.0 * (2.5 * (band_a - band_b) / (band_a + 6.0 * band_b - 7.5 * band_c + 1))")
     return spectralindex
 def calculate_arvi(array, type_satellite):
     '''
@@ -104,7 +104,7 @@ def calculate_arvi(array, type_satellite):
         band_a = array[NIR_L8-1, :, :]
         band_b = array[RED_L8-1, :, :]
         band_c = array[BLUE_L8-1, :, :]
-    spectralindex = numexpr.evaluate("100 * (1.*(band_a - (2 * band_b - band_c)) / (band_a + (2 * band_b - band_c)))")
+    spectralindex = numexpr.evaluate("1.0 * (1.*(band_a - (2 * band_b - band_c)) / (band_a + (2 * band_b - band_c)))")
     return spectralindex
 def calculate_tasseled_caps(array, type_satellite):
     number_of_bands, height, width = array.shape

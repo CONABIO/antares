@@ -137,7 +137,11 @@ def get_base_name(filename):
     Get base name of a file without its suffix. 
     '''
     return os.path.splitext(os.path.basename(filename))[0]
-
+def get_basename_of_file(filename):
+    ''''
+    Get base name of file
+    '''
+    return os.path.basename(filename)
 def get_extension(filename):
     '''
     Get the extension for a file. 
@@ -156,9 +160,16 @@ def create_file_at_home(filename):
     '''
     return os.path.join(os.path.expanduser('~'), filename)
 
+def check_if_file_exists(filename):
+    return os.path.isfile(filename)
+
 if __name__ == '__main__':
     print get_base_name('/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/myawesomefile.ext.json')
     print get_extension('/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/myawesomefile.ext.json')
     print get_parent('/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/myawesomefile.ext.json')
     print get_parent('/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/')
     print get_parent('/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a')
+    print relative_path('/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-15/sr', '/LUSTRE/MADMEX/eodata/oli_tirs/21048/2015/2015-01-15/sr/LC80210482015015LGN00_MTL.txt' )
+    print get_basename_of_file('/LUSTRE/MADMEX/eodata/oli_tirs/21048/2015/2015-01-15/sr/LC80210482015015LGN00_MTL.txt')
+    print create_file_name('/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-15/sr', get_basename_of_file('/LUSTRE/MADMEX/eodata/oli_tirs/21048/2015/2015-01-15/sr/LC80210482015015LGN00_MTL.txt'))
+    print check_if_file_exists('/LUSTRE/MADMEX/eodata/oli_tirs/21048/2015/2015-01-15/sr/LC80210482015015LGN00_MTL.txt')

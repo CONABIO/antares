@@ -17,6 +17,7 @@ from madmex.util import get_parent, create_directory_path, create_file_name
 
 #_BASE = r'L%s[0-9]?[0-9]{3}[0-9]{3}_[0-9]{3}[0-9]{4}[0-9]{2}[0-9]{2}_%s'
 _BASE = r'L%s?%s.*_%s'
+_BASE_SR = r'lndsr.L%s?%s.*%s'
 
 class LandsatBaseBundle(BaseBundle):
     def __init__(self, path):
@@ -35,6 +36,7 @@ class LandsatBaseBundle(BaseBundle):
         to identify the files that this bundle represent.
         '''
         mission = self.get_mission()
+        processing_level = self.get_processing_level()
         letter = self.get_letter()
         if not self.file_dictionary:
             band_1 = _BASE % (letter, mission, 'B1.TIF')
@@ -53,6 +55,20 @@ class LandsatBaseBundle(BaseBundle):
             band_BQA = _BASE % (letter, mission, 'BQA.TIF')
             gcp = _BASE % (letter, mission, 'GCP.txt')
             metadata = _BASE % (letter, mission, 'MTL.txt')
+            band_1_sr_img= _BASE % (letter, mission, 'sr_band1_hdf.img')
+            band_2_sr_img= _BASE % (letter, mission, 'sr_band2_hdf.img')
+            band_3_sr_img= _BASE % (letter, mission, 'sr_band3_hdf.img')
+            band_4_sr_img= _BASE % (letter, mission, 'sr_band4_hdf.img')
+            band_5_sr_img= _BASE % (letter, mission, 'sr_band5_hdf.img')
+            band_6_sr_img= _BASE % (letter, mission, 'sr_band6_hdf.img')
+            band_7_sr_img= _BASE % (letter, mission, 'sr_band7_hdf.img')    
+            band_sr_hdf = _BASE_SR % (letter, mission, '.hdf$')
+            band_sr_hdf_xml = _BASE_SR% (letter, mission, '_hdf.xml')  
+            band_sr_cloud_img = _BASE % (letter, mission, 'sr_cloud_hdf.img')
+            band_sr_ipflag_img = _BASE % (letter, mission, 'sr_ipflag_hdf.img')
+            image_fmask = _BASE % (letter, mission, 'MTLFmask$')
+            image_fmask_hdr =  _BASE % (letter, mission, 'MTLFmask.hdr')
+            image_fmask_xml =  _BASE % (letter, mission, 'MTLFmask.aux.xml')
             self.file_dictionary = {}
             if mission == '5':
                 self.file_dictionary = {
@@ -79,7 +95,7 @@ class LandsatBaseBundle(BaseBundle):
                                         gcp:None,
                                         metadata:None
                                         }
-            if mission == '8':
+            if mission == '8' and processing_level == 'L1T':
                 self.file_dictionary = {
                                         band_1:None,
                                         band_2:None,
@@ -95,14 +111,42 @@ class LandsatBaseBundle(BaseBundle):
                                         band_BQA:None,
                                         metadata:None
                                         }
-        self._look_for_files()
+            if mission == '8' and processing_level == 'SR':
+                self.file_dictionary ={
+                                        band_1_sr_img:None,
+                                        band_2_sr_img:None,
+                                        band_3_sr_img:None,
+                                        band_4_sr_img:None,
+                                        band_5_sr_img:None,
+                                        band_6_sr_img:None,
+                                        band_7_sr_img:None,
+                                        band_sr_hdf:None,
+                                        band_sr_hdf_xml:None,
+                                        band_sr_cloud_img:None,
+                                        band_sr_ipflag_img:None,
+                                        metadata:None   
+                                        }
+            if mission == '8' and processing_level == 'FMASK':
+                self.file_dictionary={
+                                      image_fmask:None,
+                                      image_fmask_hdr:None,
+                                      image_fmask_xml:None,
+                                      metadata:None,
+                                      }
+        #self._look_for_files()
         #self.get_thumbnail()
     def get_mission(self):
         '''
         Implementers should override this method to provide access to the mission
         number of the particular Landsat implementation.
         '''
-        raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_mission() method.')
+        raise NotImplementedError('Subclasses of LandsatBaseBundle must provide a get_mission() method.')
+    def get_processing_level(self):
+        '''
+        Implementers should override this method to provide access to the processing level
+        of the particular Landsat implementation.
+        '''
+        raise NotImplementedError('Subclasses of LandsatBaseBundle must provide a get_processing_level() method.')
     def get_output_directory(self):
         '''
         Creates the output directory where the Landsat files will be persisted in

@@ -135,10 +135,21 @@ def get_sensor_object(sensor_name):
     finally:
         session.close()
     return sensor_object 
-def get_satellite_object(sensor_name):
+def get_type_object(type_name):
     session = SESSION_MAKER()
     try:
-        satellite_object = session.query(Satellite).filter(Satellite.name == sensor_name).first()
+        print type_name
+        type_object = session.query(ProductType).filter(ProductType.short_name == type_name).first()
+    except Exception:
+        LOGGER.error('Not expected error in host insertion.')
+        raise
+    finally:
+        session.close()
+    return type_object 
+def get_satellite_object(satellite_name):
+    session = SESSION_MAKER()
+    try:
+        satellite_object = session.query(Satellite).filter(Satellite.name == satellite_name).first()
     except Exception:
         LOGGER.error('Not expected error in host insertion.')
         raise

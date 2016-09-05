@@ -13,6 +13,7 @@ FORMAT = 'GTiff'
 _MISSION = '5'
 _NAME = 'Landsat 5'
 _LETTER = 'T'
+_PROCESSING_LEVEL = 'L1T'
 
 class Bundle(LandsatBaseBundle):
     '''
@@ -46,6 +47,14 @@ class Bundle(LandsatBaseBundle):
         In the case of landsat5  letter T
         '''
         return _LETTER
+    def get_processing_level(self):
+        '''
+        In the case of the satellite Landsat we have different levels of processing,
+        the case of this bundle is raw data
+        '''
+        return _PROCESSING_LEVEL
+    def get_datatype(self):
+        return self.get_processing_level()
 if __name__ == '__main__':
 
     bundle = Bundle('/LUSTRE/MADMEX/eodata/tm/10052/2000/2000-08-20/l1g')

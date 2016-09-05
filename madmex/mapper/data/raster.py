@@ -1,5 +1,3 @@
-
-
 '''
 Created on 10/06/2015
 
@@ -10,6 +8,7 @@ import logging
 import gdal, gdalconst
 import ogr, osr
 from madmex.mapper.base import BaseData, _get_attribute, put_in_dictionary
+from madmex.util import check_if_file_exists
 
 gdal.AllRegister()
 gdal.UseExceptions()
@@ -27,7 +26,11 @@ CREATE_WITH_PROJECTION = ['features_of_image_for_create', 'projection']
 CREATE_WITH_GEOTRANSFORM = ['features_of_image_for_create', 'geotransform']
 CREATE_WITH_GEOTRANSFORM_FROM_GCPS = ['features_of_image_for_create', 'create_using_geotransform_from_gcps']
 GDAL_CREATE_OPTIONS = ['gdal_create_options']
+CREATE_STACKING = ['features_of_image_for_create', 'raster_stacked']
+STACK_OFFSET = ['stack_offset']
+DATASET = ['dataset']
 GDAL_TIFF = 'GTiff'
+MEMORY = 'MEM'
 
 def default_options_for_create_raster_from_reference(reference_metadata):
     '''
@@ -36,15 +39,17 @@ def default_options_for_create_raster_from_reference(reference_metadata):
     '''
     geotransform = _get_attribute(GEOTRANSFORM, reference_metadata)
     projection = _get_attribute(PROJECTION, reference_metadata)
-    options = {'features_of_image_for_create': None, 'gdal_create_options': None}
+    options = {'features_of_image_for_create': None, 'gdal_create_options': None, 'dataset':None}
     options['features_of_image_for_create'] = {
         'projection': None,
         'geotransform': None,
-        'create_using_geotransform_from_gcps': None
+        'create_using_geotransform_from_gcps': None,
+        'raster_stacked':None
         }
     put_in_dictionary(options, CREATE_WITH_PROJECTION, projection)
     put_in_dictionary(options, CREATE_WITH_GEOTRANSFORM, geotransform)
     put_in_dictionary(options, CREATE_WITH_GEOTRANSFORM_FROM_GCPS, False)
+    put_in_dictionary(options, CREATE_STACKING, False)
     put_in_dictionary(options, GDAL_CREATE_OPTIONS, [])
     return options
 def new_options_for_create_raster_from_reference(reference_metadata, new_option, value, options):
@@ -58,7 +63,7 @@ def new_options_for_create_raster_from_reference(reference_metadata, new_option,
         put_in_dictionary(options, new_option, value)
         return options
     put_in_dictionary(options, new_option, value)
-def create_raster_tiff_from_reference(reference_metadata, output_file, array, options={}, data_type=gdal.GDT_Float32):
+def create_raster_tiff_from_reference(reference_metadata, output_file, array = None, options = {}, data_type = gdal.GDT_Float32):
     '''
     This method creates a raster tif from a given tif file to be used as a
     reference. From the reference file, data such as , the
@@ -66,34 +71,61 @@ def create_raster_tiff_from_reference(reference_metadata, output_file, array, op
     '''
     if not options:
         options = default_options_for_create_raster_from_reference(reference_metadata)
-    driver = gdal.GetDriverByName(str(GDAL_TIFF))
-    shape = array.shape
-    if len(shape) == 2:
-        bands = 1
-        width = shape[1]
-        height = shape[0]
+    if output_file == '':
+        LOGGER.info('Creating raster in memory')
+        driver = gdal.GetDriverByName(str(MEMORY))
     else:
-        bands = shape[0]   
-        width = shape[2]
-        height = shape[1]
-    gdal_options = _get_attribute(GDAL_CREATE_OPTIONS, options)
-    data = driver.Create(output_file, width, height, bands, data_type, gdal_options)
-    projection = _get_attribute(CREATE_WITH_PROJECTION, options)
-    if _get_attribute(CREATE_WITH_GEOTRANSFORM_FROM_GCPS, options) is True:
-        geotransform = _get_attribute(GEOTRANSFORM_FROM_GCPS, reference_metadata)
+        LOGGER.info('Creating raster tif from reference in %s' % output_file)
+        driver = gdal.GetDriverByName(str(GDAL_TIFF))
+    if array is None and  _get_attribute(DATA_SHAPE, options) is None:
+        LOGGER.info('Error in creating raster, at least one of array or DATA_SHAPE attribute needs to be defined when calling this function')
+        return None
     else:
-        geotransform = _get_attribute(CREATE_WITH_GEOTRANSFORM, options)
-    if projection:
-        data.SetProjection(projection)
-    if geotransform:
-        data.SetGeoTransform(geotransform)
-    if bands != 1:
-        for band in range(bands):
-            data.GetRasterBand(band + 1).WriteArray(array[band, :, :])
-    else:
-        data.GetRasterBand(1).WriteArray(array)
-    print('Created raster in %s' % output_file)
-
+        if array is not None:
+            shape = array.shape
+            if len(shape) == 2:
+                bands = 1
+                width = shape[1]
+                height = shape[0]
+            else:
+                bands = shape[0]   
+                width = shape[2]
+                height = shape[1]
+        else:
+            if _get_attribute(DATA_SHAPE, options) is not None:
+                width, height, bands = _get_attribute(DATA_SHAPE, options)
+        gdal_options = _get_attribute(GDAL_CREATE_OPTIONS, options)
+        if _get_attribute(CREATE_STACKING, options) is True:
+            width, height, bands = _get_attribute(DATA_SHAPE, options)
+        projection = _get_attribute(CREATE_WITH_PROJECTION, options)
+        if _get_attribute(CREATE_WITH_GEOTRANSFORM_FROM_GCPS, options) is True:
+            geotransform = _get_attribute(GEOTRANSFORM_FROM_GCPS, reference_metadata)
+        else:
+            geotransform = _get_attribute(CREATE_WITH_GEOTRANSFORM, options)
+        #if  _get_attribute(CREATE_STACKING, options) is False:
+        if _get_attribute(DATASET, options) is None:
+            data = driver.Create(output_file, width, height, bands, data_type, gdal_options)
+            if projection :
+                data.SetProjection(projection)
+            if geotransform:
+                data.SetGeoTransform(geotransform)
+        else:
+            data = _get_attribute(DATASET, options)  
+        if bands != 1 and array != None:
+            for band in range(bands):
+                if  _get_attribute(CREATE_STACKING, options) is False:
+                    data.GetRasterBand(band + 1).WriteArray(array[band, :, :])
+                    LOGGER.info('Created raster in %s' % output_file)
+                else:
+                    data.GetRasterBand(_get_attribute(STACK_OFFSET, options)+1).WriteArray(array)
+        else:
+            if array != None:
+                #data.SetNoDataValue(-9999)
+                data.GetRasterBand(1).WriteArray(array)
+                LOGGER.info('Created raster in %s' % output_file)
+            else:
+                if _get_attribute(DATASET, options) is None:
+                    return data
 class Data(BaseData):
     '''
     This is a class to handle raster data. It might be convenient to use
@@ -107,6 +139,7 @@ class Data(BaseData):
         super(Data, self).__init__()
         self.image_path = image_path
         self.metadata = {}
+        self.gdal_format = gdal_format
         try:
             LOGGER.info("Extracting metadata of driver %s" % gdal_format)
             self.driver = gdal.GetDriverByName(str(gdal_format))
@@ -148,6 +181,18 @@ class Data(BaseData):
         put_in_dictionary(self.metadata, DATA_SHAPE, (self.data_file.RasterXSize, self.data_file.RasterYSize, self.data_file.RasterCount))
         put_in_dictionary(self.metadata, FOOTPRINT, self._get_footprint())
         put_in_dictionary(self.metadata, GEOTRANSFORM_FROM_GCPS, self.gcps_to_geotransform())
+    def _extract_hdf_raster_properties(self, sr_band):
+        '''
+        Extract some raster info from the hdf raster image file using gdal functions.
+        '''
+        self.subdatasets = self.data_file.GetSubDatasets()
+        subdataset = [(x,y) for (x,y) in self.subdatasets if x.endswith(sr_band)]
+        #data_file_dummy =  self.data_file
+        #self.hdf_data_file = self._open_hdf_file(subdataset[0][0])
+        #self.data_file = self.hdf_data_file
+        self.data_file = self._open_hdf_file_subdataset(subdataset[0][0])
+        self._extract_raster_properties()
+        #self.data_file = data_file_dummy
     def _get_footprint(self):
         '''
         Returns the extent of the raster image.
@@ -168,7 +213,16 @@ class Data(BaseData):
             spacial_reference.ImportFromWkt(self.get_attribute(PROJECTION))
             return self._footprint_helper(ring, spacial_reference)
         except:
-            LOGGER.info('Unable to get footprint of %s', self.image_path)
+            LOGGER.info('Unable to get footprint of %s', self.image_path) 
+    def _open_hdf_file_subdataset(self, subdataset, mode=gdalconst.GA_ReadOnly):
+        '''
+        Open the raster image file with gdal.
+        '''
+        try:
+            LOGGER.debug('Open raster file: %s' % subdataset)
+            return gdal.Open(subdataset, mode)
+        except RuntimeError:
+            LOGGER.error('Unable to open raster file %s', self.image_path)
     def read_data_file_as_array(self):
         '''
         Read image data from already opened image
@@ -182,6 +236,29 @@ class Data(BaseData):
                 self.data_array = self.data_file.ReadAsArray()
                 self.close()
         return self.data_array
+    def read_hdf_data_file_as_array(self, tuple_of_files):
+        '''
+        Read image data from hdf file of already opened image
+        '''
+        #if self.data_file != None:
+        self._helper_read_hdf_data_file_as_array(tuple_of_files)
+        self.close()
+        return self.hdf_data_array
+    def _helper_read_hdf_data_file_as_array(self, tuple_of_files):
+        import numpy
+        counter=0
+        subdatasets = [(x,y) for (x,y) in self.subdatasets if x.endswith(tuple_of_files)]
+        z = len(tuple_of_files)
+        x,y, z_useless = self.get_attribute(DATA_SHAPE)
+        self.hdf_data_array = numpy.zeros((z,y,x))
+        for subdataset in subdatasets:
+            LOGGER.info('Reading subdataset %s %s into memory' %( str(subdataset[0]), str(subdataset[1])))
+            data_file = self._open_hdf_file_subdataset(subdataset[0])
+            #x, y, z = data_file.RasterXSize, data_file.RasterYSize, 6
+            self.hdf_data_array[counter,:,:] = data_file.ReadAsArray()
+            counter+=1
+        LOGGER.info('Shape of hdf data array: %s' % str(self.hdf_data_array.shape))
+        #return self.hdf_data_array
     def gcps(self):
         '''
         Get ground control points from image.

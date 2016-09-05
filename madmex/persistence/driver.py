@@ -38,8 +38,6 @@ def persist_bundle(bundle, keep=False):
     try:
         if not session.query(Product).filter(Product.product_path == bundle.get_database_object().product_path).count():
 
-            #for file_name in bundle.get_files():
-                #actions.append(filesystem.InsertAction(file_name, destination))
             if not keep:
                 LOGGER.debug('This process will move the files to a new destination.')
                 for file_name in bundle.get_files():

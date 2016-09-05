@@ -96,8 +96,8 @@ class Bundle(BaseBundle):
         '''
         Returns level of processing of this product.
         '''
-        type_object = self.get_sensor().get_attribute(rapideye.PRODUCT_NAME)
-        return driver.get_satellite_object(type_object)
+        type_name = self.get_sensor().get_attribute(rapideye.PRODUCT_NAME)
+        return driver.get_type_object(type_name)
     
     def get_aquisition_date(self):
         '''
@@ -108,7 +108,7 @@ class Bundle(BaseBundle):
         '''
         Returns the database object that represents this sensor.
         '''
-        return self.get_sensor().get_attribute(rapideye.SATELLITE_NAME)
+        return rapideye.SATELLITE_NAME
     def get_satellite_object(self):
         '''
         Returns the database object that represents this sensor.

@@ -216,34 +216,4 @@ class Command(BaseCommand):
                                 create_raster_tiff_from_reference(extents_dictionary, output_file_stack_indexes_list[j], array, options_to_create_empty_indexes_stacks)
                         array = None
                         
-                    subset_counter+=1
-                
-                
-
-        '''
-        product = 9 #this is data type l1t
-        image_paths = find_datasets(start_date, end_date, satellite, product, cloud, gridid)
-        print len(image_paths)
-        l1t_image_paths = []
-        sr_image_paths_l1t =[]
-        fmask_image_paths_l1t = []
-        for path in l1t_image_paths:
-            bundle = _get_bundle_from_path(path)
-            if bundle and bundle.get_processing_level() == 'L1T':
-                LOGGER.info('Directory %s is a %s bundle and data type is %s', path, bundle.get_name(), bundle.get_datatype())
-                sr_image_paths_l1t = [x.replace('l1t','sr') for x in l1t_image_paths ]
-                fmask_image_paths_l1t =[x.replace('l1t', 'fmask') for x in l1t_image_paths]
-            else:
-                if not bundle:
-                    LOGGER.info('No bundle was able to identify the directory: %s.', path)
-                if not bundle.get_datatype() == 'L1T':
-                    LOGGER.info('The folder %s was dropped because of data type of metadata', bundle.path)
-        
-        print len(sr_image_paths_l1t)
-        print len(fmask_image_paths_l1t)
-        
-        #we need to check if the directories sr_image_paths_l1t, fmask_image_paths_l1t exists
-       '''
-if __name__ == '__main__':
-    calculate_indexes(None)
-    
+                    subset_counter+=1   

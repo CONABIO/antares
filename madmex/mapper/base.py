@@ -175,7 +175,7 @@ class BaseBundle(object):
         that will be persisted in the database.
         '''
         raise NotImplementedError(
-            'Subclasses must implement a method to create the information object'
+            'Subclasses must implement a method to create the information object '
             'that will be persisted in the database.')
     def get_information_object(self):
         '''
@@ -207,17 +207,21 @@ class BaseBundle(object):
         return [file_path for file_path in self.file_dictionary.itervalues() if file_path]
 
     def get_metadata_file(self):
-        raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_metadata_file() method.')
+        raise NotImplementedError('Subclasses of BaseBundle must provide a get_metadata_file() method.')
     def get_format_file(self):
-        raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_format_file() method.')
+        raise NotImplementedError('Subclasses of BaseBundle must provide a get_format_file() method.')
     def get_sensor_module(self):
-        raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_sensor_module() method.')
+        raise NotImplementedError('Subclasses of BaseBundle must provide a get_sensor_module() method.')
+    def get_satellite_name(self):
+        raise NotImplementedError('Subclasses of BaseBundle must provide a get_satellite_name() method.')
+    def get_satellite_object(self):
+        raise NotImplementedError('Subclasses of BaseBundle must provide a get_satellite_object() method.')
     def get_sensor_name(self):
-        raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_sensor_name() method.')
+        raise NotImplementedError('Subclasses of BaseBundle must provide a get_sensor_name() method.')
     def get_sensor_object(self):
-        raise NotImplementedError('Subclasses of SpotBaseBundle must provide a get_sensor_object() method.')
+        raise NotImplementedError('Subclasses of BaseBundle must provide a get_sensor_object() method.')
     def preprocess(self):
-        raise NotImplementedError('Subclasses of SpotBaseBundle must provide a preprocess() method.')
+        raise NotImplementedError('Subclasses of BaseBundle must provide a preprocess() method.')
 class BaseData(object):
     '''
     Implementers of this class will represent a Data object from the outside

@@ -9,6 +9,7 @@ from datetime import datetime
 from madmex.mapper.base import BaseSensor
 import madmex.mapper.parser.rapideye as rapideye
 
+SATELLITE_NAME = 'RapidEye'
 SENSOR_NAME = ['sensor_name']
 METADATA_EXT = 'xml'
 PRODUCT_NAME = [

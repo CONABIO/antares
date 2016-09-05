@@ -108,13 +108,14 @@ def get_host_from_command(command):
     finally:
         session.close()
     return hosts 
-def find_datasets(start_date, end_date, sensor_id, product_id, cloud_cover, tile_id):
+def find_datasets(start_date, end_date, satellite_id, product_id, cloud_cover, tile_id):
     '''
     Given the parameters of the function find_datasets perform a sqlalchemy orm-query:
     Get the rows in DB that fulfill the condition in the orm-query 
     '''
     session = SESSION_MAKER()
-    images_references_paths = session.query(RawProduct.product_path).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , Information.cloud_percentage <= cloud_cover, Information.grid_id == tile_id).all()
+    images_references_paths = session.query(RawProduct.product_path).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , RawProduct.product_type_id == product_id, RawProduct.satellite_id == satellite_id, Information.cloud_percentage <= cloud_cover, Information.grid_id == tile_id).all()
+    
     # images_references_paths = session.query(RawProduct.path, Information.sensor).join(RawProduct.information).filter(tuple_(RawProduct.acquisition_date, RawProduct.acquisition_date).op('overlaps')(tuple_(start_date, end_date)) , RawProduct.product_type == product_id, Information.sensor == sensor_id, Information.cloud_percentage <= cloud_cover).all()
     session.close()
     return [tuples[0] for tuples in images_references_paths]
@@ -128,13 +129,13 @@ def acquisitions_by_mapgrid_and_date(date, mapgrid_target, day_buffer):
 def get_sensor_object(sensor_name):
     session = SESSION_MAKER()
     try:
-        sensor_object = session.query(Sensor).filter(Sensor.reference_name == sensor_name).first()
+        sensor_object = session.query(Sensor).filter(Sensor.name == sensor_name).first()
     except Exception:
         LOGGER.error('Not expected error in host insertion.')
         raise
     finally:
         session.close()
-    return sensor_object 
+    return sensor_object
 def get_type_object(type_name):
     session = SESSION_MAKER()
     try:
@@ -145,7 +146,7 @@ def get_type_object(type_name):
         raise
     finally:
         session.close()
-    return type_object 
+    return type_object
 def get_satellite_object(satellite_name):
     session = SESSION_MAKER()
     try:
@@ -155,7 +156,7 @@ def get_satellite_object(satellite_name):
         raise
     finally:
         session.close()
-    return satellite_object 
+    return satellite_object
 def get_product_type_object(product_type):
     session = SESSION_MAKER()
     try:
@@ -165,8 +166,7 @@ def get_product_type_object(product_type):
         raise
     finally:
         session.close()
-    return product_type_object 
-    
+    return product_type_object
 if __name__ == '__main__':
     #images_paths = acquisitions_by_mapgrid_and_date('2013-12-31', 15462121, 100)
     #print images_paths
@@ -174,5 +174,5 @@ if __name__ == '__main__':
     from datetime import datetime
     start_date = datetime.strptime('2015-01-01', "%Y-%m-%d")
     end_date = datetime.strptime( '2015-12-31', "%Y-%m-%d")
-    image_paths = find_datasets(start_date, end_date, 12, 1, 10, '21048')
+    image_paths = find_datasets(start_date, end_date, 17, 4, 10, '21048')
     print image_paths

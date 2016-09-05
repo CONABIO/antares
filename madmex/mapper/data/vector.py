@@ -21,37 +21,59 @@ class Data(BaseData):
     '''
     def __init__(self, image_path, ogr_format):
         super(Data, self).__init__()
-        self.image_path = image_path
+        self.image_path = image_path.encode('utf-8')
         self.footprint = None
         self.layer = None
         try:
+            ogr_format = ogr_format.encode('utf-8')
             self.driver = ogr.GetDriverByName(ogr_format)
         except AttributeError:
             LOGGER.error('Cannot access driver for format %s', ogr_format)
+        self.data_file = self._open_file()
+        if self.data_file is None:
+            LOGGER.info('Unable to open file: %s' % self.image_path)
+        else:
+            LOGGER.info('Extracting metadata: footprint and layer of %s' % self.image_path)
+            self._extract_metadata()
+        
     def _open_file(self):
         '''
         Open the vector image file with ogr.
         '''
         try:
+            LOGGER.debug('Open vector file: %s' % self.image_path)
             return self.driver.Open(self.image_path, 0)  # 0 means read-only. 1 means writeable.
         except Exception:
             LOGGER.error('Unable to open shape file: %s', self.image_path)
-    def _extract_metadata(self, data):
+    def _extract_metadata(self):
         '''
         Extract metadata from the raster image file using gdal functions.
         '''
-        self.layer = data.GetLayer()
-        self.footprint = self._get_footprint()
+        if  self.layer is None:
+            self.layer = self.data_file.GetLayer()
+        if self.footprint is None:
+            self.footprint = self._get_footprint()
     def _get_footprint(self):
         '''
         Returns the extent of the shape image.
         '''
-        extent = self.layer.GetExtent()
+        self.extent = self.layer.GetExtent()
         ring = ogr.Geometry(ogr.wkbLinearRing)
-        ring.AddPoint_2D(extent[0], extent[2])
-        ring.AddPoint_2D(extent[1], extent[2])
-        ring.AddPoint_2D(extent[1], extent[3])
-        ring.AddPoint_2D(extent[0], extent[3])
+        ring.AddPoint_2D(self.extent[0], self.extent[2])
+        ring.AddPoint_2D(self.extent[1], self.extent[2])
+        ring.AddPoint_2D(self.extent[1], self.extent[3])
+        ring.AddPoint_2D(self.extent[0], self.extent[3])
         ring.CloseRings()
         spacial_reference = self.layer.GetSpatialRef()
         return self._footprint_helper(ring, spacial_reference)
+    
+if __name__ == '__main__':
+    image = '/Users/erickpalacios/Documents/CONABIO/MADMEXdata/eodata/footprints/country_mexico_2012.shp'
+    FORMAT =  'ESRI Shapefile'
+    data_class = Data(image, FORMAT)
+    print data_class.layer
+    print data_class.footprint
+    
+    
+    
+    

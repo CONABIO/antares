@@ -1,29 +1,28 @@
 '''
-Created on Aug 26, 2015
+Created on 25/08/2016
 
-@author: agutierrez
+@author: erickpalacios
 '''
-from __future__ import unicode_literals
-
 from madmex.mapper.bundle._landsat import LandsatBaseBundle, _BASE
-from madmex.mapper.sensor import olitirs
-from madmex.persistence.database.connection import Information
 from madmex.mapper.data import raster
-from madmex.configuration import SETTINGS
-from madmex.util import get_path_from_list, get_basename_of_file,\
-    create_file_name
+from madmex.mapper.sensor import olitirs
 from madmex.persistence import driver
+from madmex.persistence.database.connection import Information
+from madmex.configuration import SETTINGS
+from madmex.util import get_path_from_list, create_file_name, relative_path,\
+    get_basename_of_file
+import logging
 
-FORMAT = 'GTiff'
+FORMAT = 'ENVI'
 _MISSION = '8'
 _NAME = 'Landsat 8' #Defined according to key name of satellites_array in populate.py module
 _LETTER = 'C'
-_PROCESSING_LEVEL = 'L1T'
+_PROCESSING_LEVEL = 'FMASK'
+LOGGER = logging.getLogger(__name__)
+
 class Bundle(LandsatBaseBundle):
     '''
-    A class to create a memory representation of a Landsat 5 image including its
-    metadata files. It is also responsible of creating a database object to be
-    persisted.
+    classdocs
     '''
     def __init__(self, path):
         '''
@@ -35,11 +34,11 @@ class Bundle(LandsatBaseBundle):
         self.sensor = None
         self.raster = None
         self.output_directory = None
-    def get_format_file(self):
-        return FORMAT
-    def get_sensor_module(self):
-        return olitirs
-
+    def get_name(self):
+        '''
+        Returns the name of the bundle.
+        '''
+        return 'Landsat 8 fmask'
     def get_mission(self):
         '''
         Returns the mission for this particular implementation of the landsat
@@ -53,7 +52,7 @@ class Bundle(LandsatBaseBundle):
         '''
         return _PROCESSING_LEVEL
     def get_datatype(self):
-        return self.get_processing_level()
+        return self.get_sensor().get_attribute(olitirs.DATA_TYPE).upper()
     def get_letter(self):
         '''
         Files after 2012 have a letter to distinguish the different sensors
@@ -66,7 +65,7 @@ class Bundle(LandsatBaseBundle):
         Lazily creates and returns a raster object for this bundle.
         '''
         if self.raster is None:
-            self.raster = raster.Data(self.file_dictionary[_BASE % (self.get_letter(), self.get_mission(), 'B1.TIF')], self.FORMAT)
+            self.raster = raster.Data(self.file_dictionary[_BASE % (self.get_letter(), self.get_mission(), 'MTLFmask$')], self.FORMAT)
         return self.raster
     def get_sensor(self):
         '''
@@ -75,11 +74,21 @@ class Bundle(LandsatBaseBundle):
         if not self.sensor:
             self.sensor = olitirs.Sensor(self.file_dictionary[_BASE % (self.get_letter(), self.get_mission(), 'MTL.txt')])
         return self.sensor
-    def get_name(self):
+    def get_aquisition_date(self):
         '''
-        Returns the name of the bundle.
+        Returns the data in which this image was aquired.
         '''
-        return _NAME
+        return self.get_sensor().get_attribute(olitirs.ACQUISITION_DATE)
+    def get_satellite_object(self):
+        '''
+        Returns the database object that represents this sensor.
+        '''
+        return driver.get_satellite_object(_NAME)
+    def get_product_type_object(self):
+        '''
+        Defined according to the attribute shortname of the table product_type
+        '''
+        return driver.get_product_type_object('fmask')
     def get_information_object(self):
         row = self.get_sensor().get_attribute(olitirs.ROW)
         path = self.get_sensor().get_attribute(olitirs.PATH)
@@ -105,9 +114,9 @@ class Bundle(LandsatBaseBundle):
             destination = getattr(SETTINGS, 'TEST_FOLDER')
             sensor_name = self.get_sensor().get_attribute(olitirs.SENSOR_NAME)
             grid_id = unicode(path + row)
-            year = self.get_sensor().get_attribute(olitirs.ACQUISITION_DATE).strftime('%Y')
-            date = self.get_sensor().get_attribute(olitirs.ACQUISITION_DATE).strftime('%Y-%m-%d')
-            product_name = self.get_sensor().get_attribute(olitirs.DATA_TYPE)
+            year = self.get_aquisition_date().strftime('%Y')
+            date = self.get_aquisition_date().strftime('%Y-%m-%d')
+            product_name = _PROCESSING_LEVEL.lower()
             self.output_directory = get_path_from_list([
                 destination,
                 sensor_name,
@@ -117,31 +126,9 @@ class Bundle(LandsatBaseBundle):
                 product_name
                 ])
         return self.output_directory
-    def get_aquisition_date(self):
-        '''
-        Returns the data in which this image was aquired.
-        '''
-        return self.get_sensor().get_attribute(olitirs.ACQUISITION_DATE)
-    def get_sensor_object(self):
-        '''
-        Returns the database object that represents this sensor.
-        '''
-        return driver.get_sensor_object(self.get_sensor_name())
-    def get_sensor_name(self):
-        '''
-        Returns the data in which this image was aquired.
-        '''
-        return self.get_sensor().get_attribute(olitirs.SENSOR_NAME)
-    def get_satellite_object(self):
-        '''
-        Returns the database object that represents this sensor.
-        '''
-        return driver.get_satellite_object(self.get_name())
-    def get_product_type_object(self):
-        return driver.get_product_type_object(self.get_sensor().get_attribute(olitirs.DATA_TYPE).upper())
-
 if __name__ == '__main__':
-    path = '/LUSTRE/MADMEX/eodata/oli_tirs/21048/2013/2013-04-15/l1t/'
+    import numpy
+    path ='/LUSTRE/MADMEX/eodata/oli_tirs/21048/2015/2015-02-16/fmask/'
     bundle = Bundle(path)
     print bundle.get_files()
     print bundle.can_identify()
@@ -149,19 +136,15 @@ if __name__ == '__main__':
     print bundle.get_sensor().get_attribute(olitirs.SENSOR)
     print "sensor_name"
     print bundle.get_sensor().get_attribute(olitirs.SENSOR_NAME)
-    print "scene"
-    print bundle.get_sensor().get_attribute(olitirs.SCENE_ID)
-    print "cloud"
-    print bundle.get_sensor().get_attribute(olitirs.CLOUD_COVER)
-    print "sun"
-    print bundle.get_sensor().get_attribute(olitirs.SUN_ELEVATION)
-    print "data type"
-    print driver.get_product_type_object(bundle.get_sensor().get_attribute(olitirs.DATA_TYPE).upper())
+    print 'footprint'
     print bundle.get_raster().get_attribute(raster.FOOTPRINT)
-    print "path metadata"
-    print bundle.file_dictionary[_BASE % (bundle.get_letter(), bundle.get_mission(), 'MTL.txt')]
-    print "row"
-    print bundle.get_sensor().get_attribute(olitirs.ROW)
-    print driver.get_satellite_object(bundle.get_name())
-    print getattr(SETTINGS, 'TEST_FOLDER') + '/' + bundle.file_dictionary[_BASE % (bundle.get_letter(), bundle.get_mission(), 'MTL.txt')],
-    #print bundle.get_sensor().parser.metadata
+    print bundle.get_raster().get_attribute(raster.PROJECTION)
+    print bundle.get_raster().get_attribute(raster.DATA_SHAPE)
+    print bundle.get_raster().get_attribute(raster.GEOTRANSFORM)[1]
+    print bundle.get_raster().image_path
+    print bundle.get_aquisition_date().strftime('%Y')
+
+
+
+    
+    

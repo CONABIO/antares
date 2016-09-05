@@ -16,9 +16,6 @@ from madmex.mapper.base import BaseData, _get_attribute, put_in_dictionary
 # import numpy.ma as ma
 # from Carbon.TextEdit import WIDTHHook
 LOGGER = logging.getLogger(__name__)
-PROJECTION = ['projection']
-DATA_SHAPE = ['data_shape']
-GEOTRANSFORM = ['geotransform']
 XRANGE = ['x_range']
 YRANGE = ['y_range']
 XOFFSET = ['x_offset']
@@ -196,31 +193,35 @@ def get_mask_multiband_image_subset(x, y, width, height, data, threshold=0):
 def stack_images():
     pass
 
-def harmonize_images(images, projection, shape):
+def harmonize_images(images):#, projection, shape):
     '''
     Harmonizes a list of images into the minimum common extent. If one of
     the images is not in the specified projection, it will be ignored.
     '''
+    import raster
+    projection = images[0].get_attribute(raster.PROJECTION)
+    shape = images[0].get_attribute(raster.DATA_SHAPE)
     if not projection or not shape:
         LOGGER.error('Projection and shape should not be null.')
         raise Exception('Projection and shape should not be null.')
-    import raster
     extents = {}
     geotransforms = []
     projections = []
     shapes = []
     accepted_images = []
     for image in images:
-        if projection and shape and image and image.get_attribute(raster.PROJECTION) == projection and image.get_attribute(raster.DATA_SHAPE) == shape:
+        #if projection and shape and image and image.get_attribute(raster.PROJECTION) == projection and image.get_attribute(raster.DATA_SHAPE) == shape:
+        if image.get_attribute(raster.PROJECTION) == projection:# and image.get_attribute(raster.DATA_SHAPE) == shape:
             geotransforms.append(image.get_attribute(raster.GEOTRANSFORM))
             projections.append(image.get_attribute(raster.PROJECTION))
             shapes.append(image.get_attribute(raster.DATA_SHAPE))
             accepted_images.append(image)
         else:
-            LOGGER.warn('Image not in the specified projection or data_shape, will be ignored.')
+            LOGGER.warn('Image not in the specified projection, will be ignored.')
     if accepted_images:
-        put_in_dictionary(extents, PROJECTION, projection)
-        put_in_dictionary(extents, DATA_SHAPE, shape)
+        LOGGER.info('Number of accepted images: %d' % len(accepted_images))
+        put_in_dictionary(extents, raster.PROJECTION, projection)
+        #put_in_dictionary(extents, DATA_SHAPE, shape)#TODO: Is it necessary the data shape??
         geotransforms = numpy.array(geotransforms)
         projections = numpy.array(projections)
         shapes = numpy.array(shapes)
@@ -240,7 +241,7 @@ def harmonize_images(images, projection, shape):
         y_offset = (ul_y - geotransforms[:, 3]) / geotransforms[:, 5]
         # Calculate unique geo transformation
         geotransform = (ul_x, geotransforms[0, 1], 0.0, ul_y, 0.0, geotransforms[0, 5])
-        put_in_dictionary(extents, GEOTRANSFORM, geotransform)
+        put_in_dictionary(extents, raster.GEOTRANSFORM, geotransform)
         put_in_dictionary(extents, XRANGE, x_range)
         put_in_dictionary(extents, YRANGE, y_range)
         put_in_dictionary(extents, XOFFSET, x_offset)
@@ -263,9 +264,9 @@ class Data(BaseData):
         Given two images of class raster create a new image with no data, the same projection, 
         and uniform xrange, yrange, xoffset, yoffset
         '''
-        import raster
+        #import raster
         if not self.harmonized_extents:
-            self.harmonized_extents = harmonize_images([image1_data_class, image2_data_class], image1_data_class.get_attribute(raster.PROJECTION), image1_data_class.get_attribute(raster.DATA_SHAPE))
+            self.harmonized_extents = harmonize_images([image1_data_class, image2_data_class])#, image1_data_class.get_attribute(raster.PROJECTION), image1_data_class.get_attribute(raster.DATA_SHAPE))
             if not self.harmonized_extents:
                 print('No common extents for images')
     def harmonized_arrays(self, image1_data_class, image2_data_class):

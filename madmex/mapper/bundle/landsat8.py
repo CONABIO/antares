@@ -10,15 +10,15 @@ from madmex.mapper.sensor import olitirs
 from madmex.persistence.database.connection import Information
 from madmex.mapper.data import raster
 from madmex.configuration import SETTINGS
-from madmex.util import get_path_from_list
+from madmex.util import get_path_from_list, get_basename_of_file,\
+    create_file_name
 from madmex.persistence import driver
 
 FORMAT = 'GTiff'
 _MISSION = '8'
-_NAME = 'Landsat 8'
+_NAME = 'Landsat 8' #Defined according to key name of satellites_array in populate.py module
 _LETTER = 'C'
-#_METADATA = 
-
+_PROCESSING_LEVEL = 'L1T'
 class Bundle(LandsatBaseBundle):
     '''
     A class to create a memory representation of a Landsat 5 image including its
@@ -46,6 +46,14 @@ class Bundle(LandsatBaseBundle):
         satellite.
         '''
         return _MISSION
+    def get_processing_level(self):
+        '''
+        In the case of the satellite Landsat we have different levels of processing,
+        the case of this bundle is raw data
+        '''
+        return _PROCESSING_LEVEL
+    def get_datatype(self):
+        return self.get_processing_level()
     def get_letter(self):
         '''
         Files after 2012 have a letter to distinguish the different sensors
@@ -75,8 +83,9 @@ class Bundle(LandsatBaseBundle):
     def get_information_object(self):
         row = self.get_sensor().get_attribute(olitirs.ROW)
         path = self.get_sensor().get_attribute(olitirs.PATH)
+        basename_metadata = get_basename_of_file( self.file_dictionary[_BASE % (self.get_letter(), self.get_mission(), 'MTL.txt')])
         information = Information(
-                    metadata_path = getattr(SETTINGS, 'TEST_FOLDER') + '/' + self.file_dictionary[_BASE % (self.get_letter(), self.get_mission(), 'MTL.txt')],
+                    metadata_path = create_file_name(self.get_output_directory(),basename_metadata),
                     grid_id = unicode(path + row),
                     projection = self.get_raster().get_attribute(raster.PROJECTION),
                     cloud_percentage = self.get_sensor().get_attribute(olitirs.CLOUD_COVER),
@@ -154,5 +163,5 @@ if __name__ == '__main__':
     print "row"
     print bundle.get_sensor().get_attribute(olitirs.ROW)
     print driver.get_satellite_object(bundle.get_name())
-
+    print getattr(SETTINGS, 'TEST_FOLDER') + '/' + bundle.file_dictionary[_BASE % (bundle.get_letter(), bundle.get_mission(), 'MTL.txt')],
     #print bundle.get_sensor().parser.metadata

@@ -203,6 +203,45 @@ class Test(unittest.TestCase):
         folder=''
         image = raster.Data(folder, '')
         image.create_raster_in_memory()
+    def test_rasterize_vector_in_memory_and_then_write_to_disk(self):
+        from madmex.mapper.data.raster import new_options_for_create_raster_from_reference, create_raster_tiff_from_reference
+        from madmex.core.controller.commands import get_bundle_from_path
+        from madmex.mapper.data import raster
+        BUNDLE_PACKAGE = 'madmex.mapper.bundle'
+        landmask_path = '/Users/erickpalacios/Documents/CONABIO/MADMEXdata/eodata/footprints/country_mexico/'
+        bundle = get_bundle_from_path(landmask_path, '../../../mapper', BUNDLE_PACKAGE)
+        extents_dictionary = {u'x_range': 7521.0, u'y_range': 7741.0, u'properties': {u'projection': 'PROJCS["UTM Zone 15, Northern Hemisphere",GEOGCS["Unknown datum based upon the WGS 84 ellipsoid",DATUM["Not specified (based on WGS 84 spheroid)",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",-93],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",0],UNIT["Meter",1]]', u'geotransform': (523185.0, 30.0, 0.0, 2033715.0, 0.0, -30.0)}, u'x_offset': 'array([ 10.,  30.,   0.,  50.])', u'y_offset': 'array([-0., -0., -0., -0.])'}
+        options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.DATA_SHAPE, (int(extents_dictionary['x_range']), int(extents_dictionary['y_range']), 1), {})
+        data = create_raster_tiff_from_reference(extents_dictionary, '', None, options_to_create) #created in memory
+        #new_options_for_create_raster_from_reference(extents_dictionary, raster.DATASET, data, options_to_create)
+        bundle.rasterize(data, [1], [1])
+        image = '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/rasterize3.tif' 
+        create_raster_tiff_from_reference(extents_dictionary, image, data.ReadAsArray()) #created in disk
+    def test_create_raster_in_memory_and_then_write_to_disk(self):
+        from madmex.mapper.data.raster import new_options_for_create_raster_from_reference, create_raster_tiff_from_reference
+        from madmex.mapper.data import raster
+        extents_dictionary = {u'x_range': 7521.0, u'y_range': 7741.0, u'properties': {u'projection': 'PROJCS["UTM Zone 15, Northern Hemisphere",GEOGCS["Unknown datum based upon the WGS 84 ellipsoid",DATUM["Not specified (based on WGS 84 spheroid)",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",-93],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",0],UNIT["Meter",1]]', u'geotransform': (523185.0, 30.0, 0.0, 2033715.0, 0.0, -30.0)}, u'x_offset': 'array([ 10.,  30.,   0.,  50.])', u'y_offset': 'array([-0., -0., -0., -0.])'}
+        options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.DATA_SHAPE, (int(extents_dictionary['x_range']), int(extents_dictionary['y_range']), 1), {})
+        data = create_raster_tiff_from_reference(extents_dictionary, '', None, options_to_create) #created in memory
+        new_options_for_create_raster_from_reference(extents_dictionary, raster.DATASET, data, options_to_create)
+        image = '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/raster_test_created.tif' 
+        create_raster_tiff_from_reference(extents_dictionary, image, data.ReadAsArray()) #created in disk
+    def test_rasterize_vector_and_write_to_disk(self):
+        from madmex.mapper.data.raster import new_options_for_create_raster_from_reference, create_raster_tiff_from_reference
+        from madmex.core.controller.commands import get_bundle_from_path
+        from madmex.mapper.data import raster
+        BUNDLE_PACKAGE = 'madmex.mapper.bundle'
+        landmask_path = '/Users/erickpalacios/Documents/CONABIO/MADMEXdata/eodata/footprints/country_mexico/'
+        bundle = get_bundle_from_path(landmask_path, '../../../mapper', BUNDLE_PACKAGE)
+        extents_dictionary = {u'x_range': 7521.0, u'y_range': 7741.0, u'properties': {u'projection': 'PROJCS["UTM Zone 15, Northern Hemisphere",GEOGCS["Unknown datum based upon the WGS 84 ellipsoid",DATUM["Not specified (based on WGS 84 spheroid)",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",-93],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",0],UNIT["Meter",1]]', u'geotransform': (523185.0, 30.0, 0.0, 2033715.0, 0.0, -30.0)}, u'x_offset': 'array([ 10.,  30.,   0.,  50.])', u'y_offset': 'array([-0., -0., -0., -0.])'}
+        options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.DATA_SHAPE, (int(extents_dictionary['x_range']), int(extents_dictionary['y_range']), 1), {})
+        image = '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/rasterize2.tif'
+        #The next line create a tiff with empty array
+        data = create_raster_tiff_from_reference(extents_dictionary, image, None, options_to_create)
+        bundle.rasterize(data, [1], [1])
+        new_options_for_create_raster_from_reference(extents_dictionary, raster.DATASET, data, options_to_create)
+        create_raster_tiff_from_reference(extents_dictionary, image, data.ReadAsArray()) #created in disk
+
 #     def test_maf_classification(self):
 #         '''
 #         Perform classification of maf result

@@ -13,5 +13,3 @@ def rasterize_vector(target_ds,source_layer, band_list, burn_values):
         raise Exception("error rasterizing layer: %s" % source_layer)
     else:
         return 0
-
-

@@ -225,7 +225,7 @@ class Data(BaseData):
             LOGGER.error('Unable to open raster file %s', self.image_path)
     def read_data_file_as_array(self):
         '''
-        Read image data from already opened image
+        Read image data from already opened image.
         '''
         if self.data_array is None:
             if self.data_file != None:
@@ -238,7 +238,7 @@ class Data(BaseData):
         return self.data_array
     def read_hdf_data_file_as_array(self, tuple_of_files):
         '''
-        Read image data from hdf file of already opened image
+        Read image data from hdf file of already opened image.
         '''
         #if self.data_file != None:
         self._helper_read_hdf_data_file_as_array(tuple_of_files)

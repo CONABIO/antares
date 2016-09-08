@@ -169,9 +169,18 @@ class BaseBundle(object):
                 product_type=self.get_product_type_object(),
                 type='raw'
                 )
+    def get_features_object(self):
+        '''
+        Subclasses must implement a method to create the features object
+        that will be persisted in the database.
+        '''
+        raise NotImplementedError(
+            'Subclasses must implement a method to create the features object '
+            'that will be persisted in the database.')
+        
     def get_product_type_object(self):
         '''
-        Subclasses must implement a method to create the information object
+        Subclasses must implement a method to create the product type object
         that will be persisted in the database.
         '''
         raise NotImplementedError(

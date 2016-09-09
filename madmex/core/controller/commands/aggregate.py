@@ -23,9 +23,10 @@ from madmex.mapper.data._gdal import create_empty_raster_from_reference, \
 from madmex.util import get_base_name, create_file_name
 
 
-INITIAL_ARRAY = [[1,2,3,8,9,10,11,12,13,16,14,15,20,24,25,26],
-               [4,5,6,7,17,18,19,21,22,23,27,28,29,30,31,32]]
-FINAL_ARRAY = [1,2]
+INITIAL_ARRAY = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,123,124,200,210],
+                 [27,28,30,31],
+                 [29,98,99]]
+FINAL_ARRAY = [1,2,3]
 
 def dictionary_from_list(key_list, value_list):
     new_dict = {}

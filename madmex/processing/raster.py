@@ -77,9 +77,6 @@ def calculate_ndvi_2(array, type_satellite):
     spectral_index[numpy.where(numpy.logical_and(band_a == 0, band_b == 0))] = -9999
     index_inf_values = spectral_index >= OVERFLOW_LEVEL
     spectral_index[index_inf_values] = -9999
-        #spectral_index[numpy.where(numpy.logical_or(math.frexp(band_a-band_b) - math.frexp(band_a + band_b) >= 1024 , band_a + band_b == 0))] == -9999
-    #spectral_index[numpy.where(numpy.logical_or(band_a == -9999, band_b == -9999))] = -9999
-        #spectral_index[numpy.where(numpy.logical_or(band_a == 0, band_b == 0))] = -9999 #TODO: the value 0 is the result of applying the mask
     return spectral_index
 def calculate_sr(array, type_satellite):
     '''

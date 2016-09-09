@@ -14,10 +14,13 @@ from madmex.mapper.data.raster import create_raster_tiff_from_reference,\
     new_options_for_create_raster_from_reference
 from madmex.processing.raster import mask_values, \
     calculate_ndvi_2, calculate_sr, calculate_evi, calculate_arvi,\
-    calculate_tasseled_caps
+    calculate_tasseled_caps, calculate_statistics_metrics,\
+    calculate_statistics_metrics2
 from madmex.configuration import SETTINGS
 import numpy
 from madmex.mapper.bundle.landsat8sr import FILES
+from madmex.mapper.data._gdal import get_dataset, get_array_from_image_path
+from numpy import ndarray
 LOGGER = logging.getLogger(__name__)
 BUNDLE_PACKAGE = 'madmex.mapper.bundle'
 FMASK_LAND = 0
@@ -82,7 +85,6 @@ class Command(BaseCommand):
                 if not bundle.get_datatype() == 'L1T':
                     LOGGER.info('The folder %s was dropped because of data type', bundle.path)
                     bundle  = None
-
         fmask_image_paths_l1t = []
         for path in fmask_image_paths:
             bundle = _get_bundle_from_path(path)
@@ -124,7 +126,6 @@ class Command(BaseCommand):
             list_fmask_arrays_resized_and_boolean = []
             values = [FMASK_CLOUD, FMASK_CLOUD_SHADOW, FMASK_OUTSIDE]
             #the next for can be parallelized and extracted to a general function
-            #for obj in list_data_class_objects_fmask:
             for bundle in fmask_image_paths_l1t:
                 yoffset = extents_dictionary['y_offset'][subset_counter]
                 xoffset = extents_dictionary['x_offset'][subset_counter]
@@ -150,7 +151,7 @@ class Command(BaseCommand):
             output_file_stack_bands_list = []
             datasets_stack_bands_list = []
             for i in range(0, number_of_sr_bands):
-                output_file = folder_results + 'band' + str(i+1)
+                output_file = folder_results + 'band' + str(i+1) 
                 datasets_stack_bands_list.append(create_raster_tiff_from_reference(extents_dictionary, output_file, None, options_to_create_empty_stacks))
                 output_file_stack_bands_list.append(output_file)
             LOGGER.info('Created empty stacks for bands')
@@ -165,55 +166,156 @@ class Command(BaseCommand):
             for i in range(number_of_indexes):
                 if list_of_indexes[i] == 'TC':
                     for k in range(number_of_sr_bands):
-                        output_file = folder_results + list_of_indexes[i] + str(k+1)
+                        output_file = folder_results + list_of_indexes[i] + str(k+1) 
                         datasets_stack_indexes_list.append(create_raster_tiff_from_reference(extents_dictionary, output_file, None, options_to_create_empty_indexes_stacks))
                         output_file_stack_indexes_list.append(output_file)
                 else:
-                    output_file = folder_results + list_of_indexes[i] # + str(i+1)
+                    output_file = folder_results + list_of_indexes[i]  # + str(i+1)
                     datasets_stack_indexes_list.append(create_raster_tiff_from_reference(extents_dictionary, output_file, None, options_to_create_empty_indexes_stacks))
                     output_file_stack_indexes_list.append(output_file)
             LOGGER.info('Created empty stacks for indexes')
-            list_sr_hdf_arrays_resized_and_masked = [] #TODO: This list is useless
+            landmask_array = dataset_landmask_rasterized.ReadAsArray()
             subset_counter = 0
             for bundle in sr_image_paths_l1t:
                 if bundle.FORMAT == 'HDF4':
                     LOGGER.info('Reading arrays of sr images')
                     bundle.read_hdf_data_file_as_array()
-                    data_array_resized_and_masked = numpy.zeros((number_of_sr_bands, y_range, x_range))
+                    data_array_resized = numpy.zeros((number_of_sr_bands, y_range, x_range))
                     LOGGER.info('Starting stacking of sr images for every band')
                     LOGGER.info('Processing image %s' % bundle.path)
                     new_options_for_create_raster_from_reference(extents_dictionary, raster.CREATE_STACKING, True, options_to_create_empty_stacks)
                     LOGGER.info('Number of offset in writing of stack: %s' % str(subset_counter))
                     yoffset = extents_dictionary['y_offset'][subset_counter]
                     xoffset = extents_dictionary['x_offset'][subset_counter]
+                    new_options_for_create_raster_from_reference(extents_dictionary, raster.STACK_OFFSET, subset_counter, options_to_create_empty_stacks)
+                    array_for_masking = list_fmask_arrays_resized_and_boolean[subset_counter]*landmask_array
+                    index_masked_pixels = numpy.array(array_for_masking==0, dtype = bool)
                     for i in range(number_of_sr_bands):
-                        LOGGER.info('Resizing arrays')
-                        #data_array_resized[i, :, :] = get_image_subset(yoffset, xoffset, y_range, x_range, bundle.get_raster().hdf_data_array[i,:,:])
-                        data_array_resized = get_image_subset(yoffset, xoffset, y_range, x_range, bundle.get_raster().hdf_data_array[i,:,:])
+                        LOGGER.info('Resizing bands of %s' % bundle.path)
+                        data_array_resized[i,:,:] = get_image_subset(yoffset, xoffset, y_range, x_range, bundle.get_raster().hdf_data_array[i,:,:])
                         LOGGER.info('Applying landmask and fmask')
-                        #data_array_resized_and_masked = (data_array_resized[i, :, :]*list_fmask_arrays_resized_and_boolean[subset_counter])*dataset_landmask_rasterized.ReadAsArray()
-                        data_array_resized_and_masked[i, :, :] = (data_array_resized*list_fmask_arrays_resized_and_boolean[subset_counter])*dataset_landmask_rasterized.ReadAsArray()
-                        LOGGER.info('Writing band %s of %s of file %s in the stack: %s' % (str(i+1), str(len(sr_image_paths_l1t)), bundle.path, output_file_stack_bands_list[i]))
-                        new_options_for_create_raster_from_reference(extents_dictionary, raster.STACK_OFFSET, subset_counter, options_to_create_empty_stacks)
+                        data_array_resized[i,:,:][index_masked_pixels] = 0
+                        LOGGER.info('Writing band %s of file %s in the stack: %s' % (str(i+1), bundle.path, output_file_stack_bands_list[i]))
                         new_options_for_create_raster_from_reference(extents_dictionary, raster.DATASET, datasets_stack_bands_list[i], options_to_create_empty_stacks)
-                        #create_raster_tiff_from_reference(extents_dictionary, output_file_stack_bands_list[i], data_array_resized_and_masked, options_to_create_empty_stacks)
-                        create_raster_tiff_from_reference(extents_dictionary, output_file_stack_bands_list[i], data_array_resized_and_masked[i, :, :], options_to_create_empty_stacks)
-                    LOGGER.info('Shape of hdf data array resized and masked  %s %s %s'  % (data_array_resized_and_masked.shape[0], data_array_resized_and_masked.shape[1], data_array_resized_and_masked.shape[2]))
-                    list_sr_hdf_arrays_resized_and_masked.append(data_array_resized_and_masked) #TODO: This list is useless because we perform the calculation of indexes in the next lines
+                        create_raster_tiff_from_reference(extents_dictionary, output_file_stack_bands_list[i], data_array_resized[i, :, :], options_to_create_empty_stacks)
+                    index_NaNs = numpy.array(data_array_resized== -9999, dtype = bool)
+                    index_NaNs_2d = numpy.array(ndarray.all(data_array_resized==-9999,axis=0), dtype = bool)
+                    LOGGER.info('Shape of hdf data array resized and masked  %s %s %s'  % (data_array_resized.shape[0], data_array_resized.shape[1], data_array_resized.shape[2]))
                     LOGGER.info('Starting calculation of indexes for hdf data array resized and masked')
                     LOGGER.info('Starting stacking of sr images for every index')                
                     if bundle.get_name() == 'Landsat 8 surfaces reflectances':
                         new_options_for_create_raster_from_reference(extents_dictionary, raster.CREATE_STACKING, True, options_to_create_empty_indexes_stacks)
                         new_options_for_create_raster_from_reference(extents_dictionary, raster.STACK_OFFSET, subset_counter, options_to_create_empty_indexes_stacks)
                         for j in range(number_of_indexes):
-                            array = list_of_indexes_functions[j](data_array_resized_and_masked, bundle.get_name())
+                            LOGGER.info('Calculating index: %s' % list_of_indexes[j])
+                            array = list_of_indexes_functions[j](data_array_resized, bundle.get_name())
                             if list_of_indexes[j] == 'TC':    
                                 for k in range(number_of_sr_bands):
+                                    LOGGER.info('Masking Tasseled caps result: %s with fmask and landmask' %  output_file_stack_indexes_list[j+k])
+                                    array[k,:,:][index_masked_pixels] = 0
+                                    LOGGER.info('Masking Tasseled caps result: %s with Nan values' %  output_file_stack_indexes_list[j+k])
+                                    array[k,:,:][index_NaNs[k,:,:]] = -9999
                                     new_options_for_create_raster_from_reference(extents_dictionary, raster.DATASET, datasets_stack_indexes_list[j+k], options_to_create_empty_indexes_stacks)
                                     create_raster_tiff_from_reference(extents_dictionary, output_file_stack_indexes_list[j+k], array[k, :, :], options_to_create_empty_indexes_stacks)
                             else:
+                                LOGGER.info('Masking index: %s with fmask and landmask' %  output_file_stack_indexes_list[j])
+                                array[index_masked_pixels] = 0
+                                LOGGER.info('Masking index result: %s with Nan values' %  output_file_stack_indexes_list[j])
+                                array[index_NaNs_2d] = -9999
                                 new_options_for_create_raster_from_reference(extents_dictionary, raster.DATASET, datasets_stack_indexes_list[j], options_to_create_empty_indexes_stacks)
                                 create_raster_tiff_from_reference(extents_dictionary, output_file_stack_indexes_list[j], array, options_to_create_empty_indexes_stacks)
                         array = None
                         
-                    subset_counter+=1   
+                    subset_counter+=1
+                data_array_resized = None
+            LOGGER.info('Starting calculation of temporal metrics for images stacked bands')
+            output_file_stack_bands_list_metrics = []
+            for i in range(len(output_file_stack_bands_list)):
+                LOGGER.info('Reading image: %s' % output_file_stack_bands_list[i])
+                array = datasets_stack_bands_list[i].ReadAsArray()
+                LOGGER.info('Calculating statistics: average, minimum, maximum, standard deviation, range of file %s' % output_file_stack_bands_list[i])
+                array_metrics = calculate_statistics_metrics2(array, [0,-9999])
+                LOGGER.info('Applying fmask and landmask to array_metrics of file: %s' % output_file_stack_bands_list[i])
+                LOGGER.info('Shape of array metrics: %s %s %s' % (array_metrics.shape[0], array_metrics.shape[1], array_metrics.shape[2]))     
+                for j in range(array_metrics.shape[0]):
+                    array_metrics[j,:,:][index_masked_pixels] = 0
+                image_result = output_file_stack_bands_list[i] + 'metrics' + 'band' + str(i+1)
+                options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], {})
+                create_raster_tiff_from_reference(extents_dictionary, image_result, array_metrics, options_to_create)
+                output_file_stack_bands_list_metrics.append(image_result)
+            LOGGER.info('Starting calculation of temporal metrics for images stacked indexes')
+            output_file_stack_indexes_list_metrics = []
+            for i in range(len(output_file_stack_indexes_list)):
+                LOGGER.info('Reading image: %s' % output_file_stack_indexes_list[i])
+                array = datasets_stack_indexes_list[i].ReadAsArray()
+                LOGGER.info('Calculating statistics: average, minimum, maximum, standard deviation, range of file %s' % output_file_stack_indexes_list[i])
+                array_metrics = calculate_statistics_metrics2(array, [0, -9999])
+                LOGGER.info('Applying fmask and landmask to array_metrics of file: %s' % output_file_stack_indexes_list[i])
+                LOGGER.info('Shape of array metrics: %s %s %s' % (array_metrics.shape[0], array_metrics.shape[1], array_metrics.shape[2]))     
+                for j in range(array_metrics.shape[0]):
+                    array_metrics[j,:,:][index_masked_pixels] = 0
+                image_result = output_file_stack_indexes_list[i] + 'metrics' + 'index' + str(i+1)                
+                options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], {})
+                create_raster_tiff_from_reference(extents_dictionary, image_result, array_metrics, options_to_create)
+                output_file_stack_indexes_list_metrics.append(image_result)
+        
+        '''
+        output_file_stack_bands_list = [
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/band1',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/band2',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/band3',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/band4',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/band5',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/band6']
+        extents_dictionary = {u'x_range': 7521.0, u'y_range': 7741.0, u'properties': {u'projection': 'PROJCS["UTM Zone 15, Northern Hemisphere",GEOGCS["Unknown datum based upon the WGS 84 ellipsoid",DATUM["Not specified (based on WGS 84 spheroid)",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",-93],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",0],UNIT["Meter",1]]', u'geotransform': (523185.0, 30.0, 0.0, 2033715.0, 0.0, -30.0)}, u'x_offset': 'array([ 10.,  30.,   0.,  50.])', u'y_offset': 'array([-0., -0., -0., -0.])'}
+        print extents_dictionary
+        LOGGER.info('Starting calculation of temporal metrics for images stacked bands')
+        output_file_stack_bands_list_metrics = []
+        for i in range(len(output_file_stack_bands_list)):
+            image_class = raster.Data(output_file_stack_bands_list[i], 'GTiff')
+            LOGGER.info('Reading image: %s' % output_file_stack_bands_list[i])
+            array = image_class.read_data_file_as_array()
+            LOGGER.info('Calculating statistics: average, minimum, maximum, standard deviation, range of file %s' % output_file_stack_bands_list[i])
+            array_metrics = calculate_statistics_metrics(array, -9999)
+            LOGGER.info('Shape of array metrics:')
+            print array_metrics.shape
+            image_result = output_file_stack_bands_list[i] + 'metrics' + 'band' + str(i+1)
+            options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], {})
+            create_raster_tiff_from_reference(extents_dictionary, image_result, array_metrics, options_to_create)                        
+            output_file_stack_bands_list_metrics.append(image_result)
+            LOGGER.info('Starting calculation of temporal metrics for images stacked indexes')
+        '''
+        '''
+        output_file_stack_indexes_list = [
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/NDVI',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/ARVI',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/EVI',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/SR',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC1',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC2',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC3',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC4',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC5',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC6']
+        extents_dictionary = {u'x_range': 7521.0, u'y_range': 7741.0, u'properties': {u'projection': 'PROJCS["UTM Zone 15, Northern Hemisphere",GEOGCS["Unknown datum based upon the WGS 84 ellipsoid",DATUM["Not specified (based on WGS 84 spheroid)",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",-93],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",0],UNIT["Meter",1]]', u'geotransform': (523185.0, 30.0, 0.0, 2033715.0, 0.0, -30.0)}, u'x_offset': 'array([ 10.,  30.,   0.,  50.])', u'y_offset': 'array([-0., -0., -0., -0.])'}
+        print extents_dictionary
+
+        LOGGER.info('Starting calculation of temporal metrics for images stacked indexes')
+        output_file_stack_indexes_list_metrics = []
+        for i in range(len(output_file_stack_indexes_list)):
+            LOGGER.info('Reading image: %s' % output_file_stack_indexes_list[i])
+            #array = get_array_from_image_path(output_file_stack_indexes_list[i])
+            image_class = raster.Data(output_file_stack_indexes_list[i], 'GTiff')
+            LOGGER.info('Reading image: %s' % output_file_stack_indexes_list[i])
+            array = image_class.read_data_file_as_array()
+            LOGGER.info('Calculating statistics: average, minimum, maximum, standard deviation, range of file %s' % output_file_stack_indexes_list[i])
+            #array_metrics = calculate_statistics_metrics(array, -9999)
+            array_metrics = calculate_statistics_metrics2(array, [0, -9999])
+            image_result = output_file_stack_indexes_list[i] + 'metrics' + 'index' + str(i+1)                
+            options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], {})
+            create_raster_tiff_from_reference(extents_dictionary, image_result, array_metrics, options_to_create)
+            output_file_stack_indexes_list_metrics.append(image_result)
+         '''  
+ 
+            
+            

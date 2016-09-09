@@ -14,8 +14,7 @@ from madmex.mapper.data.raster import create_raster_tiff_from_reference,\
     new_options_for_create_raster_from_reference
 from madmex.processing.raster import mask_values, \
     calculate_ndvi_2, calculate_sr, calculate_evi, calculate_arvi,\
-    calculate_tasseled_caps, calculate_statistics_metrics,\
-    calculate_statistics_metrics2
+    calculate_tasseled_caps, calculate_statistics_metrics
 from madmex.configuration import SETTINGS
 import numpy
 from madmex.mapper.bundle.landsat8sr import FILES
@@ -234,7 +233,7 @@ class Command(BaseCommand):
                 LOGGER.info('Reading image: %s' % output_file_stack_bands_list[i])
                 array = datasets_stack_bands_list[i].ReadAsArray()
                 LOGGER.info('Calculating statistics: average, minimum, maximum, standard deviation, range of file %s' % output_file_stack_bands_list[i])
-                array_metrics = calculate_statistics_metrics2(array, [0,-9999])
+                array_metrics = calculate_statistics_metrics(array, [0,-9999])
                 LOGGER.info('Applying fmask and landmask to array_metrics of file: %s' % output_file_stack_bands_list[i])
                 LOGGER.info('Shape of array metrics: %s %s %s' % (array_metrics.shape[0], array_metrics.shape[1], array_metrics.shape[2]))     
                 for j in range(array_metrics.shape[0]):
@@ -249,7 +248,7 @@ class Command(BaseCommand):
                 LOGGER.info('Reading image: %s' % output_file_stack_indexes_list[i])
                 array = datasets_stack_indexes_list[i].ReadAsArray()
                 LOGGER.info('Calculating statistics: average, minimum, maximum, standard deviation, range of file %s' % output_file_stack_indexes_list[i])
-                array_metrics = calculate_statistics_metrics2(array, [0, -9999])
+                array_metrics = calculate_statistics_metrics(array, [0, -9999])
                 LOGGER.info('Applying fmask and landmask to array_metrics of file: %s' % output_file_stack_indexes_list[i])
                 LOGGER.info('Shape of array metrics: %s %s %s' % (array_metrics.shape[0], array_metrics.shape[1], array_metrics.shape[2]))     
                 for j in range(array_metrics.shape[0]):

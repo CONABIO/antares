@@ -75,7 +75,10 @@ def create_raster_tiff_from_reference(reference_metadata, output_file, array = N
         LOGGER.info('Creating raster in memory')
         driver = gdal.GetDriverByName(str(MEMORY))
     else:
-        LOGGER.info('Creating raster tif from reference in %s' % output_file)
+        if  _get_attribute(CREATE_STACKING, options) is False:
+            LOGGER.info('Creating raster tif from reference in %s' % output_file)
+        else:
+            LOGGER.info('Stacking in file %s' % output_file)
         driver = gdal.GetDriverByName(str(GDAL_TIFF))
     if array is None and  _get_attribute(DATA_SHAPE, options) is None:
         LOGGER.info('Error in creating raster, at least one of array or DATA_SHAPE attribute needs to be defined when calling this function')
@@ -102,7 +105,6 @@ def create_raster_tiff_from_reference(reference_metadata, output_file, array = N
             geotransform = _get_attribute(GEOTRANSFORM_FROM_GCPS, reference_metadata)
         else:
             geotransform = _get_attribute(CREATE_WITH_GEOTRANSFORM, options)
-        #if  _get_attribute(CREATE_STACKING, options) is False:
         if _get_attribute(DATASET, options) is None:
             data = driver.Create(output_file, width, height, bands, data_type, gdal_options)
             if projection :
@@ -112,12 +114,13 @@ def create_raster_tiff_from_reference(reference_metadata, output_file, array = N
         else:
             data = _get_attribute(DATASET, options)  
         if bands != 1 and array != None:
-            for band in range(bands):
-                if  _get_attribute(CREATE_STACKING, options) is False:
+            if  _get_attribute(CREATE_STACKING, options) is False:
+                for band in range(bands):
                     data.GetRasterBand(band + 1).WriteArray(array[band, :, :])
-                    LOGGER.info('Created raster in %s' % output_file)
-                else:
-                    data.GetRasterBand(_get_attribute(STACK_OFFSET, options)+1).WriteArray(array)
+                LOGGER.info('Created raster in %s' % output_file)
+            else:
+                data.GetRasterBand(_get_attribute(STACK_OFFSET, options)+1).WriteArray(array)
+                LOGGER.info('Writing offset %s in %s' % (_get_attribute(STACK_OFFSET, options),output_file))
         else:
             if array != None:
                 #data.SetNoDataValue(-9999)
@@ -125,6 +128,7 @@ def create_raster_tiff_from_reference(reference_metadata, output_file, array = N
                 LOGGER.info('Created raster in %s' % output_file)
             else:
                 if _get_attribute(DATASET, options) is None:
+                    LOGGER.info('Returning dataset %s from function create raster tiff from reference' % data)
                     return data
 class Data(BaseData):
     '''
@@ -225,7 +229,7 @@ class Data(BaseData):
             LOGGER.error('Unable to open raster file %s', self.image_path)
     def read_data_file_as_array(self):
         '''
-        Read image data from already opened image
+        Read image data from already opened image.
         '''
         if self.data_array is None:
             if self.data_file != None:
@@ -238,7 +242,7 @@ class Data(BaseData):
         return self.data_array
     def read_hdf_data_file_as_array(self, tuple_of_files):
         '''
-        Read image data from hdf file of already opened image
+        Read image data from hdf file of already opened image.
         '''
         #if self.data_file != None:
         self._helper_read_hdf_data_file_as_array(tuple_of_files)

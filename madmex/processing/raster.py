@@ -5,6 +5,8 @@ Created on 19/04/2016
 '''
 import numexpr
 import numpy
+from numpy import NaN
+from scipy.stats import nanstd, nanmean
 AEROSOL_L8 = 1
 BLUE_L8 = 2
 GREEN_L8 = 3
@@ -15,6 +17,7 @@ LANDSAT_5_DN = 'Landsat 5 DN'
 LANDSAT_5 = 'Landsat 5'
 LANDSAT_7 = 'Landsat 7'
 LANDSAT_8 = 'Landsat 8 surfaces reflectances' #Defined according to get_name() function of module bundle landsat8sr
+OVERFLOW_LEVEL = 1.e309
 tc_coefficents = {LANDSAT_5:None,
                             LANDSAT_7:None,
                             LANDSAT_8:None
@@ -70,9 +73,13 @@ def calculate_ndvi_2(array, type_satellite):
     if type_satellite == LANDSAT_8:
         band_a = array[NIR_L8-1, :, :]
         band_b = array[RED_L8-1, :, :]
-        spectral_index = numexpr.evaluate("1.0 * (band_a - band_b) / (band_a + band_b)")
+    spectral_index = numexpr.evaluate("1.0 * (band_a - band_b) / (band_a + band_b)")
+    spectral_index[numpy.where(numpy.logical_and(band_a == 0, band_b == 0))] = -9999
+    index_inf_values = spectral_index >= OVERFLOW_LEVEL
+    spectral_index[index_inf_values] = -9999
         #spectral_index[numpy.where(numpy.logical_or(math.frexp(band_a-band_b) - math.frexp(band_a + band_b) >= 1024 , band_a + band_b == 0))] == -9999
-        spectral_index[numpy.where(numpy.logical_or(band_a == -9999, band_b == -9999))] = -9999
+    #spectral_index[numpy.where(numpy.logical_or(band_a == -9999, band_b == -9999))] = -9999
+        #spectral_index[numpy.where(numpy.logical_or(band_a == 0, band_b == 0))] = -9999 #TODO: the value 0 is the result of applying the mask
     return spectral_index
 def calculate_sr(array, type_satellite):
     '''
@@ -83,6 +90,10 @@ def calculate_sr(array, type_satellite):
         band_a = array[NIR_L8-1, :, :]
         band_b = array[RED_L8-1, :, :]
     spectralindex = numexpr.evaluate("1.0 * (1.*band_a / band_b)")
+    index_zeros = numpy.where(band_b == 0)
+    index_inf_values  = spectralindex >= OVERFLOW_LEVEL
+    spectralindex[index_zeros] = -9999
+    spectralindex[index_inf_values] = -9999
     return spectralindex
 def calculate_evi(array, type_satellite):
     '''
@@ -94,6 +105,10 @@ def calculate_evi(array, type_satellite):
         band_b = array[RED_L8-1, :, :]
         band_c = array[BLUE_L8-1, :, :]
     spectralindex = numexpr.evaluate("1.0 * (2.5 * (band_a - band_b) / (band_a + 6.0 * band_b - 7.5 * band_c + 1))")
+    index_zeros_denominator = band_a+6.0*band_b-7.5*band_c+1 == 0
+    index_inf_values  = spectralindex >= OVERFLOW_LEVEL
+    spectralindex[index_inf_values] = -9999
+    spectralindex[index_zeros_denominator] = -9999
     return spectralindex
 def calculate_arvi(array, type_satellite):
     '''
@@ -105,6 +120,10 @@ def calculate_arvi(array, type_satellite):
         band_b = array[RED_L8-1, :, :]
         band_c = array[BLUE_L8-1, :, :]
     spectralindex = numexpr.evaluate("1.0 * (1.*(band_a - (2 * band_b - band_c)) / (band_a + (2 * band_b - band_c)))")
+    index_zeros_denominator = band_a + (2 * band_b - band_c) == 0
+    spectralindex[index_zeros_denominator] = -9999
+    index_inf_values  = spectralindex >= OVERFLOW_LEVEL
+    spectralindex[index_inf_values] = -9999
     return spectralindex
 def calculate_tasseled_caps(array, type_satellite):
     number_of_bands, height, width = array.shape
@@ -115,6 +134,8 @@ def calculate_tasseled_caps(array, type_satellite):
     tc2d = numpy.dot(tc_coefficents[type_satellite], bands)
     for i in range(number_of_bands):
         tc3d[i, :, :] = tc2d[i, :].reshape(1, height, width)
+    index_inf_values  = tc3d >= OVERFLOW_LEVEL
+    tc3d[index_inf_values] = -9999
     return tc3d
 def calculate_index(band_a, band_b):
     '''
@@ -147,4 +168,30 @@ def mask_values(data, values):
         numpy.putmask(masked, data == no_data , 1)
     #base = base + masked
     return numpy.invert(numpy.array(masked, dtype = bool)).astype(numpy.int8)
-    
+def calculate_statistics_metrics(array, no_data_values):
+    for no_data_value in no_data_values:
+        numpy.putmask(array, array == no_data_value, NaN)
+    zonalstats = []
+    statsmin = numpy.nanmin(array, axis = 0)
+    statsmax = numpy.nanmax(array, axis = 0)
+    statsrange = statsmax-statsmin
+    numpy.putmask(statsmin, numpy.isnan(statsmin), -9999)
+    numpy.putmask(statsmax, numpy.isnan(statsmax), -9999)
+    numpy.putmask(statsrange, numpy.isnan(statsrange), -9999)
+    zonalstats.append(statsmin)
+    zonalstats.append(statsmax)
+    zonalstats.append(statsrange)
+    #statsmin = None
+    #statsmax =None
+    #statsrange = None
+    statsmean = nanmean(array, axis = 0)
+    numpy.putmask(statsmean, numpy.isnan(statsmean), -9999)
+    zonalstats.append(statsmean)
+    statsstd = nanstd(array, axis = 0)
+    numpy.putmask(statsstd, numpy.isnan(statsstd), -9999)
+    zonalstats.append(statsstd)
+    #statsmean = None
+    #statsstd = None
+    array_stats = numpy.array(zonalstats)
+    #zonalstats = None
+    return array_stats

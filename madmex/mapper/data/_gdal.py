@@ -17,7 +17,10 @@ GTIFF = 'GTiff'
 JPEG = 'JPEG'
 
 LOGGER = logging.getLogger(__name__)
-
+def get_dataset(image_path, mode=GA_ReadOnly):
+    return gdal.Open(image_path, mode)
+def get_array_from_image_path(image_path):
+    return get_dataset(image_path).ReadAsArray()
 def get_width(image_path):
     '''
     This function will query the width from raster and return it.

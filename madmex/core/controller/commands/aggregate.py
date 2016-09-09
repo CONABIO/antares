@@ -137,7 +137,7 @@ class Command(BaseCommand):
         
         
         
-        create_raster_from_reference(output + "three.tif", to_vector_array, path, gdal.GDT_Byte)
+        create_raster_from_reference(output, to_vector_array, path, gdal.GDT_Byte)
         
         
     

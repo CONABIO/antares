@@ -47,6 +47,14 @@ def persist_bundle(bundle, keep=False):
                 bundle.get_database_object(),
                 session)
                 )
+            actions.append(database.InsertAction(
+                bundle.get_information_object(),
+                session)
+                )
+            actions.append(database.InsertAction(
+                bundle.get_features_object(),
+                session)
+                )
             def do_result(action):
                 '''
                 Lambda function to perform an action and return the result.
@@ -78,9 +86,25 @@ def persist_host(host):
     finally:
         session.close()
 def persist_command(command):
+    '''
+    Gets a Command object, and inserts it into the database.
+    '''
     session = SESSION_MAKER()
     try:
         session.add(command)
+        session.commit()
+    except Exception:
+        LOGGER.error('Not expected error in host insertion.')
+        raise
+    finally:
+        session.close()
+def persist_features(rapideye_features):
+    '''
+    Expects a RapideyeFeatures object and commits it to the database.
+    '''
+    session = SESSION_MAKER()
+    try:
+        session.add(rapideye_features)
         session.commit()
     except Exception:
         LOGGER.error('Not expected error in host insertion.')
@@ -137,9 +161,11 @@ def get_sensor_object(sensor_name):
         session.close()
     return sensor_object
 def get_type_object(type_name):
+    '''
+    This method retrieves the Type object from the database.
+    '''
     session = SESSION_MAKER()
     try:
-        print type_name
         type_object = session.query(ProductType).filter(ProductType.short_name == type_name).first()
     except Exception:
         LOGGER.error('Not expected error in host insertion.')

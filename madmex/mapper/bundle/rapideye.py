@@ -5,6 +5,7 @@ Created on Jun 10, 2015
 '''
 from __future__ import unicode_literals
 
+import datetime
 import logging
 
 import dateutil
@@ -19,13 +20,14 @@ import madmex.mapper.data.raster as raster
 from madmex.mapper.sensor.rapideye import TILE_ID
 import madmex.mapper.sensor.rapideye as rapideye
 from madmex.persistence import driver
-from madmex.persistence.database.connection import Information
+from madmex.persistence.database.connection import Information, RapideyeFeatures
 from madmex.preprocessing import masking
 from madmex.preprocessing import maskingwithreference
 from madmex.preprocessing.topofatmosphere import calculate_distance_sun_earth, \
     calculate_toa_rapideye, calculate_rad_rapideye
 from madmex.util import get_path_from_list, create_file_name, \
     create_directory_path, get_base_name, get_parent
+
 
 FORMAT = 'GTiff'
 ANOMALY_DETECTION = 1
@@ -163,19 +165,87 @@ class Bundle(BaseBundle):
         Creates a thumbnail for the scene in true color.
         '''
         from subprocess import call
-        print thumbnail_path
         thumnail_directory = create_file_name(thumbnail_path, 'thumbnail')
-        print thumnail_directory
         create_directory_path(thumnail_directory)
         filename = self.file_dictionary[_BROWSE]
         
         thumbnail = create_file_name(thumnail_directory, '%s.jpg' % get_base_name(filename))
         
-        print thumbnail
         resize_command = ['/Library/Frameworks/GDAL.framework/Programs/gdal_translate', filename, '-of', 'JPEG', thumbnail]
         call(resize_command)
 
-
+    def get_features_object(self):
+        '''
+        This method will calculate features that characterize the rapideye scene, 
+        and will be useful later. It will populate the values into the database.
+        '''
+        array = self.get_raster().read_data_file_as_array()
+        data_array = numpy.array(array)
+        features_array = []
+        for i in range(data_array.shape[0]):
+            band = data_array[i,:,:].ravel()
+            band = band[band!=0]
+            features_array.append(numpy.nanpercentile(band,10))
+            features_array.append(numpy.nanpercentile(band,25))
+            features_array.append(numpy.nanpercentile(band,50))
+            features_array.append(numpy.nanpercentile(band,75))
+            features_array.append(numpy.nanpercentile(band,90))
+            features_array.append(numpy.mean(band))
+            features_array.append(numpy.min(band) * 1.0)
+            features_array.append(numpy.max(band) * 1.0)
+        geotransform = self.get_raster().get_geotransform()
+        
+        features_array.append(geotransform[0])
+        features_array.append(geotransform[3])
+        features_array.append((self.get_aquisition_date() - datetime.datetime(1970, 1, 1)).total_seconds())
+        tile_id =  self.get_sensor().get_attribute(TILE_ID)
+        raster_path = self.file_dictionary[_IMAGE]
+        features = RapideyeFeatures(band_1_quant_10=features_array[0],
+                                    band_1_quant_25=features_array[1],
+                                    band_1_quant_50=features_array[2],
+                                    band_1_quant_75=features_array[3],
+                                    band_1_quant_90=features_array[4],
+                                    band_1_mean=features_array[5],
+                                    band_1_min=features_array[6],
+                                    band_1_max=features_array[7],
+                                    band_2_quant_10=features_array[8],
+                                    band_2_quant_25=features_array[9],
+                                    band_2_quant_50=features_array[10],
+                                    band_2_quant_75=features_array[11],
+                                    band_2_quant_90=features_array[12],
+                                    band_2_mean=features_array[13],
+                                    band_2_min=features_array[14],
+                                    band_2_max=features_array[15],
+                                    band_3_quant_10=features_array[16],
+                                    band_3_quant_25=features_array[17],
+                                    band_3_quant_50=features_array[18],
+                                    band_3_quant_75=features_array[19],
+                                    band_3_quant_90=features_array[20],
+                                    band_3_mean=features_array[21],
+                                    band_3_min=features_array[22],
+                                    band_3_max=features_array[23],
+                                    band_4_quant_10=features_array[24],
+                                    band_4_quant_25=features_array[25],
+                                    band_4_quant_50=features_array[26],
+                                    band_4_quant_75=features_array[27],
+                                    band_4_quant_90=features_array[28],
+                                    band_4_mean=features_array[29],
+                                    band_4_min=features_array[30],
+                                    band_4_max=features_array[31],
+                                    band_5_quant_10=features_array[32],
+                                    band_5_quant_25=features_array[33],
+                                    band_5_quant_50=features_array[34],
+                                    band_5_quant_75=features_array[35],
+                                    band_5_quant_90=features_array[36],
+                                    band_5_mean=features_array[37],
+                                    band_5_min=features_array[38],
+                                    band_5_max=features_array[39],
+                                    top=features_array[40],
+                                    left=features_array[41],
+                                    time=features_array[42],
+                                    footprint=tile_id,
+                                    path=raster_path)
+        return features
     # TODO: The next couple of methods can be abstracted in a base class and
     # inheritance.
     def anomaly_detection_cloud_mask(self, top_of_atmosphere_data, cloud_output_file, solar_zenith, solar_azimuth, geotransform):

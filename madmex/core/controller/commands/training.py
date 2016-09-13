@@ -51,6 +51,7 @@ class Command(BaseCommand):
         result = numpy.full(size, NO_DATA)       
         mask = numpy.equal(arrays[paths[0]],arrays[paths[1]])
         for p in range(2, len(paths)):
+            print 'Image %s ' % p
             mask = numpy.logical_and(mask, numpy.equal(arrays[paths[0]],arrays[paths[p]]))
         result[mask] = numpy.array(arrays[paths[0]])[mask]
                     

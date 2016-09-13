@@ -8,7 +8,6 @@ Created on August 13, 2016
 
 from __future__ import unicode_literals
 from madmex.core.controller.base import BaseCommand
-from subprocess import Popen, PIPE
 
 import subprocess
 import logging
@@ -18,7 +17,7 @@ LOGGER = logging.getLogger(__name__)
 def warp(args):
     """subprocess call"""
     
-    options = ['/usr/bin/gdadem']
+    options = ['/usr/bin/gdaldem']
     options.extend(args)
     
     subprocess.check_call(options)
@@ -50,6 +49,10 @@ class Command(BaseCommand):
         LOGGER.info('The val_1 is = %s ' % val_1)
         LOGGER.info('The val_2 is = %s ' % val_2)
         
+        try:
+            subprocess.check_call(['gdalinfo','/Users/rmartinez/Desktop/chiapas_to_hill.asc'])
+        except subprocess.CalledProcessError:
+            LOGGER.info('There is somthing wrong')
         
             
 

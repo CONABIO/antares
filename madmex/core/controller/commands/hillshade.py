@@ -53,18 +53,31 @@ class Command(BaseCommand):
             LOGGER.error('Input file not found')
             sys.exit(1)
                 
-        LOGGER.info('The input file is %s        :' %inputFile)
-        LOGGER.info('The output file will be %s  :' %outputFile)
-        LOGGER.info('The z_factor is %s          :' %z_factor)
-        LOGGER.info('The scale is %s             :' %scale)
-        LOGGER.info('The azimuth is %s           :' %azimuth)
-        LOGGER.info('The altitude is %s          :' %altitude)
+        LOGGER.info('The input file is %s        ' %inputFile)
+        LOGGER.info('The output file will be %s  ' %outputFile)
+        LOGGER.info('The z_factor is %s          ' %z_factor)
+        LOGGER.info('The scale is %s             ' %scale)
+        LOGGER.info('The azimuth is %s           ' %azimuth)
+        LOGGER.info('The altitude is %s          ' %altitude)
 
         
         try:
             subprocess.check_call(['gdalinfo', inputFile])
         except subprocess.CalledProcessError:
-            LOGGER.info('There is something wrong')
+            LOGGER.error('There is something wrong with gdalinfo')
+            
+        try:
+            subprocess.check_call(['gdaldem', 
+                                   'hillshade', 
+                                   inputFile, 
+                                   outputFile, 
+                                   '-z', z_factor, 
+                                   '-s', scale, 
+                                   '-az', azimuth, 
+                                   '-alt', altitude,
+                                   '-of', 'GTiff'])
+        except subprocess.CalledProcessError:
+            LOGGER.error('There is something wrong with gdaldem')
         
             
 

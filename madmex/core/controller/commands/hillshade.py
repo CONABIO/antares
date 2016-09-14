@@ -3,6 +3,11 @@
 '''
 Created on August 13, 2016
 @author:     rmartinez
+
+This class implements the gdaldem function hillshade. It is mandatory 
+a Digital Elevation Model (DEM) file. It is possible to download from
+http://www.inegi.org.mx/geo/contenidos/datosrelieve/continental/Descarga.aspx
+for Mexico.
 '''
 
 from __future__ import unicode_literals
@@ -35,8 +40,9 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         '''
-        In this example command, the values that come from the user input are
-        added up and the result is printed in the screen.
+        A gdalinfo call is performed to check the input file, then, a gdaldem function with hillshade 
+        option is called. The result is printed in the screen and written in the output file with
+        GTiff format.
         '''
         
         inputFile  = options['inFile'][0]
@@ -53,21 +59,21 @@ class Command(BaseCommand):
             LOGGER.error('Input file not found')
             sys.exit(1)
                 
-        LOGGER.info('The input file is %s        ' %inputFile)
-        LOGGER.info('The output file will be %s  ' %outputFile)
-        LOGGER.info('The z_factor is %s          ' %z_factor)
-        LOGGER.info('The scale is %s             ' %scale)
-        LOGGER.info('The azimuth is %s           ' %azimuth)
-        LOGGER.info('The altitude is %s          ' %altitude)
+        LOGGER.info('The input file is       : %s   ' %inputFile)
+        LOGGER.info('The output file will be : %s  ' %outputFile)
+        LOGGER.info('The z_factor is         : %s  ' %z_factor)
+        LOGGER.info('The scale is            : %s  ' %scale)
+        LOGGER.info('The azimuth is          : %s  ' %azimuth)
+        LOGGER.info('The altitude is         : %s  ' %altitude)
 
         
         try:
             subprocess.check_call(['gdalinfo', inputFile])
         except subprocess.CalledProcessError:
-            LOGGER.error('There is something wrong with gdalinfo')
+            pass
             
         try:
-            subprocess.check_call(['gdaldem', 
+            subprocess.check_call(['gdaldem',
                                    'hillshade', 
                                    inputFile, 
                                    outputFile, 
@@ -77,7 +83,8 @@ class Command(BaseCommand):
                                    '-alt', altitude,
                                    '-of', 'GTiff'])
         except subprocess.CalledProcessError:
-            LOGGER.error('There is something wrong with gdaldem')
+            pass
+        
         
             
 

@@ -4,23 +4,16 @@
 Created on August 13, 2016
 @author:     rmartinez
 '''
-# gdaldem hillshade /Users/rmartinez/Desktop/chiapas_to_hill.asc /Users/rmartinez/Documents/presentacion_secretarios/mapas/chiapas_shapehill3.asc -z 3.0 -s 1.0 -az 315.0 -alt 45.0 -of AAIGrid
 
 from __future__ import unicode_literals
 from madmex.core.controller.base import BaseCommand
 
 import subprocess
 import logging
+import os
+import sys
 
 LOGGER = logging.getLogger(__name__)
-
-def warp(args):
-    """subprocess call"""
-    
-    options = ['/usr/bin/gdaldem']
-    options.extend(args)
-    
-    subprocess.check_call(options)
 
 
 class Command(BaseCommand):
@@ -31,8 +24,13 @@ class Command(BaseCommand):
         '''
         Adds the hillshade argument for this command
         '''
-        
-        parser.add_argument('hillshade', nargs=3, help='This is a test')
+        parser.add_argument('hillshade', nargs='*', help='Hillshade option for gdaldem command')
+        parser.add_argument('--inFile', nargs='*',help='Input file')
+        parser.add_argument('--outFile', nargs='*',help='Output file')
+        parser.add_argument('--z', nargs=1, help='z factor')
+        parser.add_argument('--scale', nargs=1, help='scale')
+        parser.add_argument('--az', nargs=1, help='azimuth')
+        parser.add_argument('--alt', nargs=1, help='altitude')
 
 
     def handle(self, **options):
@@ -41,18 +39,32 @@ class Command(BaseCommand):
         added up and the result is printed in the screen.
         '''
         
-        val_0 = int(options['hillshade'][0])
-        val_1 = int(options['hillshade'][1])
-        val_2 = int(options['hillshade'][2])
+        inputFile  = options['inFile'][0]
+        outputFile = options['outFile'][0]
+        z_factor   = options['z'][0]
+        scale      = options['scale'][0]
+        azimuth    = options['az'][0]
+        altitude   = options['alt'][0]
         
-        LOGGER.info('The val_0 is = %s ' % val_0)
-        LOGGER.info('The val_1 is = %s ' % val_1)
-        LOGGER.info('The val_2 is = %s ' % val_2)
+        
+        if os.path.exists(inputFile):
+            LOGGER.info('The file %s was found.' % inputFile)
+        else:
+            LOGGER.error('Input file not found')
+            sys.exit(1)
+                
+        LOGGER.info('The input file is %s        :' %inputFile)
+        LOGGER.info('The output file will be %s  :' %outputFile)
+        LOGGER.info('The z_factor is %s          :' %z_factor)
+        LOGGER.info('The scale is %s             :' %scale)
+        LOGGER.info('The azimuth is %s           :' %azimuth)
+        LOGGER.info('The altitude is %s          :' %altitude)
+
         
         try:
-            subprocess.check_call(['gdalinfo','/Users/rmartinez/Desktop/chiapas_to_hill.asc'])
+            subprocess.check_call(['gdalinfo', inputFile])
         except subprocess.CalledProcessError:
-            LOGGER.info('There is somthing wrong')
+            LOGGER.info('There is something wrong')
         
             
 

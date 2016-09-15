@@ -57,7 +57,6 @@ class Command(BaseCommand):
         if os.path.exists(outputFile):
             LOGGER.warning('File %s already exist.' % outputFile)
             LOGGER.info('Deleting existing file')
-            filename, file_extension = os.path.splitext(outputFile)
             try :
                 os.remove(outputFile) 
             except :

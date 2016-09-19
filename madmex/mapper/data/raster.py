@@ -269,12 +269,12 @@ class Data(BaseData):
         '''
         if self.data_file != None:
             gcps = self.data_file.GetGCPs()
-            self.close()
+            #self.close()
             return gcps
         else:
             self.data_file = self._open_file()
             gcps = self.data_file.GetGCPs()
-            self.close()
+            #self.close()
             return gcps
     def get_geotransform(self):
         '''

@@ -14,16 +14,13 @@ from madmex.mapper.data.raster import create_raster_tiff_from_reference,\
     new_options_for_create_raster_from_reference
 from madmex.processing.raster import mask_values, \
     calculate_ndvi_2, calculate_sr, calculate_evi, calculate_arvi,\
-    calculate_tasseled_caps, calculate_statistics_metrics
+    calculate_tasseled_caps, calculate_statistics_metrics, vectorize_raster
 from madmex.configuration import SETTINGS
 import numpy
 from madmex.mapper.bundle.landsat8sr import FILES
-from madmex.mapper.data._gdal import get_dataset, get_array_from_image_path
 from numpy import ndarray
-import subprocess
 from madmex.remote.dispatcher import RemoteProcessLauncher
-from madmex.util import get_parent, get_base_name, get_basename_of_file
-from madmex import LOGGER
+from madmex.util import get_parent, get_basename_of_file
 LOGGER = logging.getLogger(__name__)
 BUNDLE_PACKAGE = 'madmex.mapper.bundle'
 FMASK_LAND = 0
@@ -76,7 +73,10 @@ class Command(BaseCommand):
         product = 7 #This is fmask product
         fmask_image_paths = find_datasets(start_date, end_date, satellite, product, cloud, gridid)
         print fmask_image_paths
-        
+
+        #sr_image_paths = [u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-15/sr', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-31/sr', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-02-16/sr', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-03-04/sr']
+        #fmask_image_paths = [u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-15/fmask', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-31/fmask', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-02-16/fmask', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-03-04/fmask']
+
         sr_image_paths_l1t = []
         for path in sr_image_paths:
             bundle = _get_bundle_from_path(path)
@@ -253,9 +253,10 @@ class Command(BaseCommand):
                 LOGGER.info('Calculating statistics: average, minimum, maximum, standard deviation, range of file %s' % output_file_stack_bands_list[i])
                 array_metrics = calculate_statistics_metrics(array, [0,-9999])
                 LOGGER.info('Applying fmask and landmask to array_metrics of file: %s' % output_file_stack_bands_list[i])
-                LOGGER.info('Shape of array metrics: %s %s %s' % (array_metrics.shape[0], array_metrics.shape[1], array_metrics.shape[2]))     
-                for j in range(array_metrics.shape[0]):
-                    array_metrics[j,:,:][index_masked_pixels_over_all_images] = 0
+                LOGGER.info('Shape of array metrics: %s %s %s' % (array_metrics.shape[0], array_metrics.shape[1], array_metrics.shape[2]))
+                #TODO: Is necessary the masking with 0 or we leave the -9999 ? ? ?     
+                #for j in range(array_metrics.shape[0]):
+                    #array_metrics[j,:,:][index_masked_pixels_over_all_images] = 0
                 image_result = output_file_stack_bands_list[i] + 'metrics' + 'band' + str(i+1)
                 #options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], {})
                 options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND'], {})
@@ -277,6 +278,8 @@ class Command(BaseCommand):
                 options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND'], {})
                 create_raster_tiff_from_reference(extents_dictionary, image_result, array_metrics, options_to_create)
                 output_file_stack_indexes_list_metrics.append(image_result)
+            datasets_stack_bands_list = None
+            datasets_stack_indexes_list = None
             LOGGER.info('Starting segmentation with: %s' % output_file_stack_indexes_list_metrics[0])            
             val_t = 3
             val_s = 0.2
@@ -296,13 +299,18 @@ class Command(BaseCommand):
             #output_file_stack_indexes_list_metrics = ['/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/metrics/NDVImetrics_mod.tif']        
             folder_and_bind_ndvimetrics = get_parent(output_file_stack_indexes_list_metrics[0]) + ':/results'
             ndvimetrics = '/results/' +  get_basename_of_file(output_file_stack_indexes_list_metrics[0])
-            LOGGER.info('starging segmentation')
+            LOGGER.info('starting segmentation')
             command = 'segmentation_mac'
             hosts_from_command = get_host_from_command(command)
             LOGGER.info('The command to be executed is %s in the host %s' % (command, hosts_from_command[0].hostname))
             remote = RemoteProcessLauncher(hosts_from_command[0])
             arguments = 'docker  run --rm -v ' + folder_and_bind_segmentation + ' -v ' + folder_and_bind_license + ' -v ' + folder_and_bind_ndvimetrics + ' segmentation/segmentation:v1 python /segmentation/segment.py ' + ndvimetrics
-            arguments+=  ' --t ' + str(val_t) + ' -s ' + str(val_s) + ' -c ' + str(val_c) + ' --tile ' + str(val_tile) + ' --mp ' + str(val_mp) + ' --xt ' + str(val_xt) + ' --rows ' + str(val_rows) + ' --nodata ' + str(val_nodata)
+            arguments+=  ' -t ' + str(val_t) + ' -s ' + str(val_s) + ' -c ' + str(val_c) + ' --tile ' + str(val_tile) + ' --mp ' + str(val_mp) + ' --xt ' + str(val_xt) + ' --rows ' + str(val_rows) + ' --nodata ' + str(val_nodata)
             remote.execute(arguments)
             LOGGER.info('Finished segmentation')
-            
+            #TODO: If we apply the mask to segmentation tif of Nans values??
+            image_segmentation_file =  output_file_stack_indexes_list_metrics[0] + '_' + str(val_t) + '_' + ''.join(str(val_s).split('.'))+ '_' + ''.join(str(val_c).split('.')) + '.tif'
+            LOGGER.info('Starting vectorization of segmentation file: %s' % image_segmentation_file)
+            image_segmentation_shp = image_segmentation_file + '.shp'
+            vectorize_raster(image_segmentation_file, 1, image_segmentation_shp, 'objects', 'id')
+            LOGGER.info('Finished vectorization: %s' % image_segmentation_shp)

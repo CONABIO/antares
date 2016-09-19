@@ -8,12 +8,26 @@ import logging
 import gdal
 import ogr
 from madmex.mapper.base import BaseData
+import osr
 
 
 gdal.AllRegister()
 ogr.UseExceptions()
-
 LOGGER = logging.getLogger(__name__)
+ESRI_FORMAT = 'ESRI Shapefile'
+def create_empty_layer(filename, layer_name, projection_reference = None, geom_type=ogr.wkbPolygon, options = []):
+    driver = ogr.GetDriverByName(str(ESRI_FORMAT))
+    spatial_reference = osr.SpatialReference()
+    if not projection_reference:
+        spatial_reference.ImportFromEPSG(4326) # Geo WGS84)
+        srid = spatial_reference.GetAuthorityCode(None)
+    else:
+        spatial_reference.ImportFromWkt(projection_reference)
+        spatial_reference.AutoIdentifyEPSG()
+        srid = spatial_reference.GetAuthorityCode(None)
+    data_source = driver.CreateDataSource(filename)
+    data_layer = data_source.CreateLayer(layer_name, spatial_reference,  geom_type)
+    return (data_layer, data_source) #we have to return the data source for avoiding segmentation fault in the calling function
 
 class Data(BaseData):
     '''
@@ -68,12 +82,23 @@ class Data(BaseData):
         return self._footprint_helper(ring, spacial_reference)
     
 if __name__ == '__main__':
-    image = '/Users/erickpalacios/Documents/CONABIO/MADMEXdata/eodata/footprints/country_mexico_2012.shp'
+    image = '/Users/erickpalacios/Documents/CONABIO/MADMEXdata/eodata/footprints/country_mexico/country_mexico_2012.shp'
     FORMAT =  'ESRI Shapefile'
     data_class = Data(image, FORMAT)
     print data_class.layer
     print data_class.footprint
-    
-    
-    
+    print data_class.layer.GetName()
+    print data_class.layer.GetLayerDefn()
+    print data_class.layer.GetLayerDefn().GetFieldCount()
+    print osr.SpatialReference()
+    srs = osr.SpatialReference()
+    print srs.ImportFromEPSG(4326) 
+    print srs.GetAuthorityCode(None)
+    projection = 'PROJCS["UTM Zone 15, Northern Hemisphere",GEOGCS["Unknown datum based upon the WGS 84 ellipsoid",DATUM["Not specified (based on WGS 84 spheroid)",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",-93],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",0],UNIT["Meter",1]]'
+    print osr.SpatialReference()
+    srs = osr.SpatialReference()
+    print srs.ImportFromWkt(projection)
+    print srs.AutoIdentifyEPSG()
+    print srs.GetAuthorityCode(None)
+    print srs.ImportFromEPSG(4326)
     

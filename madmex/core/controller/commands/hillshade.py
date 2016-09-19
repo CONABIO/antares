@@ -58,7 +58,19 @@ class Command(BaseCommand):
         else:
             LOGGER.error('Input file not found')
             sys.exit(1)
-                
+        
+        # gdaldem does not works if output file already exist. 
+        if os.path.exists(outputFile):
+            LOGGER.warning('File %s already exist.' % outputFile)
+            LOGGER.info('Deleting existing file')
+            try :
+                os.remove(outputFile) 
+            except :
+                LOGGER.error('Impossible to delete %s' %outputFile + ' consider to change output file.' )
+                sys.exit(1)
+            LOGGER.info('Succesfully deleted')
+            
+            
         LOGGER.info('The input file is       : %s   ' %inputFile)
         LOGGER.info('The output file will be : %s  ' %outputFile)
         LOGGER.info('The z_factor is         : %s  ' %z_factor)

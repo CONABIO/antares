@@ -42,6 +42,11 @@ def get_bands(image_path):
     dataset = gdal.Open(image_path, GA_ReadOnly)
     bands = dataset.RasterCount
     return bands
+def get_band(image_path, number_of_band):
+    dataset = gdal.Open(image_path, GA_ReadOnly)
+    band = dataset.GetRasterBand(number_of_band)
+    dataset = None
+    return band
 def get_driver(image_path):
     '''
     This function will return the driver from a given raster file.

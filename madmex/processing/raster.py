@@ -7,6 +7,10 @@ import numexpr
 import numpy
 from numpy import NaN
 from scipy.stats import nanstd, nanmean
+from madmex.mapper.data._gdal import get_projection, get_dataset, get_band
+from madmex.mapper.data.vector import create_empty_layer
+import gdal
+import ogr
 AEROSOL_L8 = 1
 BLUE_L8 = 2
 GREEN_L8 = 3
@@ -202,3 +206,11 @@ def calculate_statistics_metrics(array, no_data_values):
     array_stats = numpy.array(zonalstats)
     zonalstats = None
     return array_stats
+def vectorize_raster(image_path, gdal_band_number, target_vector_layer_filename, layer_name, field_name_of_layer):
+    ds = get_dataset(image_path)
+    projection_reference = ds.GetProjection()
+    data_layer, ds_layer=create_empty_layer(target_vector_layer_filename, layer_name, projection_reference)
+    band = ds.GetRasterBand(gdal_band_number)
+    field = ogr.FieldDefn(field_name_of_layer, ogr.OFTInteger)
+    data_layer.CreateField(field)
+    return gdal.Polygonize(band, None, data_layer, 0, [])

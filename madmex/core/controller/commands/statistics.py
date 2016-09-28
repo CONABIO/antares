@@ -24,9 +24,44 @@ from madmex.util import get_base_name, get_parent, create_file_name
 LOGGER = logging.getLogger(__name__)
 BUNDLE_PACKAGE = 'madmex.mapper.bundle'
 
-INITIAL_ARRAY = {'Bosque' : [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,123,124,200,210],
-                 'No Bosque' : [27,28,30,31],
-                 'Otros' : [29,98,99]}
+#INITIAL_ARRAY = {'Bosque' : [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,123,124,200,210],
+#                 'No Bosque' : [27,28,30,31],
+#                 'Otros' : [29,98,99]}
+
+INITIAL_ARRAY = {'Bosque de Coníferas de Oyamel Ayarín Cedro' : [1],
+                 'Bosque de Coníferas de Pino y Tascate' : [2],
+                 'Bosque de Encino y Bosque de Galería' : [3],
+                 'Chaparral' : [4],
+                 'Mezquital y Submontano' : [5],
+                 'Bosque Cultivado e Inducido' : [6],
+                 'Selva Baja Perennifolia y Bosque Mesofilo' : [7],
+                 'Selva Baja y Mediana Subperennifolia Galeria y Palmar Natural' : [8],
+                 'Manglar y Peten' : [9],
+                 'Selva Mediana y Alta Perennifolia' : [10],
+                 'Selva Alta Subperennifolia' : [11],
+                 'Selva Baja Caducifolia Subcaducifolia y Matorral Subtropical' : [12],
+                 'Selva Mediana Caducifolia y Subcaducifolia' : [13],
+                 'Mezquital Xerofilo Galeria y Desertico Microfilo' : [14],
+                 'Matorral Crasicaule' : [15],
+                 'Matorral Espinoso Tamaulipeco' : [16],
+                 'Matorral Sarco-Crasicaule' : [17],
+                 'Matorral Sarcocaule' : [18],
+                 'Matorral Sarco-Crasicaule de Neblina' : [19],
+                 'Matorral Rosetófilo Costero' : [20],
+                 'Matorral Desértico Rosetófilo' : [21],
+                 'Popal' : [22],
+                 'Tular' : [23],
+                 'Vegetación de Dunas Costeras' : [24],
+                 'Vegetación de Desiertos Arenosos' : [25],
+                 'Vegetación Halófila Hidrófila' : [26],
+                 'Vegetación Halófila Xerófila y Gipsófila' : [27],
+                 'Pastizales' : [28],
+                 'Tierras Agrícolas' : [29],
+                 'Urbano y Construido' : [30],
+                 'Suelo Desnudo' : [31],
+                 'Agua' : [32],
+                 'Sombras' : [98],
+                 'Nubes' : [99]}
 
 def _get_bundle_from_path(path):
     '''

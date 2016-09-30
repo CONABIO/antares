@@ -28,6 +28,8 @@ INITIAL_ARRAY = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24
                  [29,98,99]]
 FINAL_ARRAY = [1,2,3]
 
+MASK_ARRAY =[32]
+
 def dictionary_from_list(key_list, value_list):
     new_dict = {}
     for i in range(len(key_list)):
@@ -64,7 +66,7 @@ class Command(BaseCommand):
         print FINAL_ARRAY
         #data_array = open_handle(path)
         
-        outDataset = create_empty_raster_from_reference(output + "one.tif", path)
+        outDataset = create_empty_raster_from_reference(output, path, data_type=gdal.GDT_Byte)
         
         print 'back from dataset creation.'
         
@@ -88,9 +90,14 @@ class Command(BaseCommand):
             scanline = classification_band.ReadRaster( 0, row, classification_band.XSize, 1, classification_band.XSize, 1, gdal.GDT_Float32 )
             row_tuple = struct.unpack('f' * classification_band.XSize, scanline)
             for i in range(len(row_tuple)):
-                new_pixel = row_tuple[i]
+                #print row_tuple[i]
+                if row_tuple[i] in MASK_ARRAY:
+                    new_pixel = 1
+                else:
+                    new_pixel = 0
                 outputLine = str(outputLine) + struct.pack('f', new_pixel)
             outDataset.GetRasterBand(1).WriteRaster(0, row, classification_band.XSize, 1, outputLine, buf_xsize=classification_band.XSize, buf_ysize=1, buf_type=gdal.GDT_Float32)
+            print 'Line %s was processed' % row
             del outputLine
                 
     def method_two(self, options):
@@ -171,7 +178,7 @@ class Command(BaseCommand):
         #print 'Dataset was written.'
         
         start_time = time.time()
-        self.method_three(options)
+        self.method_one(options)
         print("--- %s seconds ---" % (time.time() - start_time))
         
         print 'Dataset was written.'

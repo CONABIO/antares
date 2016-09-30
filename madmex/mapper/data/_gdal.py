@@ -111,7 +111,8 @@ def create_empty_raster_from_reference(image_path, reference_path, data_type=gda
                                                          dataset.RasterXSize,
                                                          dataset.RasterYSize,
                                                          bands,
-                                                         gdal.GDT_Float32)
+                                                         data_type,
+                                                         ['COMPRESS=LZW'])
     if geotransform:
         new_dataset.SetGeoTransform(geotransform)
     if projection:   

@@ -7,10 +7,15 @@ import numexpr
 import numpy
 from numpy import NaN
 from scipy.stats import nanstd, nanmean
+#from scipy import  ndimage
+import scipy.ndimage
 from madmex.mapper.data._gdal import get_projection, get_dataset, get_band
 from madmex.mapper.data.vector import create_empty_layer
 import gdal
 import ogr
+from pandas.core.frame import DataFrame
+from numpy import ndarray
+
 AEROSOL_L8 = 1
 BLUE_L8 = 2
 GREEN_L8 = 3
@@ -131,6 +136,7 @@ def calculate_tasseled_caps(array, type_satellite):
     bands = numpy.zeros((number_of_bands, width * height))
     for i in range(number_of_bands):
         bands[i, :] = numpy.ravel(array[i, :, :])
+        bands[i,:] = numpy.nan_to_num(bands[i,:]) #This is an option to handle the entries with value of -9999
     tc3d = numpy.zeros((number_of_bands, height, width))
     tc2d = numpy.dot(tc_coefficents[type_satellite], bands)
     for i in range(number_of_bands):
@@ -176,6 +182,7 @@ def calculate_statistics_metrics(array, no_data_values):
     statsmin = numpy.nanmin(array, axis = 0)
     statsmax = numpy.nanmax(array, axis = 0)
     statsrange = statsmax-statsmin
+    #The resulting metrics have no data value of -9999:
     numpy.putmask(statsmin, numpy.isnan(statsmin), -9999)
     index_inf_values  = abs(statsmin) >= OVERFLOW_LEVEL
     statsmin[index_inf_values] = -9999
@@ -191,13 +198,15 @@ def calculate_statistics_metrics(array, no_data_values):
     statsrange[index_inf_values] = -9999
     zonalstats.append(statsrange)
     statsrange = None
-    statsmean = nanmean(array, axis = 0)
+    #statsmean = nanmean(array, axis = 0)
+    statsmean = numpy.nanmean(array, axis = 0)
     numpy.putmask(statsmean, numpy.isnan(statsmean), -9999)
     index_inf_values  = abs(statsmean) >= OVERFLOW_LEVEL
     statsmean[index_inf_values] = -9999
     zonalstats.append(statsmean)
     statsmean = None    
-    statsstd = nanstd(array, axis = 0)
+    #statsstd = nanstd(array, axis = 0)
+    statsstd = numpy.nanstd(array, axis = 0)
     numpy.putmask(statsstd, numpy.isnan(statsstd), -9999)
     index_inf_values  = abs(statsstd) >= OVERFLOW_LEVEL
     statsstd[index_inf_values] = -9999
@@ -214,3 +223,41 @@ def vectorize_raster(image_path, gdal_band_number, target_vector_layer_filename,
     field = ogr.FieldDefn(field_name_of_layer, ogr.OFTInteger)
     data_layer.CreateField(field)
     return gdal.Polygonize(band, None, data_layer, 0, [])
+def calculate_zonal_statistics(array, array_labeled, labels):
+    #TODO: Instead of the next two lines, why don't we create segmentations files based
+    #on each of the indexes so we can use them as the argument array_labeled of this function 
+    #and it's corresponding labels argument ???
+    index_NaNs_2d = numpy.array(ndarray.all(array==-9999,axis=0), dtype = bool) #The arguments  
+    #array_labeled and labels are based on the NDVI index, so it's possible that no data values 
+    #of the ARVI index (for example) are present in the argument array and these values are labeled 
+    #different in the NDVI index, that's the reason of this line and the next one 
+    array_labeled[index_NaNs_2d] = 0 #we re-labeled the array_labeled according of the array
+    #of the index
+    function_min_zonal = lambda x: scipy.ndimage.measurements.minimum(x, labels = array_labeled, index= labels)
+    function_max_zonal =lambda x: scipy.ndimage.measurements.maximum(x, labels = array_labeled, index= labels)
+    function_mean_zonal =lambda x: scipy.ndimage.measurements.mean(x, labels = array_labeled, index= labels)
+    function_std_zonal =lambda x: scipy.ndimage.measurements.standard_deviation(x, labels = array_labeled, index= labels)    
+    return numpy.concatenate((map(function_min_zonal,array),map(function_max_zonal,array), map(function_mean_zonal,array), map(function_std_zonal,array)),axis=0)
+    
+    #number_of_bands = array.shape[0]
+    #fmin_zonal = lambda dim: numpy.array([numpy.nanmin(array[dim,array_labeled == x]) for x in labels])
+    #fmax_zonal = lambda dim: numpy.array([numpy.nanmax(array[dim,array_labeled == x]) for x in labels])
+    #fmean_zonal = lambda dim: numpy.array([numpy.nanmean(array[dim,array_labeled == x]) for x in labels])
+    #fstd_zonal= lambda dim: numpy.array([numpy.nanstd(array[dim,array_labeled == x]) for x in labels])
+    #return numpy.concatenate((map(fmin_zonal, [dim for dim in range(number_of_bands)]), map(fmax_zonal, [dim for dim in range(number_of_bands)]), map(fmean_zonal, [dim for dim in range(number_of_bands)]), map(fstd_zonal, [dim for dim in range(number_of_bands)]) ),axis=0)
+    
+   #return numpy.array([numpy.array([numpy.nanmin(array[:,array_labeled==x],axis=1), numpy.nanmax(array[:,array_labeled==x],axis=1), numpy.nanmean(array[:,array_labeled==x],axis=1), numpy.nanstd(array[:,array_labeled==x],axis=1)]).flatten() for x in labels]).T
+    
+def append_labels_to_array(array, labels):
+    return numpy.concatenate((labels.reshape(1, len(labels)), array), axis = 0)
+    #return numpy.concatenate((labels.reshape(len(labels), 1), array), axis = 1)
+def build_dataframe_from_array(array):
+    return DataFrame(array)
+def create_names_of_dataframe_from_filename(dataframe_class, number_of_columns, filename):
+    col_labels = []
+    col_labels.append('id')
+    for i in range(number_of_columns -1):
+        col_labels.append("feature_"+ filename + "_" + str(i+1))
+    print col_labels
+    dataframe_class.columns = col_labels
+    return dataframe_class

@@ -14,13 +14,17 @@ from madmex.mapper.data.raster import create_raster_tiff_from_reference,\
     new_options_for_create_raster_from_reference
 from madmex.processing.raster import mask_values, \
     calculate_ndvi_2, calculate_sr, calculate_evi, calculate_arvi,\
-    calculate_tasseled_caps, calculate_statistics_metrics, vectorize_raster
+    calculate_tasseled_caps, calculate_statistics_metrics, vectorize_raster,\
+    calculate_zonal_statistics, append_labels_to_array, build_dataframe_from_array,\
+    create_names_of_dataframe_from_filename
 from madmex.configuration import SETTINGS
 import numpy
 from madmex.mapper.bundle.landsat8sr import FILES
 from numpy import ndarray
 from madmex.remote.dispatcher import RemoteProcessLauncher
 from madmex.util import get_parent, get_basename_of_file
+from madmex.mapper.data._gdal import get_array_from_image_path
+import pandas
 LOGGER = logging.getLogger(__name__)
 BUNDLE_PACKAGE = 'madmex.mapper.bundle'
 FMASK_LAND = 0
@@ -47,7 +51,12 @@ def _get_class_method(list_of_objects, name_method):
         #print inspect.getmembers(lista[0])
         list_methods.append(getattr(obj, name_method)())
     return list_methods 
-    
+
+def join_dataframes_by_column_name(list_of_dataframes, column_name):
+    dataframe = list_of_dataframes[0]
+    for i in range(1, len(list_of_dataframes)):
+        dataframe = pandas.merge(dataframe, list_of_dataframes[i], on = column_name, how = 'inner')
+    return dataframe
 class Command(BaseCommand):
     '''
     classdocs
@@ -76,7 +85,7 @@ class Command(BaseCommand):
 
         #sr_image_paths = [u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-15/sr', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-31/sr', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-02-16/sr', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-03-04/sr']
         #fmask_image_paths = [u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-15/fmask', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-31/fmask', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-02-16/fmask', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-03-04/fmask']
-
+            
         sr_image_paths_l1t = []
         for path in sr_image_paths:
             bundle = _get_bundle_from_path(path)
@@ -101,7 +110,7 @@ class Command(BaseCommand):
                 if not bundle.get_datatype() == 'L1T':
                     LOGGER.info('The folder %s was dropped because of data type of metadata', bundle.path)
                     bundle = None
-        
+    
         if len(sr_image_paths_l1t) == len(fmask_image_paths_l1t):
             LOGGER.info('Starting harmonize process of all sr images')
             list_data_class_objects_sr = _get_class_method(sr_image_paths_l1t, 'get_raster')
@@ -158,7 +167,8 @@ class Command(BaseCommand):
             output_file_stack_bands_list = []
             datasets_stack_bands_list = []
             for i in range(0, number_of_sr_bands):
-                output_file = folder_results + 'band' + str(i+1) 
+                output_file = folder_results + 'band' + str(i+1)
+                #We keep the dataset output of create_raster_tiff_from_reference for stacking purposes
                 datasets_stack_bands_list.append(create_raster_tiff_from_reference(extents_dictionary, output_file, None, options_to_create_empty_stacks))
                 output_file_stack_bands_list.append(output_file)
             LOGGER.info('Created empty stacks for bands')
@@ -175,10 +185,12 @@ class Command(BaseCommand):
                 if list_of_indexes[i] == 'TC':
                     for k in range(number_of_sr_bands):
                         output_file = folder_results + list_of_indexes[i] + str(k+1) 
+                        #We keep the dataset output of create_raster_tiff_from_reference for stacking purposes
                         datasets_stack_indexes_list.append(create_raster_tiff_from_reference(extents_dictionary, output_file, None, options_to_create_empty_indexes_stacks))
                         output_file_stack_indexes_list.append(output_file)
                 else:
                     output_file = folder_results + list_of_indexes[i]  # + str(i+1)
+                    #We keep the dataset output of create_raster_tiff_from_reference for stacking purposes
                     datasets_stack_indexes_list.append(create_raster_tiff_from_reference(extents_dictionary, output_file, None, options_to_create_empty_indexes_stacks))
                     output_file_stack_indexes_list.append(output_file)
 
@@ -209,8 +221,9 @@ class Command(BaseCommand):
                     for i in range(number_of_sr_bands):
                         LOGGER.info('Resizing bands of %s' % bundle.path)
                         data_array_resized[i,:,:] = get_image_subset(yoffset, xoffset, y_range, x_range, bundle.get_raster().hdf_data_array[i,:,:])
-                        LOGGER.info('Applying landmask and fmask')
-                        data_array_resized[i,:,:][index_masked_pixels] = 0
+                        LOGGER.info('Applying landmask and fmask, value of mask of -9999')
+                        #data_array_resized[i,:,:][index_masked_pixels] = 0
+                        data_array_resized[i,:,:][index_masked_pixels] = -9999
                         LOGGER.info('Writing band %s of file %s in the stack: %s' % (str(i+1), bundle.path, output_file_stack_bands_list[i]))
                         new_options_for_create_raster_from_reference(extents_dictionary, raster.DATASET, datasets_stack_bands_list[i], options_to_create_empty_stacks)
                         create_raster_tiff_from_reference(extents_dictionary, output_file_stack_bands_list[i], data_array_resized[i, :, :], options_to_create_empty_stacks)
@@ -227,15 +240,17 @@ class Command(BaseCommand):
                             array = list_of_indexes_functions[j](data_array_resized, bundle.get_name())
                             if list_of_indexes[j] == 'TC':    
                                 for k in range(number_of_sr_bands):
-                                    LOGGER.info('Masking Tasseled caps result: %s with fmask and landmask' %  output_file_stack_indexes_list[j+k])
-                                    array[k,:,:][index_masked_pixels] = 0
+                                    LOGGER.info('Masking Tasseled caps result: %s with fmask and landmask, value of -9999' %  output_file_stack_indexes_list[j+k])
+                                    #array[k,:,:][index_masked_pixels] = 0
+                                    array[k,:,:][index_masked_pixels] = -9999
                                     LOGGER.info('Masking Tasseled caps result: %s with Nan values' %  output_file_stack_indexes_list[j+k])
                                     array[k,:,:][index_NaNs[k,:,:]] = -9999
                                     new_options_for_create_raster_from_reference(extents_dictionary, raster.DATASET, datasets_stack_indexes_list[j+k], options_to_create_empty_indexes_stacks)
                                     create_raster_tiff_from_reference(extents_dictionary, output_file_stack_indexes_list[j+k], array[k, :, :], options_to_create_empty_indexes_stacks)
                             else:
-                                LOGGER.info('Masking index: %s with fmask and landmask' %  output_file_stack_indexes_list[j])
-                                array[index_masked_pixels] = 0
+                                LOGGER.info('Masking index: %s with fmask and landmask, value of -9999' %  output_file_stack_indexes_list[j])
+                                #array[index_masked_pixels] = 0
+                                array[index_masked_pixels] = -9999
                                 LOGGER.info('Masking index result: %s with Nan values' %  output_file_stack_indexes_list[j])
                                 array[index_NaNs_2d] = -9999
                                 new_options_for_create_raster_from_reference(extents_dictionary, raster.DATASET, datasets_stack_indexes_list[j], options_to_create_empty_indexes_stacks)
@@ -251,8 +266,13 @@ class Command(BaseCommand):
                 LOGGER.info('Reading image: %s' % output_file_stack_bands_list[i])
                 array = datasets_stack_bands_list[i].ReadAsArray()
                 LOGGER.info('Calculating statistics: average, minimum, maximum, standard deviation, range of file %s' % output_file_stack_bands_list[i])
-                array_metrics = calculate_statistics_metrics(array, [0,-9999])
-                LOGGER.info('Applying fmask and landmask to array_metrics of file: %s' % output_file_stack_bands_list[i])
+                #LOGGER.info('Changing value of fmask and landmask to array_metrics from zero to -9999 of file: %s' % output_file_stack_bands_list[i])
+                #for j in range(array.shape[0]):
+                    #array[j,:,:][index_masked_pixels_over_all_images] = -9999
+                array_metrics = calculate_statistics_metrics(array, [-9999])
+                #array_metrics = calculate_statistics_metrics(array, [0,-9999])
+                #The masking value for array_metrics is -9999
+                #LOGGER.info('Applying fmask and landmask to array_metrics of file: %s' % output_file_stack_bands_list[i])
                 LOGGER.info('Shape of array metrics: %s %s %s' % (array_metrics.shape[0], array_metrics.shape[1], array_metrics.shape[2]))
                 #TODO: Is necessary the masking with 0 or we leave the -9999 ? ? ?     
                 #for j in range(array_metrics.shape[0]):
@@ -267,9 +287,14 @@ class Command(BaseCommand):
             for i in range(len(output_file_stack_indexes_list)):
                 LOGGER.info('Reading image: %s' % output_file_stack_indexes_list[i])
                 array = datasets_stack_indexes_list[i].ReadAsArray()
+                #LOGGER.info('Changing value of fmask and landmask to array_metrics from zero to -9999 of file: %s' % output_file_stack_indexes_list[i])
+                #for j in range(array.shape[0]):
+                    #array[j,:,:][index_masked_pixels_over_all_images] = -9999
+                array_metrics = calculate_statistics_metrics(array, [-9999])
                 LOGGER.info('Calculating statistics: average, minimum, maximum, standard deviation, range of file %s' % output_file_stack_indexes_list[i])
-                array_metrics = calculate_statistics_metrics(array, [0, -9999])
-                LOGGER.info('Applying fmask and landmask to array_metrics of file: %s' % output_file_stack_indexes_list[i])
+                #array_metrics = calculate_statistics_metrics(array, [0, -9999])
+                #The masking value for array_metrics is -9999
+                #LOGGER.info('Applying fmask and landmask to array_metrics of file: %s' % output_file_stack_indexes_list[i])
                 LOGGER.info('Shape of array metrics: %s %s %s' % (array_metrics.shape[0], array_metrics.shape[1], array_metrics.shape[2]))
                 #TODO: Is necessary the masking with 0 or we leave the -9999 ? ? ?     
                 #for j in range(array_metrics.shape[0]):
@@ -278,6 +303,7 @@ class Command(BaseCommand):
                 options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND'], {})
                 create_raster_tiff_from_reference(extents_dictionary, image_result, array_metrics, options_to_create)
                 output_file_stack_indexes_list_metrics.append(image_result)
+            array = None
             datasets_stack_bands_list = None
             datasets_stack_indexes_list = None
             LOGGER.info('Starting segmentation with: %s' % output_file_stack_indexes_list_metrics[0])            
@@ -308,9 +334,33 @@ class Command(BaseCommand):
             arguments+=  ' -t ' + str(val_t) + ' -s ' + str(val_s) + ' -c ' + str(val_c) + ' --tile ' + str(val_tile) + ' --mp ' + str(val_mp) + ' --xt ' + str(val_xt) + ' --rows ' + str(val_rows) + ' --nodata ' + str(val_nodata)
             remote.execute(arguments)
             LOGGER.info('Finished segmentation')
-            #TODO: If we apply the mask to segmentation tif of Nans values??
+            #TODO: Do we need to have separate values for  the mask of zeros and  Nans values to segmentation tif ??
+            #Right now the segmentation tif have the value of zero as the no data value
+            #The first entry of output_file_stack_indexes_list_metrics is NDVImetrics
             image_segmentation_file =  output_file_stack_indexes_list_metrics[0] + '_' + str(val_t) + '_' + ''.join(str(val_s).split('.'))+ '_' + ''.join(str(val_c).split('.')) + '.tif'
             LOGGER.info('Starting vectorization of segmentation file: %s' % image_segmentation_file)
             image_segmentation_shp = image_segmentation_file + '.shp'
             vectorize_raster(image_segmentation_file, 1, image_segmentation_shp, 'objects', 'id')
             LOGGER.info('Finished vectorization: %s' % image_segmentation_shp)
+            LOGGER.info('Preparation for classification')
+            LOGGER.info('Reading raster of segmentation file: %s' % image_segmentation_file)
+            array_sg_raster = get_array_from_image_path(image_segmentation_file)
+            unique_labels = numpy.unique(array_sg_raster)
+            LOGGER.info('Starting calculation of zonal statistics for stacking of temporal metrics indexes')
+            dataframe_list_stack_indexes_list_metrics = []
+            #output_file_stack_indexes_list_metrics = ['/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/NDVImetrics']
+            for i in range(len(output_file_stack_indexes_list_metrics)):
+                LOGGER.info('Reading image: %s' % output_file_stack_indexes_list_metrics[i])
+                array = get_array_from_image_path(output_file_stack_indexes_list_metrics[i])
+                LOGGER.info('calculating zonal statistics for file: %s' % output_file_stack_indexes_list_metrics[i])
+                array_zonal_statistics = calculate_zonal_statistics(array, array_sg_raster, unique_labels)
+                LOGGER.info('finished zonal statistics')
+                array_zonal_statistics_labeled = append_labels_to_array(array_zonal_statistics, unique_labels)
+                LOGGER.info('Shape of array of zonal statistics labeled %s %s' % (array_zonal_statistics_labeled.shape[0], array_zonal_statistics_labeled.shape[1]))
+                LOGGER.info('Building data frame')
+                dataframe_list_stack_indexes_list_metrics.append(create_names_of_dataframe_from_filename(build_dataframe_from_array(array_zonal_statistics_labeled.T), array_zonal_statistics_labeled.shape[0], get_basename_of_file(output_file_stack_indexes_list_metrics[i])))
+            LOGGER.info('Joining feature dataframes for stack indexes list metrics')
+            dataframe_joined = join_dataframes_by_column_name(dataframe_list_stack_indexes_list_metrics, 'id')
+            file_name = folder_results + 'dataframe_joined_for_stack_indexes'
+            dataframe_joined.to_csv(file_name, sep='\t', encoding='utf-8')
+    

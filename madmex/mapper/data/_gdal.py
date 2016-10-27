@@ -21,6 +21,33 @@ def get_dataset(image_path, mode=GA_ReadOnly):
     return gdal.Open(image_path, mode)
 def get_array_from_image_path(image_path):
     return get_dataset(image_path).ReadAsArray()
+def get_array_resized_from_reference_dataset(dataset, dataset_reference):
+    geotransform_reference = _get_geotransform(dataset_reference)
+    width_reference, height_reference, bands_reference = get_datashape_from_dataset(dataset_reference)
+    LOGGER.info('data shape of reference dataset: %s %s %s' % (width_reference, height_reference, bands_reference))
+    LOGGER.info('data shape of dataset to be resized: %s %s %s' %(dataset.RasterXSize, dataset.RasterYSize, dataset.RasterCount))
+    ul_x = geotransform_reference[0]
+    ul_y = geotransform_reference[3]
+    lr_x = ul_x + width_reference*geotransform_reference[1]
+    lr_y = ul_y + height_reference*geotransform_reference[5]
+    geotransform = _get_geotransform(dataset)
+    x_offset = int(round((ul_x-geotransform[0])/geotransform[1]))
+    x_offset = (x_offset,0)[x_offset<0]
+    y_offset = int(round((ul_y-geotransform[3])/geotransform[5]))
+    y_offset = (y_offset,0)[y_offset<0]
+    x_range = int(round((lr_x-ul_x)/geotransform[1]))
+    x_range = (x_range, dataset.RasterXSize-x_offset)[x_range+x_offset>dataset.RasterXSize]
+    y_range = int(round((lr_y-ul_y)/geotransform[5]))
+    y_range = (y_range, dataset.RasterYSize-y_offset)[y_range+y_offset>dataset.RasterYSize]
+    LOGGER.info('Reading array resized with x_offset: %s, y_offset: %s, x_range: %s, y_range: %s' % (x_offset, y_offset, x_range, y_range))
+    array = dataset.ReadAsArray(x_offset, y_offset, x_range, y_range)
+    if len(array.shape) == 3:
+        LOGGER.info('Array resized dimensions: %s %s %s' % (array.shape[0], array.shape[1], array.shape[2]))
+    else:
+        LOGGER.info('Array resized dimensions: %s %s' % (array.shape[0], array.shape[1]))
+    return array
+def get_datashape_from_dataset(dataset):
+    return (dataset.RasterXSize, dataset.RasterYSize, dataset.RasterCount) 
 def get_width(image_path):
     '''
     This function will query the width from raster and return it.
@@ -185,6 +212,10 @@ def warp_raster_from_reference(input_path, reference_path, output_path, data_typ
     '''
     This function will warp the input image to a new one using the reference
     projection and size.
+    Reference for this function:
+    http://gis.stackexchange.com/questions/139906/replicating-result-of-gdalwarp-using-gdal-python-bindings
+    We have a different way to warp an image with gdal version 2.1.1:
+    http://gis.stackexchange.com/questions/177193/raster-interpolation-with-gdalwarp-and-replicating-with-python-api
     '''
     reference_dataset = gdal.Open(reference_path, GA_ReadOnly)
     input_dataset = gdal.Open(input_path, GA_ReadOnly)
@@ -192,9 +223,10 @@ def warp_raster_from_reference(input_path, reference_path, output_path, data_typ
     reference_dataset = None
 
     resampling = gdal.GRA_NearestNeighbour
+    #resampling = gdal.GRA_CubicSpline  
     error_threshold = 0.125
     
-    tmp_ds = gdal.AutoCreateWarpedVRT(input_dataset,
+    dataset_warped = gdal.AutoCreateWarpedVRT(input_dataset,
                                       None,
                                       str(reference_projection),
                                       resampling,
@@ -202,6 +234,8 @@ def warp_raster_from_reference(input_path, reference_path, output_path, data_typ
 
     input_dataset = None
     # Create the final warped raster
-    dst_ds = gdal.GetDriverByName(str('GTiff')).CreateCopy(output_path, tmp_ds)
-    dst_ds = None
+    #TODO: Do we need to write it to disk ???
+    #dst_ds = gdal.GetDriverByName(str('GTiff')).CreateCopy(output_path, tmp_ds)
+    #dst_ds = None
     LOGGER.info('Image warping was successful.')
+    return dataset_warped

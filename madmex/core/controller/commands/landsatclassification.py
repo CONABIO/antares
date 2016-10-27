@@ -16,14 +16,16 @@ from madmex.processing.raster import mask_values, \
     calculate_ndvi_2, calculate_sr, calculate_evi, calculate_arvi,\
     calculate_tasseled_caps, calculate_statistics_metrics, vectorize_raster,\
     calculate_zonal_statistics, append_labels_to_array, build_dataframe_from_array,\
-    create_names_of_dataframe_from_filename
+    create_names_of_dataframe_from_filename, resample_numpy_array
 from madmex.configuration import SETTINGS
 import numpy
 from madmex.mapper.bundle.landsat8sr import FILES
 from numpy import ndarray
 from madmex.remote.dispatcher import RemoteProcessLauncher
 from madmex.util import get_parent, get_basename_of_file
-from madmex.mapper.data._gdal import get_array_from_image_path
+from madmex.mapper.data._gdal import get_array_from_image_path,\
+    warp_raster_from_reference, get_array_resized_from_reference_dataset,\
+    get_dataset, create_raster
 import pandas
 LOGGER = logging.getLogger(__name__)
 BUNDLE_PACKAGE = 'madmex.mapper.bundle'
@@ -85,7 +87,7 @@ class Command(BaseCommand):
 
         #sr_image_paths = [u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-15/sr', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-31/sr', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-02-16/sr', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-03-04/sr']
         #fmask_image_paths = [u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-15/fmask', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-31/fmask', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-02-16/fmask', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-03-04/fmask']
-            
+        
         sr_image_paths_l1t = []
         for path in sr_image_paths:
             bundle = _get_bundle_from_path(path)
@@ -110,7 +112,7 @@ class Command(BaseCommand):
                 if not bundle.get_datatype() == 'L1T':
                     LOGGER.info('The folder %s was dropped because of data type of metadata', bundle.path)
                     bundle = None
-    
+        
         if len(sr_image_paths_l1t) == len(fmask_image_paths_l1t):
             LOGGER.info('Starting harmonize process of all sr images')
             list_data_class_objects_sr = _get_class_method(sr_image_paths_l1t, 'get_raster')
@@ -202,7 +204,8 @@ class Command(BaseCommand):
             #file_masked_overall = '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/fmask_mask_overall_images.tif'
             #options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], {})
             #create_raster_tiff_from_reference(extents_dictionary, file_masked_overall, index_masked_pixels_over_all_images, options_to_create)
- 
+            #LOGGER.info('Calculating mask from no data values over all images') #is too restrictive this line
+            #index_NaNs_over_all_images = numpy.zeros([y_range, x_range])
             subset_counter = 0
             for bundle in sr_image_paths_l1t:
                 if bundle.FORMAT == 'HDF4':
@@ -229,6 +232,7 @@ class Command(BaseCommand):
                         create_raster_tiff_from_reference(extents_dictionary, output_file_stack_bands_list[i], data_array_resized[i, :, :], options_to_create_empty_stacks)
                     index_NaNs = numpy.array(data_array_resized== -9999, dtype = bool)
                     index_NaNs_2d = numpy.array(ndarray.all(data_array_resized==-9999,axis=0), dtype = bool)
+                    #index_NaNs_over_all_images[index_NaNs_2d] = -9999
                     LOGGER.info('Shape of hdf data array resized and masked  %s %s %s'  % (data_array_resized.shape[0], data_array_resized.shape[1], data_array_resized.shape[2]))
                     LOGGER.info('Starting calculation of indexes for hdf data array resized and masked')
                     LOGGER.info('Starting stacking of sr images for every index')                
@@ -258,7 +262,11 @@ class Command(BaseCommand):
                             array = None
                         
                     subset_counter+=1
-                data_array_resized = None         
+                data_array_resized = None
+            #file_masked_NaNs_over_all_images = folder_results + 'mask_NaNs_over_all_images.tif'
+            #options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], {})
+            #create_raster_tiff_from_reference(extents_dictionary, file_masked_NaNs_over_all_images, index_NaNs_over_all_images, options_to_create)
+                     
             
             LOGGER.info('Starting calculation of temporal metrics for images stacked bands')
             output_file_stack_bands_list_metrics = []
@@ -343,8 +351,12 @@ class Command(BaseCommand):
             vectorize_raster(image_segmentation_file, 1, image_segmentation_shp, 'objects', 'id')
             LOGGER.info('Finished vectorization: %s' % image_segmentation_shp)
             LOGGER.info('Preparation for classification')
-            LOGGER.info('Reading raster of segmentation file: %s' % image_segmentation_file)
-            array_sg_raster = get_array_from_image_path(image_segmentation_file)
+            #LOGGER.info('Reading raster of segmentation file: %s' % image_segmentation_file)
+            #array_sg_raster = get_array_from_image_path(image_segmentation_file)
+            LOGGER.info('Extracting infomation of raster segmentation file: %s' % image_segmentation_file)
+            gdal_format = "GTiff"
+            image_segmentation_file_class = raster.Data(image_segmentation_file, gdal_format)
+            array_sg_raster = image_segmentation_file_class.read_data_file_as_array()
             unique_labels = numpy.unique(array_sg_raster)
             LOGGER.info('Starting calculation of zonal statistics for stacking of temporal metrics indexes')
             dataframe_list_stack_indexes_list_metrics = []
@@ -359,8 +371,41 @@ class Command(BaseCommand):
                 LOGGER.info('Shape of array of zonal statistics labeled %s %s' % (array_zonal_statistics_labeled.shape[0], array_zonal_statistics_labeled.shape[1]))
                 LOGGER.info('Building data frame')
                 dataframe_list_stack_indexes_list_metrics.append(create_names_of_dataframe_from_filename(build_dataframe_from_array(array_zonal_statistics_labeled.T), array_zonal_statistics_labeled.shape[0], get_basename_of_file(output_file_stack_indexes_list_metrics[i])))
+            array = None
             LOGGER.info('Joining feature dataframes for stack indexes list metrics')
             dataframe_joined = join_dataframes_by_column_name(dataframe_list_stack_indexes_list_metrics, 'id')
-            file_name = folder_results + 'dataframe_joined_for_stack_indexes'
-            dataframe_joined.to_csv(file_name, sep='\t', encoding='utf-8')
+            #The next two lines are just for checking 
+            #file_name = folder_results + 'dataframe_joined_for_stack_indexes'
+            #dataframe_joined.to_csv(file_name, sep='\t', encoding='utf-8')
+            LOGGER.info('Working with auxiliary files')
+            dem_file = getattr(SETTINGS, 'DEM')
+            aspect_file = getattr(SETTINGS, 'ASPECT')
+            slope_file = getattr(SETTINGS, 'SLOPE')
+            LOGGER.info('File of dem: %s' % dem_file)
+            LOGGER.info('File of aspect: %s' % aspect_file)
+            LOGGER.info('File of slope: %s' % slope_file)
+            list_of_aux_files = [dem_file, aspect_file, slope_file]
+            #The next command is faster than the following for, but we don't get a pixel size resolution
+            #of 30 meters
+            #gdalwarp -cutline landmask_chiapas.shp -crop_to_cutline -of GTiff -dstnodata -9999 -t_srs 'EPSG:4326' -ts 7521 7741 CEM3.0_R15m_dem.tif CEM3.0_R15m_dem_cropped_nodatavalue_reprojected_resized.tif
+            for aux_file in list_of_aux_files:
+                LOGGER.info('Starting warping of file: %s according to %s ' % (aux_file, image_segmentation_file))
+                dataset_warped_aux_file = warp_raster_from_reference(aux_file, image_segmentation_file, None)
+                LOGGER.info('Starting resizing of array of auxiliary file: %s' % aux_file)
+                array_resized_and_warped_aux_file = get_array_resized_from_reference_dataset(dataset_warped_aux_file, image_segmentation_file_class.data_file)
+                #The next lines just for testing purposes:
+                aux_file_resized_and_warped =  folder_results + get_basename_of_file(aux_file) + '_resized_and_warped.tif'
+                geotransform_sg_rater = image_segmentation_file_class.get_attribute(raster.GEOTRANSFORM)
+                projection_sg_rater = image_segmentation_file_class.get_attribute(raster.PROJECTION)
+                create_raster(aux_file_resized_and_warped, array_resized_and_warped_aux_file, geotransform_sg_rater, projection_sg_rater)
+                LOGGER.info('Starting resampling')
+                width_sg_raster, height_sg_raster, bands_sg_raster = image_segmentation_file_class.get_attribute(raster.DATA_SHAPE)
+                array = resample_numpy_array(array_resized_and_warped_aux_file, width_sg_raster, height_sg_raster, interpolation = 'nearest')
+                #LOGGER.info('Reading warped array')
+                #array_warped = dataset_warped_aux_file.ReadAsArray()
+                #LOGGER.info('Finished reading warped array')
+                #array = resample_numpy_array(array_warped, width_sg_raster, height_sg_raster, interpolation = 'nearest')
+                aux_file_resampled = folder_results + get_basename_of_file(aux_file) + '_resampled_from_resized_and_warped.tif'
+                options_to_create = new_options_for_create_raster_from_reference(image_segmentation_file_class.metadata,  raster.GDAL_CREATE_OPTIONS, ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND'], {})
+                create_raster_tiff_from_reference(image_segmentation_file_class.metadata, aux_file_resampled, array, options_to_create) 
     

@@ -27,6 +27,7 @@ from madmex.mapper.data._gdal import get_array_from_image_path,\
     warp_raster_from_reference, get_array_resized_from_reference_dataset,\
     get_dataset, create_raster
 import pandas
+import subprocess
 LOGGER = logging.getLogger(__name__)
 BUNDLE_PACKAGE = 'madmex.mapper.bundle'
 FMASK_LAND = 0
@@ -348,7 +349,7 @@ class Command(BaseCommand):
             image_segmentation_file =  output_file_stack_indexes_list_metrics[0] + '_' + str(val_t) + '_' + ''.join(str(val_s).split('.'))+ '_' + ''.join(str(val_c).split('.')) + '.tif'
             LOGGER.info('Starting vectorization of segmentation file: %s' % image_segmentation_file)
             image_segmentation_shp = image_segmentation_file + '.shp'
-            vectorize_raster(image_segmentation_file, 1, image_segmentation_shp, 'objects', 'id')
+            
             LOGGER.info('Finished vectorization: %s' % image_segmentation_shp)
             LOGGER.info('Preparation for classification')
             #LOGGER.info('Reading raster of segmentation file: %s' % image_segmentation_file)
@@ -377,6 +378,8 @@ class Command(BaseCommand):
             #The next two lines are just for checking 
             #file_name = folder_results + 'dataframe_joined_for_stack_indexes'
             #dataframe_joined.to_csv(file_name, sep='\t', encoding='utf-8')
+                    
+            #####
             LOGGER.info('Working with auxiliary files')
             dem_file = getattr(SETTINGS, 'DEM')
             aspect_file = getattr(SETTINGS, 'ASPECT')
@@ -385,27 +388,60 @@ class Command(BaseCommand):
             LOGGER.info('File of aspect: %s' % aspect_file)
             LOGGER.info('File of slope: %s' % slope_file)
             list_of_aux_files = [dem_file, aspect_file, slope_file]
-            #The next command is faster than the following for, but we don't get a pixel size resolution
-            #of 30 meters
-            #gdalwarp -cutline landmask_chiapas.shp -crop_to_cutline -of GTiff -dstnodata -9999 -t_srs 'EPSG:4326' -ts 7521 7741 CEM3.0_R15m_dem.tif CEM3.0_R15m_dem_cropped_nodatavalue_reprojected_resized.tif
+            #dataset_landmask_rasterized = get_dataset(folder_results + 'rasterize3.tif')
+            #gdalwarp -cutline landmask_chiapas.shp -crop_to_cutline -of GTiff -dstnodata 0 CEM3.0_R15m_dem.tif CEM3.0_R15m_dem.tif_cropped_nodatavalue.tif
+            landmask_folder = folder_results  + 'landmask_from_rasterize/'
+            LOGGER.info('Polygonizing the landmask rasterized array for clipping the aux files')
+            layer_landmask = 'landmask'
+            vectorize_raster(folder_results + 'rasterize3.tif', 1, landmask_folder, layer_landmask, 'id')
+            #vectorize_raster(dataset_landmask_rasterized, 1, landmask_folder, layer_landmask, 'id')
+            LOGGER.info('Folder of polygon: %s' % landmask_folder)
+            output_file_aux_files_warped = []
             for aux_file in list_of_aux_files:
-                LOGGER.info('Starting warping of file: %s according to %s ' % (aux_file, image_segmentation_file))
-                dataset_warped_aux_file = warp_raster_from_reference(aux_file, image_segmentation_file, None)
+                landmask_file = landmask_folder + layer_landmask + '.shp'
+                LOGGER.info('Clipping aux_file: %s with: %s' % (aux_file, landmask_file))
+                aux_file_clipped = folder_results  + get_basename_of_file(aux_file) + '_cropped_subprocess_call.tif'
+                command = [
+                       'gdalwarp', '-cutline', landmask_file,
+                       '-crop_to_cutline', '-of', 'GTiff', '-dstnodata', '-9999', aux_file, aux_file_clipped
+                       ]
+                subprocess.call(command)
+                LOGGER.info('Finished clipping of aux file')
+                #LOGGER.info('Starting warping of file: %s according to %s ' % (aux_file, image_segmentation_file))
+                LOGGER.info('Starting warping of file: %s according to %s ' % (aux_file_clipped, image_segmentation_file))
+                dataset_warped_aux_file = warp_raster_from_reference(aux_file_clipped, image_segmentation_file, None)
                 LOGGER.info('Starting resizing of array of auxiliary file: %s' % aux_file)
                 array_resized_and_warped_aux_file = get_array_resized_from_reference_dataset(dataset_warped_aux_file, image_segmentation_file_class.data_file)
                 #The next lines just for testing purposes:
                 aux_file_resized_and_warped =  folder_results + get_basename_of_file(aux_file) + '_resized_and_warped.tif'
-                geotransform_sg_rater = image_segmentation_file_class.get_attribute(raster.GEOTRANSFORM)
-                projection_sg_rater = image_segmentation_file_class.get_attribute(raster.PROJECTION)
-                create_raster(aux_file_resized_and_warped, array_resized_and_warped_aux_file, geotransform_sg_rater, projection_sg_rater)
+                options_to_create = new_options_for_create_raster_from_reference(image_segmentation_file_class.metadata,  raster.GDAL_CREATE_OPTIONS, ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND'], {})
+                create_raster_tiff_from_reference(image_segmentation_file_class.metadata, aux_file_resized_and_warped, array_resized_and_warped_aux_file, options_to_create)
                 LOGGER.info('Starting resampling')
                 width_sg_raster, height_sg_raster, bands_sg_raster = image_segmentation_file_class.get_attribute(raster.DATA_SHAPE)
                 array = resample_numpy_array(array_resized_and_warped_aux_file, width_sg_raster, height_sg_raster, interpolation = 'nearest')
-                #LOGGER.info('Reading warped array')
-                #array_warped = dataset_warped_aux_file.ReadAsArray()
-                #LOGGER.info('Finished reading warped array')
-                #array = resample_numpy_array(array_warped, width_sg_raster, height_sg_raster, interpolation = 'nearest')
                 aux_file_resampled = folder_results + get_basename_of_file(aux_file) + '_resampled_from_resized_and_warped.tif'
-                options_to_create = new_options_for_create_raster_from_reference(image_segmentation_file_class.metadata,  raster.GDAL_CREATE_OPTIONS, ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND'], {})
-                create_raster_tiff_from_reference(image_segmentation_file_class.metadata, aux_file_resampled, array, options_to_create) 
+                LOGGER.info('Masking auxiliary file: %s with fmask and NaNs of NDVI segmentation raster' % aux_file_resampled)
+                index_nodata_value_pixels_ndvi = numpy.array(array_sg_raster==0, dtype = bool)
+                array[index_nodata_value_pixels_ndvi] = -9999
+                create_raster_tiff_from_reference(image_segmentation_file_class.metadata, aux_file_resampled, array, options_to_create)
+                output_file_aux_files_warped.append(aux_file_resampled)
+            unique_labels = numpy.unique(array_sg_raster)
+            LOGGER.info('Starting calculation of zonal statistics for auxiliary files warped')
+            dataframe_list_aux_files_warped = []
+            for i in range(len(output_file_aux_files_warped)):
+                LOGGER.info('Reading image: %s' % output_file_aux_files_warped[i])
+                array = get_array_from_image_path(output_file_aux_files_warped[i])
+                LOGGER.info('calculating zonal statistics for file: %s' % output_file_aux_files_warped[i])
+                array_zonal_statistics = calculate_zonal_statistics(array, array_sg_raster, unique_labels)
+                LOGGER.info('finished zonal statistics')
+                array_zonal_statistics_labeled = append_labels_to_array(array_zonal_statistics, unique_labels)
+                LOGGER.info('Shape of array of zonal statistics labeled %s %s' % (array_zonal_statistics_labeled.shape[0], array_zonal_statistics_labeled.shape[1]))
+                LOGGER.info('Building data frame')
+                dataframe_list_aux_files_warped.append(create_names_of_dataframe_from_filename(build_dataframe_from_array(array_zonal_statistics_labeled.T), array_zonal_statistics_labeled.shape[0], get_basename_of_file(output_file_aux_files_warped[i])))
+            array = None
+            LOGGER.info('Joining feature dataframes for stack indexes list metrics')
+            dataframe_joined = join_dataframes_by_column_name(dataframe_list_aux_files_warped, 'id')
+            #The next two lines are just for checking 
+            file_name = folder_results + 'dataframe_joined_for_aux_files'
+            dataframe_joined.to_csv(file_name, sep='\t', encoding='utf-8')
     

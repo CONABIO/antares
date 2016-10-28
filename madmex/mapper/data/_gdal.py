@@ -223,9 +223,7 @@ def warp_raster_from_reference(input_path, reference_path, output_path, data_typ
     reference_dataset = None
 
     resampling = gdal.GRA_NearestNeighbour
-    #resampling = gdal.GRA_CubicSpline  
     error_threshold = 0.125
-    
     dataset_warped = gdal.AutoCreateWarpedVRT(input_dataset,
                                       None,
                                       str(reference_projection),

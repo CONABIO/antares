@@ -88,7 +88,7 @@ class Command(BaseCommand):
 
         #sr_image_paths = [u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-15/sr', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-31/sr', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-02-16/sr', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-03-04/sr']
         #fmask_image_paths = [u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-15/fmask', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-31/fmask', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-02-16/fmask', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-03-04/fmask']
-        
+        '''
         sr_image_paths_l1t = []
         for path in sr_image_paths:
             bundle = _get_bundle_from_path(path)
@@ -444,4 +444,413 @@ class Command(BaseCommand):
             #The next two lines are just for checking 
             file_name = folder_results + 'dataframe_joined_for_aux_files'
             dataframe_joined.to_csv(file_name, sep='\t', encoding='utf-8')
+            '''
+        
+        
+        
+        LOGGER.info('Working with auxiliary files')
+        #dem_file = 'CEM3.0_R15m_dem.tif_cropped_nodatavalue.tif' #gdalwarp -cutline landmask_chiapas.shp -crop_to_cutline -of GTiff -dstnodata 0 CEM3.0_R15m_dem.tif CEM3.0_R15m_dem.tif_cropped_nodatavalue.tif
+        #dem_file = 'CEM3.0_R15m_dem.tif_cropped_nodatavalue_9999.tif'
+        dem_file = getattr(SETTINGS, 'DEM')
+        aspect_file = getattr(SETTINGS, 'ASPECT')
+        slope_file = getattr(SETTINGS, 'SLOPE')
+        LOGGER.info('File of dem: %s' % dem_file)
+        folder_results = '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/'
+        list_of_aux_files = [dem_file, aspect_file, slope_file]
+        image_segmentation_file = folder_results + 'NDVImetrics_3_02_08.tif'
+        gdal_format = "GTiff"
+        image_segmentation_file_class = raster.Data(image_segmentation_file, gdal_format)
+        array_sg_raster = image_segmentation_file_class.read_data_file_as_array()
+        #dataset_landmask_rasterized = get_dataset(folder_results + 'rasterize3.tif')
+        #gdalwarp -cutline landmask_chiapas.shp -crop_to_cutline -of GTiff -dstnodata 0 CEM3.0_R15m_dem.tif CEM3.0_R15m_dem.tif_cropped_nodatavalue.tif
+        landmask_folder = folder_results  + 'landmask_from_rasterize/'
+        LOGGER.info('Polygonizing the landmask rasterized array for clipping the aux files')
+        layer_landmask = 'landmask'
+        vectorize_raster(folder_results + 'rasterize3.tif', 1, landmask_folder, layer_landmask, 'id')
+        LOGGER.info('Folder of polygon: %s' % landmask_folder)
+        output_file_aux_files_warped = []
+        for aux_file in list_of_aux_files:
+            landmask_file = landmask_folder + layer_landmask + '.shp'
+            LOGGER.info('Clipping aux_file: %s with: %s' % (aux_file, landmask_file))
+            aux_file_clipped = folder_results  + get_basename_of_file(aux_file) + '_cropped_subprocess_call.tif'
+            command = [
+                   'gdalwarp', '-cutline', landmask_file,
+                   '-crop_to_cutline', '-of', 'GTiff', '-dstnodata', '-9999', aux_file, aux_file_clipped
+                   ]
+            subprocess.call(command)
+            LOGGER.info('Finished clipping of aux file')
+            #LOGGER.info('Starting warping of file: %s according to %s ' % (aux_file, image_segmentation_file))
+            LOGGER.info('Starting warping of file: %s according to %s ' % (aux_file_clipped, image_segmentation_file))
+            dataset_warped_aux_file = warp_raster_from_reference(aux_file_clipped, image_segmentation_file, None)
+            LOGGER.info('Starting resizing of array of auxiliary file: %s' % aux_file)
+            array_resized_and_warped_aux_file = get_array_resized_from_reference_dataset(dataset_warped_aux_file, image_segmentation_file_class.data_file)
+            #The next lines just for testing purposes:
+            aux_file_resized_and_warped =  folder_results + get_basename_of_file(aux_file) + '_resized_and_warped.tif'
+            options_to_create = new_options_for_create_raster_from_reference(image_segmentation_file_class.metadata,  raster.GDAL_CREATE_OPTIONS, ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND'], {})
+            create_raster_tiff_from_reference(image_segmentation_file_class.metadata, aux_file_resized_and_warped, array_resized_and_warped_aux_file, options_to_create)
+            LOGGER.info('Starting resampling')
+            width_sg_raster, height_sg_raster, bands_sg_raster = image_segmentation_file_class.get_attribute(raster.DATA_SHAPE)
+            array = resample_numpy_array(array_resized_and_warped_aux_file, width_sg_raster, height_sg_raster, interpolation = 'nearest')
+            aux_file_resampled = folder_results + get_basename_of_file(aux_file) + '_resampled_from_resized_and_warped.tif'
+            LOGGER.info('Masking auxiliary file: %s with fmask and NaNs of NDVI segmentation raster' % aux_file_resampled)
+            index_nodata_value_pixels_ndvi = numpy.array(array_sg_raster==0, dtype = bool)
+            array[index_nodata_value_pixels_ndvi] = -9999
+            create_raster_tiff_from_reference(image_segmentation_file_class.metadata, aux_file_resampled, array, options_to_create)
+            output_file_aux_files_warped.append(aux_file_resampled)
+        unique_labels = numpy.unique(array_sg_raster)
+        LOGGER.info('Starting calculation of zonal statistics for auxiliary files warped')
+        dataframe_list_aux_files_warped = []
+        for i in range(len(output_file_aux_files_warped)):
+            LOGGER.info('Reading image: %s' % output_file_aux_files_warped[i])
+            array = get_array_from_image_path(output_file_aux_files_warped[i])
+            LOGGER.info('calculating zonal statistics for file: %s' % output_file_aux_files_warped[i])
+            array_zonal_statistics = calculate_zonal_statistics(array, array_sg_raster, unique_labels)
+            LOGGER.info('finished zonal statistics')
+            array_zonal_statistics_labeled = append_labels_to_array(array_zonal_statistics, unique_labels)
+            LOGGER.info('Shape of array of zonal statistics labeled %s %s' % (array_zonal_statistics_labeled.shape[0], array_zonal_statistics_labeled.shape[1]))
+            LOGGER.info('Building data frame')
+            dataframe_list_aux_files_warped.append(create_names_of_dataframe_from_filename(build_dataframe_from_array(array_zonal_statistics_labeled.T), array_zonal_statistics_labeled.shape[0], get_basename_of_file(output_file_aux_files_warped[i])))
+        array = None
+        LOGGER.info('Joining feature dataframes for stack indexes list metrics')
+        dataframe_joined = join_dataframes_by_column_name(dataframe_list_aux_files_warped, 'id')
+        #The next two lines are just for checking 
+        file_name = folder_results + 'dataframe_joined_for_aux_files'
+        dataframe_joined.to_csv(file_name, sep='\t', encoding='utf-8')
+        
+        
+        
+        
+        '''
+        folder_results = '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/'
+        val_t = 3
+        val_s = 0.2
+        val_c = 0.8
+        output_file_aux_files_warped = [
+                                        'CEM3.0_R15m_dem.tif_resampled_from_resized_and_warped.tif',
+                                        'CEM3.0_R15m_aspect.tif_resampled_from_resized_and_warped.tif',
+                                        'CEM3.0_R15m_slope.tif_resampled_from_resized_and_warped.tif'
+                                        ]
+        output_file_aux_files_warped = [folder_results + 'CEM3.0_R15m_dem_cropped_nodatavalue_reprojected.tif_resampled_from_resized_and_warpednearest2.2.tif']
+        #output_file_aux_files_warped = [folder_results + 'CEM3.0_R15m_dem_cropped_nodatavalue_reprojected.tif_resampled_from_resized_and_warpednearest2.3.tif']
+        #output_file_aux_files_warped = [folder_results + 'CEM3.0_R15m_dem_cropped_nodatavalue_reprojected.tif_resampled_from_resized_and_warpednearest3.tif']
+        
+        output_file_stack_indexes_list_metrics = [ folder_results + 'NDVImetrics']
+        image_segmentation_file = output_file_stack_indexes_list_metrics[0] + '_' + str(val_t) + '_' + ''.join(str(val_s).split('.'))+ '_' + ''.join(str(val_c).split('.')) + '.tif'
+        LOGGER.info('Reading raster of segmentation file: %s' % image_segmentation_file)
+        array_sg_raster = get_array_from_image_path(image_segmentation_file)
+        unique_labels = numpy.unique(array_sg_raster)
+        LOGGER.info('Starting calculation of zonal statistics for auxiliary files warped')
+        dataframe_list_aux_files_warped = []
+        for i in range(len(output_file_aux_files_warped)):
+            LOGGER.info('Reading image: %s' % output_file_aux_files_warped[i])
+            array = get_array_from_image_path(output_file_aux_files_warped[i])
+            LOGGER.info('calculating zonal statistics for file: %s' % output_file_aux_files_warped[i])
+            array_zonal_statistics = calculate_zonal_statistics(array, array_sg_raster, unique_labels)
+            LOGGER.info('finished zonal statistics')
+            array_zonal_statistics_labeled = append_labels_to_array(array_zonal_statistics, unique_labels)
+            LOGGER.info('Shape of array of zonal statistics labeled %s %s' % (array_zonal_statistics_labeled.shape[0], array_zonal_statistics_labeled.shape[1]))
+            LOGGER.info('Building data frame')
+            dataframe_list_aux_files_warped.append(create_names_of_dataframe_from_filename(build_dataframe_from_array(array_zonal_statistics_labeled.T), array_zonal_statistics_labeled.shape[0], get_basename_of_file(output_file_aux_files_warped[i])))
+        array = None
+        LOGGER.info('Joining feature dataframes for stack indexes list metrics')
+        dataframe_joined = join_dataframes_by_column_name(dataframe_list_aux_files_warped, 'id')
+        #The next two lines are just for checking 
+        file_name = folder_results + 'dataframe_joined_for_aux_files_warped2.1'
+        dataframe_joined.to_csv(file_name, sep='\t', encoding='utf-8')
+        '''
+
+
+        '''
+        LOGGER.info('Working with auxiliary files')
+        dem_file = getattr(SETTINGS, 'DEM')
+        aspect_file = getattr(SETTINGS, 'ASPECT')
+        slope_file = getattr(SETTINGS, 'SLOPE')
+        LOGGER.info('File of dem: %s' % dem_file)
+        list_of_aux_files = [dem_file, aspect_file, slope_file]
+        folder_results = '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/'
+        dem_file = folder_results + 'CEM3.0_R15m_dem_cropped_nodatavalue_reprojected.tif'
+        list_of_aux_files = [dem_file]
+        image_segmentation_file = folder_results + 'NDVImetrics_3_02_08.tif'
+        gdal_format = "GTiff"
+        image_segmentation_file_class = raster.Data(image_segmentation_file, gdal_format)
+        array_sg_raster = image_segmentation_file_class.read_data_file_as_array()
+        #The next command is faster than the following for, but we don't get a pixel size resolution
+        #of 30 meters
+        #gdalwarp -cutline landmask_chiapas.shp -crop_to_cutline -of GTiff -dstnodata -9999 -t_srs 'EPSG:4326' -ts 7521 7741 CEM3.0_R15m_dem.tif CEM3.0_R15m_dem_cropped_nodatavalue_reprojected_resized.tif
+        #gdalwarp -cutline landmask_chiapas.shp -crop_to_cutline -of GTiff -dstnodata -9999 -t_srs 'EPSG:4326' CEM3.0_R15m_dem.tif CEM3.0_R15m_dem_cropped_nodatavalue_reprojected2.tif
+        for aux_file in list_of_aux_files:
+            #LOGGER.info('Starting warping of file: %s according to %s ' % (aux_file, image_segmentation_file))
+            dataset_warped_aux_file = warp_raster_from_reference(aux_file, image_segmentation_file, None)
+            LOGGER.info('Starting resizing of array of auxiliary file: %s' % aux_file)
+            #dataset_warped_aux_file = get_dataset(aux_file)
+            array_resized_and_warped_aux_file = get_array_resized_from_reference_dataset(dataset_warped_aux_file, image_segmentation_file_class.data_file)
+            #The next lines just for testing purposes:
+            aux_file_resized_and_warped =  folder_results + get_basename_of_file(aux_file) + '_resized_and_warpednearest2.2.tif'
+            geotransform_sg_rater = image_segmentation_file_class.get_attribute(raster.GEOTRANSFORM)
+            projection_sg_rater = image_segmentation_file_class.get_attribute(raster.PROJECTION)
+            create_raster(aux_file_resized_and_warped, array_resized_and_warped_aux_file, geotransform_sg_rater, projection_sg_rater)
+            LOGGER.info('Starting resampling')
+            width_sg_raster, height_sg_raster, bands_sg_raster = image_segmentation_file_class.get_attribute(raster.DATA_SHAPE)
+            array = resample_numpy_array(array_resized_and_warped_aux_file, width_sg_raster, height_sg_raster, interpolation = 'nearest')
+            #array = resample_numpy_array(array_resized_and_warped_aux_file, width_sg_raster, height_sg_raster, interpolation = 'cubic')
+            #LOGGER.info('Reading warped array')
+            #array_warped = dataset_warped_aux_file.ReadAsArray()
+            #LOGGER.info('Finished reading warped array')
+            #array = resample_numpy_array(array_warped, width_sg_raster, height_sg_raster, interpolation = 'nearest')
+            aux_file_resampled = folder_results + get_basename_of_file(aux_file) + '_resampled_from_resized_and_warpednearest2.2.tif'
+            #is necessary? 
+            LOGGER.info('Masking auxiliary file: %s with fmask and NaNs of NDVI segmentation raster' % aux_file_resampled)
+            #is necessary? 
+            index_nodata_value_pixels_ndvi = numpy.array(array_sg_raster==0, dtype = bool)
+            array[index_nodata_value_pixels_ndvi] = -9999
+            #index_nodata_value_pixels_aux_file = numpy.array(get_array_from_image_path('CEM3.0_R15m_dem_cropped_nodatavalue_reprojected_resized.tif') == -9999, dtype =bool)
+            #array[index_nodata_value_pixels_aux_file] = -9999
+            options_to_create = new_options_for_create_raster_from_reference(image_segmentation_file_class.metadata,  raster.GDAL_CREATE_OPTIONS, ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND'], {})
+            create_raster_tiff_from_reference(image_segmentation_file_class.metadata, aux_file_resampled, array, options_to_create)
+        '''
+        '''
+        LOGGER.info('Working with auxiliary files')
+        dem_file = getattr(SETTINGS, 'DEM')
+        aspect_file = getattr(SETTINGS, 'ASPECT')
+        slope_file = getattr(SETTINGS, 'SLOPE')
+        LOGGER.info('File of dem: %s' % dem_file)
+        LOGGER.info('File of aspect: %s' % aspect_file)
+        LOGGER.info('File of slope: %s' % slope_file)
+        list_of_aux_files = [dem_file, aspect_file, slope_file]
+        output_file_aux_files_warped =[]
+        #The next command is faster than the following for, but we don't get a pixel size resolution
+        #of 30 meters
+        #gdalwarp -cutline landmask_chiapas.shp -crop_to_cutline -of GTiff -dstnodata -9999 -t_srs 'EPSG:4326' -ts 7521 7741 CEM3.0_R15m_dem.tif CEM3.0_R15m_dem_cropped_nodatavalue_reprojected_resized.tif
+        for aux_file in list_of_aux_files:
+            LOGGER.info('Starting warping of file: %s according to %s ' % (aux_file, image_segmentation_file))
+            dataset_warped_aux_file = warp_raster_from_reference(aux_file, image_segmentation_file, None)
+            LOGGER.info('Starting resizing of array of auxiliary file: %s' % aux_file)
+            array_resized_and_warped_aux_file = get_array_resized_from_reference_dataset(dataset_warped_aux_file, image_segmentation_file_class.data_file)
+            #The next lines just for testing purposes:
+            aux_file_resized_and_warped =  folder_results + get_basename_of_file(aux_file) + '_resized_and_warped.tif'
+            geotransform_sg_rater = image_segmentation_file_class.get_attribute(raster.GEOTRANSFORM)
+            projection_sg_rater = image_segmentation_file_class.get_attribute(raster.PROJECTION)
+            create_raster(aux_file_resized_and_warped, array_resized_and_warped_aux_file, geotransform_sg_rater, projection_sg_rater)
+            LOGGER.info('Starting resampling')
+            width_sg_raster, height_sg_raster, bands_sg_raster = image_segmentation_file_class.get_attribute(raster.DATA_SHAPE)
+            array = resample_numpy_array(array_resized_and_warped_aux_file, width_sg_raster, height_sg_raster, interpolation = 'nearest')
+            #LOGGER.info('Reading warped array')
+            #array_warped = dataset_warped_aux_file.ReadAsArray()
+            #LOGGER.info('Finished reading warped array')
+            #array = resample_numpy_array(array_warped, width_sg_raster, height_sg_raster, interpolation = 'nearest')
+            aux_file_resampled = folder_results + get_basename_of_file(aux_file) + '_resampled_from_resized_and_warped.tif'
+            options_to_create = new_options_for_create_raster_from_reference(image_segmentation_file_class.metadata,  raster.GDAL_CREATE_OPTIONS, ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND'], {})
+            create_raster_tiff_from_reference(image_segmentation_file_class.metadata, aux_file_resampled, array, options_to_create)
+            output_file_aux_files_warped.append(aux_file_resampled) 
+        array = None
+        LOGGER.info('Starting calculation of zonal statistics for auxiliary files warped')
+        dataframe_list_aux_files_warped = []
+        for i in range(len(output_file_aux_files_warped)):
+            LOGGER.info('Reading image: %s' % output_file_aux_files_warped[i])
+            array = get_array_from_image_path(output_file_aux_files_warped[i])
+            LOGGER.info('calculating zonal statistics for file: %s' % output_file_aux_files_warped[i])
+            array_zonal_statistics = calculate_zonal_statistics(array, array_sg_raster, unique_labels)
+            LOGGER.info('finished zonal statistics')
+            array_zonal_statistics_labeled = append_labels_to_array(array_zonal_statistics, unique_labels)
+            LOGGER.info('Shape of array of zonal statistics labeled %s %s' % (array_zonal_statistics_labeled.shape[0], array_zonal_statistics_labeled.shape[1]))
+            LOGGER.info('Building data frame')
+            dataframe_list_aux_files_warped.append(create_names_of_dataframe_from_filename(build_dataframe_from_array(array_zonal_statistics_labeled.T), array_zonal_statistics_labeled.shape[0], get_basename_of_file(output_file_aux_files_warped[i])))
+        array = None
+        LOGGER.info('Joining feature dataframes for stack indexes list metrics')
+        dataframe_joined = join_dataframes_by_column_name(dataframe_list_aux_files_warped, 'id')
+        #The next two lines are just for checking 
+        #file_name = folder_results + 'dataframe_joined_for_aux_files_warped'
+        #dataframe_joined.to_csv(file_name, sep='\t', encoding='utf-8')
+        
+        
+        '''
+
     
+        '''
+        folder_results = '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/'
+        val_t = 3
+        val_s = 0.2
+        val_c = 0.8
+        output_file_stack_indexes_list_metrics = ['/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/NDVImetrics']
+        output_file_stack_indexes_list_metrics = [
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/NDVImetrics',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/ARVImetrics',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/EVImetrics',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/SRmetrics',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC1metrics',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC2metrics',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC3metrics',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC4metrics',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC5metrics',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC6metrics']
+        image_segmentation_file = output_file_stack_indexes_list_metrics[0] + '_' + str(val_t) + '_' + ''.join(str(val_s).split('.'))+ '_' + ''.join(str(val_c).split('.')) + '.tif'
+        LOGGER.info('Reading raster of segmentation file: %s' % image_segmentation_file)
+        array_sg_raster = get_array_from_image_path(image_segmentation_file)
+        unique_labels = numpy.unique(array_sg_raster)
+        LOGGER.info('Starting calculation of zonal statistics for stacking of temporal metrics indexes')
+        dataframe_list_stack_indexes_list_metrics = []
+        for i in range(len(output_file_stack_indexes_list_metrics)):
+            LOGGER.info('Reading image: %s' % output_file_stack_indexes_list_metrics[i])
+            array = get_array_from_image_path(output_file_stack_indexes_list_metrics[i])
+            LOGGER.info('calculating zonal statistics for file: %s' % output_file_stack_indexes_list_metrics[i])
+            array_zonal_statistics = calculate_zonal_statistics(array, array_sg_raster, unique_labels)
+            LOGGER.info('finished zonal statistics')
+            array_zonal_statistics_labeled = append_labels_to_array(array_zonal_statistics, unique_labels)
+            LOGGER.info('Shape of array of zonal statistics labeled %s %s' % (array_zonal_statistics_labeled.shape[0], array_zonal_statistics_labeled.shape[1]))
+            LOGGER.info('Building data frame')
+            dataframe_list_stack_indexes_list_metrics.append(create_names_of_dataframe_from_filename(build_dataframe_from_array(array_zonal_statistics_labeled.T), array_zonal_statistics_labeled.shape[0], get_basename_of_file(output_file_stack_indexes_list_metrics[i])))
+            #dataframe_list_stack_indexes_list_metrics.append(create_names_of_dataframe_from_filename(build_dataframe_from_array(array_zonal_statistics_labeled), array_zonal_statistics_labeled.shape[0], get_basename_of_file(output_file_stack_indexes_list_metrics[i])))
+
+        LOGGER.info('Joining feature dataframes for stack indexes list metrics')
+        dataframe_joined = join_dataframes_by_column_name(dataframe_list_stack_indexes_list_metrics, 'id')
+        file_name = folder_results + 'dataframe_joined_for_stack_indexes'
+        dataframe_joined.to_csv(file_name, sep='\t', encoding='utf-8')
+        '''        
+        '''
+        val_t = 10
+        val_s = 0.2
+        val_c = 0.8
+        output_file_stack_indexes_list_metrics = ['/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/NDVImetrics']
+        image_segmentation_file = output_file_stack_indexes_list_metrics[0] + '_' + str(val_t) + '_' + ''.join(str(val_s).split('.'))+ '_' + ''.join(str(val_c).split('.')) + '.tif'
+        LOGGER.info('Starting vectorization of segmentation file: %s' % image_segmentation_file)
+        image_segmentation_shp = image_segmentation_file + '.shp'
+        vectorize_raster(image_segmentation_file, 1, image_segmentation_shp, 'objects', 'id')
+        LOGGER.info('Finished vectorization: %s' % image_segmentation_shp)
+        '''
+        '''
+        val_t = 3
+        val_s = 0.2
+        val_c = 0.8
+        val_xt = 1
+        val_rows = 1000
+        val_nodata = -9999
+        val_tile = False
+        val_mp = False
+        folder_and_bind_segmentation = '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/segmentation/segmentation:/segmentation'
+        folder_and_bind_license = '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/segmentation/license/license.txt:/segmentation/license.txt '
+        output_file_stack_indexes_list_metrics = ['/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/metrics/NDVImetrics_mod.tif']        
+        folder_and_bind_ndvimetrics = get_parent(output_file_stack_indexes_list_metrics[0]) + ':/results'
+        ndvimetrics = '/results/' +  get_basename_of_file(output_file_stack_indexes_list_metrics[0])
+        LOGGER.info('starging segmentation')
+        command = 'segmentation_mac'
+        hosts_from_command = get_host_from_command(command)
+        LOGGER.info('The command to be executed is %s in the host %s' % (command, hosts_from_command[0].hostname))
+        remote = RemoteProcessLauncher(hosts_from_command[0])
+        arguments = 'docker  run --rm -v ' + folder_and_bind_segmentation + ' -v ' + folder_and_bind_license + ' -v ' + folder_and_bind_ndvimetrics + ' segmentation/segmentation:v1 python /segmentation/segment.py ' + ndvimetrics
+        arguments+=  ' -t ' + str(val_t) + ' -s ' + str(val_s) + ' -c ' + str(val_c) + ' --tile ' + str(val_tile) + ' --mp ' + str(val_mp) + ' --xt ' + str(val_xt) + ' --rows ' + str(val_rows) + ' --nodata ' + str(val_nodata)
+        remote.execute(arguments)
+        LOGGER.info('Finished segmentation')
+        '''
+        
+        '''
+        output_file_stack_bands_list = [
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/band1',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/band2',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/band3',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/band4',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/band5',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/band6']
+        extents_dictionary = {u'x_range': 7521.0, u'y_range': 7741.0, u'properties': {u'projection': 'PROJCS["UTM Zone 15, Northern Hemisphere",GEOGCS["Unknown datum based upon the WGS 84 ellipsoid",DATUM["Not specified (based on WGS 84 spheroid)",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",-93],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",0],UNIT["Meter",1]]', u'geotransform': (523185.0, 30.0, 0.0, 2033715.0, 0.0, -30.0)}, u'x_offset': 'array([ 10.,  30.,   0.,  50.])', u'y_offset': 'array([-0., -0., -0., -0.])'}
+        print extents_dictionary
+        import gdal
+        index_masked_pixels_over_all_images_ds = gdal.Open('/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/fmask_mask_overall_images.tif')
+        index_masked_pixels_over_all_images = numpy.array(index_masked_pixels_over_all_images_ds.ReadAsArray(),dtype=bool)
+        LOGGER.info('Starting calculation of temporal metrics for images stacked bands')
+        output_file_stack_bands_list_metrics = []
+        for i in range(len(output_file_stack_bands_list)):
+            image_class = raster.Data(output_file_stack_bands_list[i], 'GTiff')
+            LOGGER.info('Reading image: %s' % output_file_stack_bands_list[i])
+            array = image_class.read_data_file_as_array()
+            LOGGER.info('Calculating statistics: average, minimum, maximum, standard deviation, range of file %s' % output_file_stack_bands_list[i])
+            array_metrics = calculate_statistics_metrics(array, [0, -9999])
+            LOGGER.info('Shape of array metrics:')
+            print array_metrics.shape
+            for j in range(array_metrics.shape[0]):
+                array_metrics[j,:,:][index_masked_pixels_over_all_images] = 0
+            image_result = output_file_stack_bands_list[i] + 'metrics' + 'band' + str(i+1)
+            options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], {})
+            create_raster_tiff_from_reference(extents_dictionary, image_result, array_metrics, options_to_create)                        
+            output_file_stack_bands_list_metrics.append(image_result)
+            LOGGER.info('Starting calculation of temporal metrics for images stacked indexes')
+
+        output_file_stack_indexes_list = [
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/NDVI',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/ARVI',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/EVI',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/SR',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC1',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC2',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC3',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC4',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC5',
+                                                    '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC6']
+        extents_dictionary = {u'x_range': 7521.0, u'y_range': 7741.0, u'properties': {u'projection': 'PROJCS["UTM Zone 15, Northern Hemisphere",GEOGCS["Unknown datum based upon the WGS 84 ellipsoid",DATUM["Not specified (based on WGS 84 spheroid)",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",-93],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",0],UNIT["Meter",1]]', u'geotransform': (523185.0, 30.0, 0.0, 2033715.0, 0.0, -30.0)}, u'x_offset': 'array([ 10.,  30.,   0.,  50.])', u'y_offset': 'array([-0., -0., -0., -0.])'}
+        print extents_dictionary
+        #import gdal
+        LOGGER.info('Starting calculation of temporal metrics for images stacked indexes')
+        output_file_stack_indexes_list_metrics = []
+        for i in range(len(output_file_stack_indexes_list)):
+            LOGGER.info('Reading image: %s' % output_file_stack_indexes_list[i])
+            #array = get_array_from_image_path(output_file_stack_indexes_list[i])
+            image_class = raster.Data(output_file_stack_indexes_list[i], 'GTiff')
+            LOGGER.info('Reading image: %s' % output_file_stack_indexes_list[i])
+            array = image_class.read_data_file_as_array()
+            LOGGER.info('Calculating statistics: average, minimum, maximum, standard deviation, range of file %s' % output_file_stack_indexes_list[i])
+            array_metrics = calculate_statistics_metrics(array, [0, -9999])
+            #index_masked_pixels_over_all_images_ds = gdal.Open('/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/fmask_mask_overall_images.tif')
+            #index_masked_pixels_over_all_images = numpy.array(index_masked_pixels_over_all_images_ds.ReadAsArray(),dtype=bool)
+            for j in range(array_metrics.shape[0]):
+                array_metrics[j,:,:][index_masked_pixels_over_all_images] = 0
+            image_result = output_file_stack_indexes_list[i] + 'metrics' + 'index' + str(i+1)                
+            options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], {})
+            create_raster_tiff_from_reference(extents_dictionary, image_result, array_metrics, options_to_create)
+            output_file_stack_indexes_list_metrics.append(image_result)
+        '''
+        '''
+        LOGGER.info('Starting segmentation with: %s' % '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/metrics/NDVImetrics_mod.tif')
+        val_t = 3
+        val_s = 0.2
+        val_c = 0.8
+        val_xt = 1
+        val_rows = 1000
+        val_nodata = -9999
+        val_tile = False
+        val_mp = False
+        command = [
+                   'ssh','docker@192.168.99.100','docker','run','--rm','-v',
+                   '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/segmentation/segmentation:/segmentation',
+                   '-v', '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/segmentation/license/license.txt:/segmentation/license.txt',
+                   '-v','/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/metrics:/results',
+                   'segmentation/segmentation:v1', 'python', '/segmentation/segment.py', '/results/NDVImetrics_mod.tif',
+                    '--t',str(val_t),'-s',str(val_s),'-c',str(val_c),'--tile',str(val_tile),'--mp',str(val_mp),'--xt',str(val_xt),'--rows',str(val_rows),
+                    '--nodata',str(val_nodata)
+                    ]
+        subprocess.call(command)
+        '''
+        '''
+            LOGGER.info('Starting segmentation with: %s' % output_file_stack_indexes_list_metrics[0])
+            val_t = 3
+            val_s = 0.2
+            val_c = 0.8
+            val_xt = 1
+            val_rows = 1000
+            val_nodata = -9999
+            val_tile = False
+            val_mp = False
+            folder_and_bind_segmentation = '/LUSTRE/MADMEX/staging/2016_tasks/redisenio_madmex/segmentation/git_segmentation/segmentation:/segmentation'
+            folder_and_bind_license = '/LUSTRE/MADMEX/staging/2016_tasks/redisenio_madmex/segmentation/license/license.txt:/segmentation/license.txt'
+            folder_and_bind_ndvimetrics = get_parent(output_file_stack_indexes_list_metrics[0]) + ':/results'
+            ndvimetrics = '/results/' + get_basename_of_file(output_file_stack_indexes_list_metrics[0])
+            command = [
+                       'ssh','172.17.0.1','docker','run','--rm','-v',
+                       folder_and_bind_segmentation,
+                       '-v', folder_and_bind_license,
+                       '-v', folder_and_bind_ndvimetrics,
+                       'segmentation/segmentation:v1', 'python', '/segmentation/segment.py', ndvimetrics,
+                        '--t',str(val_t),'-s',str(val_s),'-c',str(val_c),'--tile',str(val_tile),'--mp',str(val_mp),'--xt',str(val_xt),'--rows',str(val_rows),
+                        '--nodata',str(val_nodata)
+                        ]
+            subprocess.call(command)
+            LOGGER.info('Finished segmentation')
+        '''
+            

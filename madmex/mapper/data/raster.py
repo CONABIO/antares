@@ -235,11 +235,11 @@ class Data(BaseData):
         if self.data_array is None:
             if self.data_file != None:
                 self.data_array = self.data_file.ReadAsArray()
-                self.close()
+                #self.close()
             else:
                 self.data_file = self._open_file()
                 self.data_array = self.data_file.ReadAsArray()
-                self.close()
+                #self.close()
         return self.data_array
     def read_hdf_data_file_as_array(self, tuple_of_files):
         '''

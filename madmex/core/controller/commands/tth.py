@@ -10,7 +10,6 @@ from madmex.core.controller.base import BaseCommand
 
 import sys
 import os
-import argparse
 import gdal
 import numpy as np
 import re
@@ -36,21 +35,19 @@ class Command(BaseCommand):
         '''
         
         '''
-        raster_path1 = options['tth'][0]
-        raster_path2 = options['tth'][1]
-        LOGGER.info('Reading raster path initial year: %s'  % (raster_path1) )
-        area_raster1, info_at_open1 = self.get_pixel_info(raster_path1)
-        LOGGER.info('Pixel area in raster %s: %s'  % (os.path.basename(raster_path1), str(area_raster1)) )
-        
-        LOGGER.info('Reading raster path final year:   %s'  % (raster_path2) )
-        area_raster2, info_at_open2 = self.get_pixel_info(raster_path2)
-        LOGGER.info('Pixel area in raster %s: %s'  % (os.path.basename(raster_path2), str(area_raster2)) )
-
-        
+                
+        for j in range(len(options['tth'])):
+            pixel_area, info_at_open= self.get_pixel_info(options['tth'][j])
+            LOGGER.info('Pixel area in raster %s: %s [m2]'  % ( os.path.basename(options['tth'][j]), str(pixel_area) ))
+            self.get_class_info(info_at_open, options['tth'][j])
+            
+            
     def get_pixel_info(self, path):
         '''
         
         '''
+        LOGGER.info('Reading raster path: %s'  % (path) )
+           
         ds = gdal.Open(path)
         bands = ds.RasterCount
         geotransform = ds.GetGeoTransform()
@@ -59,3 +56,52 @@ class Command(BaseCommand):
         pixel_area   = abs(x_resolution * y_resolution)
         
         return pixel_area, ds
+    
+    def get_class_info(self, raster, raster_name):
+        '''
+        
+        '''
+        
+        raster_array   = np.array(raster.GetRasterBand(1).ReadAsArray())
+        arr_class_info = np.unique(raster_array, return_counts=True)
+        LOGGER.info('Getting classification info from %s', os.path.basename(raster_name))
+
+        for i in range(len(arr_class_info[0])):
+            print arr_class_info[0][i],  arr_class_info[1][i]
+        
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+    
+    
+    

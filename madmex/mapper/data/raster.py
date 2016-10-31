@@ -182,6 +182,7 @@ class Data(BaseData):
         self.metadata['properties'] = {'projection': None, 'geotransform': None, 'geotransform_from_gcps': None, 'data_shape': None, 'footprint': None}
         put_in_dictionary(self.metadata, PROJECTION, self.data_file.GetProjection())
         put_in_dictionary(self.metadata, GEOTRANSFORM, self.data_file.GetGeoTransform())
+        #DATA_SHAPE equivalence for numpy array.shape is data_shape[2], data_shape[1], data_shape[0]
         put_in_dictionary(self.metadata, DATA_SHAPE, (self.data_file.RasterXSize, self.data_file.RasterYSize, self.data_file.RasterCount))
         put_in_dictionary(self.metadata, FOOTPRINT, self._get_footprint())
         put_in_dictionary(self.metadata, GEOTRANSFORM_FROM_GCPS, self.gcps_to_geotransform())
@@ -234,11 +235,11 @@ class Data(BaseData):
         if self.data_array is None:
             if self.data_file != None:
                 self.data_array = self.data_file.ReadAsArray()
-                self.close()
+                #self.close()
             else:
                 self.data_file = self._open_file()
                 self.data_array = self.data_file.ReadAsArray()
-                self.close()
+                #self.close()
         return self.data_array
     def read_hdf_data_file_as_array(self, tuple_of_files):
         '''

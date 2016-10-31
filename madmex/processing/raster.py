@@ -15,7 +15,9 @@ import gdal
 import ogr
 from pandas.core.frame import DataFrame
 from numpy import ndarray
-
+from scipy.misc import imresize
+import logging
+LOGGER = logging.getLogger(__name__)
 AEROSOL_L8 = 1
 BLUE_L8 = 2
 GREEN_L8 = 3
@@ -215,8 +217,13 @@ def calculate_statistics_metrics(array, no_data_values):
     array_stats = numpy.array(zonalstats)
     zonalstats = None
     return array_stats
-def vectorize_raster(image_path, gdal_band_number, target_vector_layer_filename, layer_name, field_name_of_layer):
-    ds = get_dataset(image_path)
+def vectorize_raster(source, gdal_band_number, target_vector_layer_filename, layer_name, field_name_of_layer):
+    import os
+    if os.path.isfile(source):
+        ds = get_dataset(source)
+    else:
+        #TODO: test if is dataset
+        LOGGER.info('dataset')
     projection_reference = ds.GetProjection()
     data_layer, ds_layer=create_empty_layer(target_vector_layer_filename, layer_name, projection_reference)
     band = ds.GetRasterBand(gdal_band_number)
@@ -224,30 +231,50 @@ def vectorize_raster(image_path, gdal_band_number, target_vector_layer_filename,
     data_layer.CreateField(field)
     return gdal.Polygonize(band, None, data_layer, 0, [])
 def calculate_zonal_statistics(array, array_labeled, labels):
-    #TODO: Instead of the next two lines, why don't we create segmentations files based
-    #on each of the indexes so we can use them as the argument array_labeled of this function 
-    #and it's corresponding labels argument ???
-    index_NaNs_2d = numpy.array(ndarray.all(array==-9999,axis=0), dtype = bool) #The arguments  
-    #array_labeled and labels are based on the NDVI index, so it's possible that no data values 
-    #of the ARVI index (for example) are present in the argument array and these values are labeled 
-    #different in the NDVI index, that's the reason of this line and the next one 
-    array_labeled[index_NaNs_2d] = 0 #we re-labeled the array_labeled according of the array
-    #of the index
     function_min_zonal = lambda x: scipy.ndimage.measurements.minimum(x, labels = array_labeled, index= labels)
     function_max_zonal =lambda x: scipy.ndimage.measurements.maximum(x, labels = array_labeled, index= labels)
     function_mean_zonal =lambda x: scipy.ndimage.measurements.mean(x, labels = array_labeled, index= labels)
-    function_std_zonal =lambda x: scipy.ndimage.measurements.standard_deviation(x, labels = array_labeled, index= labels)    
-    return numpy.concatenate((map(function_min_zonal,array),map(function_max_zonal,array), map(function_mean_zonal,array), map(function_std_zonal,array)),axis=0)
-    
+    function_std_zonal =lambda x: scipy.ndimage.measurements.standard_deviation(x, labels = array_labeled, index= labels)
+    if len(array.shape) == 3:
+        #TODO: Instead of the next two lines, why don't we create segmentations files based
+        #on each of the indexes so we can use them as the argument array_labeled of this function 
+        #and it's corresponding labels argument ???
+        index_NaNs_2d = numpy.array(ndarray.all(array==-9999,axis=0), dtype = bool) #The arguments  
+        #array_labeled and labels are based on the NDVI index, so it's possible that no data values 
+        #of the ARVI index (for example) are present in the argument array and these values are labeled 
+        #different in the NDVI index, that's the reason of this line and the next one 
+        array_labeled[index_NaNs_2d] = 0 #we re-labeled the array_labeled according of the array
+        #of the index
+        LOGGER.info('Calculating zonal minimum')
+        arr_min = map(function_min_zonal,array)
+        LOGGER.info('Calculating zonal maximum')
+        arr_max = map(function_max_zonal,array)
+        LOGGER.info('Calculating zonal mean')
+        arr_mean = map(function_mean_zonal,array)
+        LOGGER.info('Calculating zonal standard deviation')
+        arr_std = map(function_std_zonal,array)
+        return numpy.concatenate((arr_min, arr_max, arr_mean, arr_std), axis=0)
+    else:
+        index_NaNs_2d = numpy.array(array == -9999, dtype =bool)
+        array_labeled[index_NaNs_2d] = 0
+        LOGGER.info('Calculating zonal minimum')
+        arr_min = function_min_zonal(array)
+        LOGGER.info('Calculating zonal maximum')
+        arr_max = function_max_zonal(array)
+        LOGGER.info('Calculating zonal mean')
+        arr_mean = function_mean_zonal(array)
+        LOGGER.info('Calculating zonal standard deviation')
+        arr_std = function_std_zonal(array)
+    #return numpy.concatenate((map(function_min_zonal,array),map(function_max_zonal,array), map(function_mean_zonal,array), map(function_std_zonal,array)),axis=0)
+        return numpy.array((arr_min, arr_max, arr_mean, arr_std))
     #number_of_bands = array.shape[0]
     #fmin_zonal = lambda dim: numpy.array([numpy.nanmin(array[dim,array_labeled == x]) for x in labels])
     #fmax_zonal = lambda dim: numpy.array([numpy.nanmax(array[dim,array_labeled == x]) for x in labels])
     #fmean_zonal = lambda dim: numpy.array([numpy.nanmean(array[dim,array_labeled == x]) for x in labels])
     #fstd_zonal= lambda dim: numpy.array([numpy.nanstd(array[dim,array_labeled == x]) for x in labels])
     #return numpy.concatenate((map(fmin_zonal, [dim for dim in range(number_of_bands)]), map(fmax_zonal, [dim for dim in range(number_of_bands)]), map(fmean_zonal, [dim for dim in range(number_of_bands)]), map(fstd_zonal, [dim for dim in range(number_of_bands)]) ),axis=0)
-    
-   #return numpy.array([numpy.array([numpy.nanmin(array[:,array_labeled==x],axis=1), numpy.nanmax(array[:,array_labeled==x],axis=1), numpy.nanmean(array[:,array_labeled==x],axis=1), numpy.nanstd(array[:,array_labeled==x],axis=1)]).flatten() for x in labels]).T
-    
+    #return numpy.array([numpy.array([numpy.nanmin(array[:,array_labeled==x],axis=1), numpy.nanmax(array[:,array_labeled==x],axis=1), numpy.nanmean(array[:,array_labeled==x],axis=1), numpy.nanstd(array[:,array_labeled==x],axis=1)]).flatten() for x in labels]).T
+ 
 def append_labels_to_array(array, labels):
     return numpy.concatenate((labels.reshape(1, len(labels)), array), axis = 0)
     #return numpy.concatenate((labels.reshape(len(labels), 1), array), axis = 1)
@@ -261,3 +288,19 @@ def create_names_of_dataframe_from_filename(dataframe_class, number_of_columns, 
     print col_labels
     dataframe_class.columns = col_labels
     return dataframe_class
+def resample_numpy_array(array, width, height, interpolation = None, mode = 'F'):
+    if len(array.shape) == 3:
+        bands, y, x= array.shape
+        LOGGER.info('Resampling using width %s and height %s' %(width, height))
+        data_resampled = numpy.zeros([bands, height, width])
+        for band in bands:
+            data_resampled[band, :, :] = imresize(array[band, :, :], [height, width], interp = interpolation, mode = mode)
+    else:
+        LOGGER.info('Resampling using width %s and height %s' %(width, height))
+        data_resampled = imresize(array, [height, width], interp = interpolation, mode = mode)
+    LOGGER.info('Array resampled')
+    if len(array.shape) == 3:
+        LOGGER.info('Shape of array resampled: %s %s %s' %(data_resampled.shape[0], data_resampled.shape[1], data_resampled.shape[2]))
+    else:
+        LOGGER.info('Shape of array resampled: %s %s' %(data_resampled.shape[0], data_resampled.shape[1]))
+    return data_resampled

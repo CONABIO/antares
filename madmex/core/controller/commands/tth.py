@@ -7,6 +7,7 @@ Created on Oct 21, 2016
 from __future__ import unicode_literals
 from decimal import Decimal
 from madmex.core.controller.base import BaseCommand
+from scipy.constants.constants import hectare
 
 import sys
 import os
@@ -37,12 +38,12 @@ class Command(BaseCommand):
         '''
                 
         for j in range(len(options['tth'])):
-            pixel_area, info_at_open= self.get_pixel_info(options['tth'][j])
+            pixel_area, info_at_open= self.pixel_info(options['tth'][j])
             LOGGER.info('Pixel area in raster %s: %s [m2]'  % ( os.path.basename(options['tth'][j]), str(pixel_area) ))
-            self.get_class_info(info_at_open, options['tth'][j])
+            self.class_info(info_at_open, options['tth'][j], pixel_area)
             
             
-    def get_pixel_info(self, path):
+    def pixel_info(self, path):
         '''
         
         '''
@@ -57,7 +58,7 @@ class Command(BaseCommand):
         
         return pixel_area, ds
     
-    def get_class_info(self, raster, raster_name):
+    def class_info(self, raster, raster_name, pixel_area):
         '''
         
         '''
@@ -67,13 +68,19 @@ class Command(BaseCommand):
         LOGGER.info('Getting classification info from %s', os.path.basename(raster_name))
 
         for i in range(len(arr_class_info[0])):
-            print arr_class_info[0][i],  arr_class_info[1][i]
-        
+            class_id = arr_class_info[0][i]
+            num_pixels_per_class = arr_class_info[1][i]
+            area_per_class = self.compute_area(num_pixels_per_class, pixel_area)
+            print 'Class ID: ', class_id, '\t', 'No. Pixels per class: ', num_pixels_per_class, '\t', 'Area per class [ha]:', area_per_class
+            
+                    
+    def compute_area(self, class_pixels, pixel_area):
+        '''
+        '''
+        area_class = (pixel_area * class_pixels) / hectare
+        return area_class
                 
-                
-                
-                
-                
+            
                 
                 
                 

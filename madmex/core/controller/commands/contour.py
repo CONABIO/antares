@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 '''
-Created on August 13, 2016
+Created on August 15, 2016
 @author:     rmartinez
 
 This class implements the gdal_contour function. A Digital Elevation Model 
@@ -85,4 +85,4 @@ class Command(BaseCommand):
                                    outputFile])
         except subprocess.CalledProcessError:
             pass
-         
+        

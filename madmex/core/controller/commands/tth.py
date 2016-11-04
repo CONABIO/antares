@@ -15,10 +15,6 @@ import numpy as np
 import logging
 
 
-#from test.pystone import nargs
-
-
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -59,19 +55,19 @@ class Command(BaseCommand):
         matching_class = list(set(arr_class_id_ini).intersection(arr_class_id_fin))
         orphan_class = list(set(list(arr_class_id_ini)).symmetric_difference(list(arr_class_id_fin)))
         
-        print matching_class
-        print orphan_class
-        print list(arr_class_id_ini)
-        print list(arr_class_id_fin)
-        
+        LOGGER.info('Computing tth analysis in period: %s - %s'  % (yearIni,yearFin) )        
         # computes the "tth" anaysis only for those classes in both rasters
-         
+        
         for i in range(len(matching_class)):
             if matching_class[i] in arr_class_id_ini and matching_class[i] in arr_class_id_fin :
                 index_arr_class_ini = list(arr_class_id_ini).index(matching_class[i])
                 index_arr_class_fin = list(arr_class_id_fin).index(matching_class[i])
-                print matching_class[i], area_arr_ini[index_arr_class_ini], area_arr_fin[index_arr_class_fin]
-            
+                # print matching_class[i], area_arr_ini[index_arr_class_ini], area_arr_fin[index_arr_class_fin]
+                class_area_ini = area_arr_ini[index_arr_class_ini]
+                class_area_fin = area_arr_fin[index_arr_class_fin]
+                tth = self.tth(int(yearIni), int(yearFin), class_area_ini, class_area_fin)
+                print 'Class ID: ', matching_class[i], '\t', 'S1 [ha]:  ',class_area_ini, '\t', 'S2 [ha]:  ', class_area_fin, '\t', 'TTH: ', tth * 100, '\t', '%'              
+                
                     
                     
     
@@ -116,8 +112,17 @@ class Command(BaseCommand):
         return area_class
     
                 
-                
-                
+    def tth(self, year_ini, year_fin, class_area_ini, class_area_fin):
+        '''
+        '''
+        period = int(year_fin) - int(year_ini)
+        coef = Decimal(1.0 / period)
+        surface_class = Decimal((class_area_ini -class_area_fin) /  class_area_ini)
+        
+        tth_class = 1- ((1 - surface_class)**(coef))
+        
+        return tth_class            
+    
                 
                 
                 

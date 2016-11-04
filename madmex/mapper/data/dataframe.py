@@ -118,7 +118,6 @@ def histogram_trimming(dataframe, object_ids, threshold, name_of_class):
             my_pdf = stats.kde.gaussian_kde(data[:,:])
             ddev = my_pdf.evaluate(my_pdf.dataset)
             p1 = stats.scoreatpercentile(ddev,25)
-
             adjust = False      
             if (p1 < threshold) and (adjust == False):
                 thisthreshold = p1    

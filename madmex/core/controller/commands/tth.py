@@ -9,8 +9,12 @@ from decimal import Decimal
 from madmex.core.controller.base import BaseCommand
 from scipy.constants.constants import hectare
 from operator import itemgetter
+
+import shutil
 import os
+import sys
 import gdal
+import csv
 import numpy as np
 import logging
 
@@ -57,7 +61,10 @@ class Command(BaseCommand):
         
         LOGGER.info('Computing tth analysis in period: %s - %s'  % (yearIni,yearFin) )        
         # computes the "tth" anaysis only for those classes in both rasters
-        
+        tth_arr = []
+        clss_area_ini_arr = []
+        clss_area_fin_arr = []
+
         for i in range(len(matching_class)):
             if matching_class[i] in arr_class_id_ini and matching_class[i] in arr_class_id_fin :
                 index_arr_class_ini = list(arr_class_id_ini).index(matching_class[i])
@@ -65,9 +72,13 @@ class Command(BaseCommand):
                 # print matching_class[i], area_arr_ini[index_arr_class_ini], area_arr_fin[index_arr_class_fin]
                 class_area_ini = area_arr_ini[index_arr_class_ini]
                 class_area_fin = area_arr_fin[index_arr_class_fin]
+                clss_area_ini_arr.append(class_area_ini)
+                clss_area_fin_arr.append(class_area_fin)
                 tth = self.tth(int(yearIni), int(yearFin), class_area_ini, class_area_fin)
+                tth_arr.append( tth * 100 )
                 print 'Class ID: ', matching_class[i], '\t', 'S1 [ha]:  ',class_area_ini, '\t', 'S2 [ha]:  ', class_area_fin, '\t', 'TTH: ', tth * 100, '\t', '%'              
-                
+        
+        self.write_file(matching_class, clss_area_ini_arr, clss_area_fin_arr, tth_arr)     
                     
                     
     
@@ -121,26 +132,30 @@ class Command(BaseCommand):
         
         tth_class = 1- ((1 - surface_class)**(coef))
         
-        return tth_class            
+        return tth_class       
     
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
+    def write_file(self, match_class, area_ini, area_fin, tth):
+        '''
+        '''
+        titles = ['Class ID','S1 [ha]','S2 [ha]', 'tth [%]'] 
+        rows = zip(match_class,area_ini,area_fin,tth)
+        
+        dir_path = './tth/'
+        csv_file = 'tth_result.csv' 
+        file_path = dir_path + csv_file
+        LOGGER.info('Writing results in  %s', file_path)
+
+        if not os.path.exists(os.path.dirname(file_path)):
+            os.makedirs(os.path.dirname(file_path))
+        else:
+            shutil.rmtree(dir_path)
+            os.makedirs(os.path.dirname(file_path))
+
+        with open(file_path, 'wb') as f:
+            wtr = csv.writer(f)
+            wtr.writerows( [titles]) 
+            for row in rows:
+                wtr.writerow(row)
                 
                 
                 

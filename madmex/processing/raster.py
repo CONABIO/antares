@@ -9,7 +9,8 @@ from numpy import NaN
 from scipy.stats import nanstd, nanmean
 #from scipy import  ndimage
 import scipy.ndimage
-from madmex.mapper.data._gdal import get_projection, get_dataset, get_band
+from madmex.mapper.data._gdal import get_projection, get_dataset, get_band,\
+    _get_geotransform, get_geotransform, get_datashape_from_dataset
 from madmex.mapper.data.vector import create_empty_layer
 import gdal
 import ogr
@@ -17,6 +18,10 @@ from pandas.core.frame import DataFrame
 from numpy import ndarray
 from scipy.misc import imresize
 import logging
+from scipy.ndimage.filters import sobel
+import pandas
+from sklearn.decomposition import PCA
+
 LOGGER = logging.getLogger(__name__)
 AEROSOL_L8 = 1
 BLUE_L8 = 2
@@ -304,3 +309,109 @@ def resample_numpy_array(array, width, height, interpolation = None, mode = 'F')
     else:
         LOGGER.info('Shape of array resampled: %s %s' %(data_resampled.shape[0], data_resampled.shape[1]))
     return data_resampled
+def get_gradient_of_image(array):
+    return calculate_filter_Sobel(array)
+def calculate_filter_Sobel(array, mode_type = "constant"):
+    sx = sobel(array, axis = 0, mode = mode_type)
+    sy = sobel(array, axis = 1, mode = mode_type)
+    return numpy.hypot(sx,sy)
+def get_grid(dimension, resolution,griddistance,chipsize,diagonal=True):
+    '''
+    Calculates a binary mask array of sample chips for a given input image dimension
+    #TODO: Do we need to rewrite this function??... right now is a copy-paste from old madmex, works ok
+    dimension: image/array dimension (as result of numpy shape). must be 2-dimensional.
+    resolution: pixel size in image map projection units        
+    griddistance: distance between nodal points in sample grid in image map projection unit
+    chipsize: Size (length) of the quadratic chips in the image map projection unit
+    diagonal: whether or not to also fill diagonal in between the grid    
+    ''' 
+ 
+    data = numpy.zeros(dimension)
+    xsize = int(data.shape[1])
+    ysize =int(data.shape[0])
+
+    blocksize = int(numpy.round(chipsize/resolution))
+    distsize = int(numpy.round(griddistance/resolution))
+    firstblock = numpy.zeros((blocksize,xsize))
+    
+    xhalfoffset = int(numpy.round(blocksize/2))
+    
+    for x in range(xhalfoffset,xsize,distsize):
+        firstblock[:,x:x+blocksize] = 1
+        
+    for y in range(xhalfoffset,ysize,distsize):
+        dy = data.shape[0]-y
+        if dy < blocksize:
+            data[y:,:] = firstblock[:dy,:]
+        else:
+            data[y:y+blocksize,:] = firstblock     
+
+    if diagonal:
+        secondblock = numpy.zeros((blocksize,xsize))
+        for x in range(xhalfoffset+numpy.round(distsize/2),xsize,distsize):
+            secondblock[:,x:x+blocksize] = 1
+            
+        for y in range(xhalfoffset+numpy.round(distsize/2),ysize,distsize):
+            dy = data.shape[0]-y
+            if dy < blocksize:
+                data[y:,:] = secondblock[:dy,:]
+            else:
+                data[y:y+blocksize,:] = secondblock         
+    return data
+def calculate_zonal_histograms(array, classes, array_labeled, labels):
+    '''
+    Calculates zonal histogram of a discrete raster image (e.g. classification result) over objects in a label raster
+    '''
+    zonal_histogram = scipy.ndimage.measurements.histogram(array, 0, max(classes), max(classes) + 1, labels=array_labeled, index=labels)
+    return numpy.vstack(zonal_histogram)
+def get_pure_objects_from_raster_as_dataframe(array_histogram_of_objects, unique_objects, unique_classes, names_of_columns):
+    '''
+    Remove mixed objects (those which have more than one class) and keep the pure ones
+    '''
+    n_objects, n_classes = array_histogram_of_objects.shape
+    n_zeros = numpy.sum(array_histogram_of_objects == 0, axis = 1) 
+    one_class_in_histogram_index = n_zeros == n_classes-1 #get the indexes of pure objects
+    subset_objects = unique_objects[one_class_in_histogram_index]
+    subset_histogram = array_histogram_of_objects[one_class_in_histogram_index,:]
+    LOGGER.info("Shape of array with histogram of pure objects, number_of_objects: %s, number_of classes: %s" % (subset_histogram.shape[0], subset_histogram.shape[1]))
+    class_list = numpy.zeros(subset_histogram.shape[0]) 
+    class_range = numpy.arange(max(unique_classes)+1)
+    for o in range(subset_histogram.shape[0]):
+        idx = subset_histogram[o,:] > 0 #Get the index of class for object "o"
+        if sum(idx) > 0: # if class index has been found
+            a_class = class_range[idx] # get the class value
+            class_list[o] = a_class # add class value to list
+    nonzero_classes =  class_list > 0 # index of classes with value greater 0 (we ignore the zero class, cause is nodata: fmask or NaN's values)
+    class_list = class_list[nonzero_classes] # all non zero class labels
+    subset_objects = subset_objects[nonzero_classes] # final object 
+    df = pandas.DataFrame(numpy.vstack([subset_objects,class_list]).T) # stack and create dataframe
+    df.columns = [names_of_columns[0], names_of_columns[1]]
+    return df
+def reduce_dimensionality(dataframe, maxvariance,columns_to_drop):
+    '''
+    Performs PCA on feature pandas dataframe and reduces number of
+    principal components to those which explain a defined variance
+    '''
+    dataframe_without_columns = dataframe.drop(columns_to_drop, axis = 1)
+    LOGGER.info('Columns to be used by pca:')
+    print dataframe_without_columns.columns
+    LOGGER.info('Adding noise to dataframe')
+    dataframe_without_columns = dataframe_without_columns + numpy.random.normal(size = dataframe_without_columns.shape)*1.e-19 
+    pca = PCA(n_components = 'mle')
+    pca.fit(dataframe_without_columns)
+    # transform
+    samples = pca.transform(dataframe_without_columns)
+    # aggregated sum of variances
+    sum_variance = sum(pca.explained_variance_)
+    #print sum_variance, pca.explained_variance_
+    # get those having aggregated variance below threshold
+    scomp = 0
+    ncomp = 0
+    while scomp < maxvariance:
+        c = pca.explained_variance_[ncomp]
+        scomp = scomp + c/sum_variance
+        ncomp = ncomp+1
+    # reduce dimensionality
+    samples = samples[:,:ncomp]  
+    LOGGER.info("Number of features after PCA transformation %s" % samples.shape[1])    
+    return samples

@@ -67,6 +67,9 @@ class Data(BaseData):
             self.layer = self.data_file.GetLayer()
         if self.footprint is None:
             self.footprint = self._get_footprint()
+        self.srs = self.layer.GetSpatialRef()
+        self.srs.AutoIdentifyEPSG() #This is the equivalent of get projection of data source object of gdal 
+        self.srid = self.srs.GetAuthorityCode(None)
     def _get_footprint(self):
         '''
         Returns the extent of the shape image.
@@ -83,6 +86,7 @@ class Data(BaseData):
     
 if __name__ == '__main__':
     image = '/Users/erickpalacios/Documents/CONABIO/MADMEXdata/eodata/footprints/country_mexico/country_mexico_2012.shp'
+    image = '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/NDVImetrics_3_02_08.tif.shp'
     FORMAT =  'ESRI Shapefile'
     data_class = Data(image, FORMAT)
     print data_class.layer
@@ -94,6 +98,13 @@ if __name__ == '__main__':
     srs = osr.SpatialReference()
     print srs.ImportFromEPSG(4326) 
     print srs.GetAuthorityCode(None)
+    print 'srid'
+    print data_class.srid
+    print 'get spatial reference'
+    print data_class.layer.GetSpatialRef()
+    print 'srs'
+    print data_class.srs
+    print 'projection defined'
     projection = 'PROJCS["UTM Zone 15, Northern Hemisphere",GEOGCS["Unknown datum based upon the WGS 84 ellipsoid",DATUM["Not specified (based on WGS 84 spheroid)",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",-93],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",0],UNIT["Meter",1]]'
     print osr.SpatialReference()
     srs = osr.SpatialReference()

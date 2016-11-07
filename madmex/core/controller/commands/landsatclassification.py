@@ -8,7 +8,7 @@ import logging
 from madmex.core.controller.commands import get_bundle_from_path
 from madmex.persistence.driver import find_datasets, get_host_from_command
 from datetime import datetime
-from madmex.mapper.data import raster
+from madmex.mapper.data import raster, vector
 from madmex.mapper.data.harmonized import harmonize_images, get_image_subset
 from madmex.mapper.data.raster import create_raster_tiff_from_reference,\
     new_options_for_create_raster_from_reference
@@ -24,15 +24,14 @@ import numpy
 from madmex.mapper.bundle.landsat8sr import FILES
 from numpy import ndarray
 from madmex.remote.dispatcher import RemoteProcessLauncher
-from madmex.util import get_parent, get_basename_of_file
+from madmex.util import get_parent, get_basename_of_file, create_directory_path
 from madmex.mapper.data._gdal import get_array_from_image_path,\
-    warp_raster_from_reference, get_array_resized_from_reference_dataset,\
-    get_dataset, create_raster
+    warp_raster_from_reference, get_array_resized_from_reference_dataset
 import pandas
 import subprocess
-from madmex.mapper.base import _get_attribute
 from madmex.mapper.data.dataframe import reduce_dimensionality,\
-    outlier_elimination_for_dataframe
+    outlier_elimination_for_dataframe, generate_namesfile,\
+    join_C5_dataframe_and_shape, join_dataframes_by_column_name
 LOGGER = logging.getLogger(__name__)
 BUNDLE_PACKAGE = 'madmex.mapper.bundle'
 FMASK_LAND = 0
@@ -59,12 +58,6 @@ def _get_class_method(list_of_objects, name_method):
         #print inspect.getmembers(lista[0])
         list_methods.append(getattr(obj, name_method)())
     return list_methods 
-
-def join_dataframes_by_column_name(list_of_dataframes, column_name):
-    dataframe = list_of_dataframes[0]
-    for i in range(1, len(list_of_dataframes)):
-        dataframe = pandas.merge(dataframe, list_of_dataframes[i], on = column_name, how = 'inner')
-    return dataframe
 
 class Command(BaseCommand):
     '''
@@ -443,6 +436,7 @@ class Command(BaseCommand):
                 LOGGER.info('Shape of array of zonal statistics labeled %s %s' % (array_zonal_statistics_labeled.shape[0], array_zonal_statistics_labeled.shape[1]))
                 LOGGER.info('Building data frame')
                 dataframe_list_aux_files_warped.append(create_names_of_dataframe_from_filename(build_dataframe_from_array(array_zonal_statistics_labeled.T), array_zonal_statistics_labeled.shape[0], get_basename_of_file(output_file_aux_files_warped[i])))
+                dataframe_list_aux_files_warped[i] = dataframe_list_aux_files_warped[i].dropna(how='any')
             array = None
             LOGGER.info('Joining feature dataframes for aux files')
             dataframe_joined_aux_files = join_dataframes_by_column_name(dataframe_list_aux_files_warped, 'id')
@@ -473,15 +467,15 @@ class Command(BaseCommand):
             LOGGER.info('Getting gradient texture features of file %s' % output_file_stack_indexes_list_metrics[0])
             array_ndvi_metrics = get_array_from_image_path(output_file_stack_indexes_list_metrics[0])            
             output_file_texture_sobel = output_file_stack_indexes_list_metrics[0] + 'gradient.tif'
-            array_ndvi_metrics_texture = get_gradient_of_image(array_ndvi_metrics)
+            array_ndvi_metrics_texture = get_gradient_of_image(array_ndvi_metrics[3,:,:])
             LOGGER.info('Masking array of ndvi metrics texture with fmask and NaNs values of segmentation raster')
-            bands, width, height = array_ndvi_metrics_texture.shape
+            image_segmentation_file = folder_results + 'NDVImetrics_3_02_08.tif'
+            array_sg_raster = get_array_from_image_path(image_segmentation_file)
             index_nodata_value_pixels_ndvi = numpy.array(array_sg_raster==0, dtype = bool)
-            for band in range(bands):
-                array_ndvi_metrics_texture[band, :, :] [index_nodata_value_pixels_ndvi] = -9999
+            array_ndvi_metrics_texture[:, :] [index_nodata_value_pixels_ndvi] = -9999    
             options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], {})
             create_raster_tiff_from_reference(extents_dictionary, output_file_texture_sobel, array_ndvi_metrics_texture, options_to_create)       
-            LOGGER.info('Finished gradient texture features')
+            LOGGER.info('Finished gradient texture features')    
             LOGGER.info('Calculating zonal stats for :%s' % output_file_texture_sobel)
             array_zonal_statistics = calculate_zonal_statistics(array_ndvi_metrics_texture, array_sg_raster, unique_labels_for_objects)
             LOGGER.info('finished zonal statistics')
@@ -561,34 +555,95 @@ class Command(BaseCommand):
                 dataframe_reduced_pca_file = folder_results + 'dataframe_joined_for_stack_bands_metrics_and_pure_objects_of_training_data_reduced_by_pca'
                 dataframe_reduced_pca = create_names_of_dataframe_from_filename(build_dataframe_from_array(array_reduced_pca_labeled.T), array_reduced_pca_labeled.shape[0], get_basename_of_file(dataframe_reduced_pca_file))
                 #TODO: Just checking:
-                dataframe_reduced_pca.to_csv(dataframe_reduced_pca_file, sep='\t', encoding='utf-8', index = False)
+                dataframe_reduced_pca.to_csv(dataframe_reduced_pca_file, sep=',', encoding='utf-8', index = False)
                 LOGGER.info('Starting with elimination of outliers')
                 LOGGER.info('Joining reduced dataframe by pca with object ids and dataframe of pure objects of training data')
                 dataframe_reduced_pca_with_classes= join_dataframes_by_column_name([dataframe_reduced_pca, dataframe_of_pure_objects_of_training_data], 'id')
                 LOGGER.info('Number of rows and columns of dataframe joined: (%s,%s)' %(len(dataframe_reduced_pca_with_classes.index), len(dataframe_reduced_pca_with_classes.columns)))
                 #Just testing purposes:
-                dataframe_reduced_pca_with_classes.to_csv(dataframe_reduced_pca_file + 'classes', sep = '\t', encoding = 'utf8', index = False)
+                dataframe_reduced_pca_with_classes.to_csv(dataframe_reduced_pca_file + 'classes', sep = ',', encoding = 'utf8', index = False)
                 unique_classes = numpy.unique(dataframe_of_pure_objects_of_training_data['given'].values)
                 object_ids_outlier_elimination = outlier_elimination_for_dataframe(dataframe_reduced_pca_with_classes, 'id', 'given', 'id', 3, unique_classes, 0.15)
                 #Just testing purposes:
                 object_ids_outlier_elimination_file = folder_results + 'dataframe_object_ids_outlier_elimination'
-                object_ids_outlier_elimination.to_csv(object_ids_outlier_elimination_file, sep = '\t', encoding = 'utf-8', index = False)
+                object_ids_outlier_elimination.to_csv(object_ids_outlier_elimination_file, sep = ',', encoding = 'utf-8', index = False)
                 LOGGER.info('Joining all dataframes according to ids of outlier elimination ')
                 dataframe_all_joined_classified = join_dataframes_by_column_name([object_ids_outlier_elimination, dataframe_joined_stack_bands_metrics, dataframe_joined_stack_indexes_metrics, dataframe_joined_aux_files, dataframe_texture_features, dataframe_of_pure_objects_of_training_data], 'id')
                 LOGGER.info('Number of rows and columns of dataframe joined: (%s,%s)' %(len(dataframe_all_joined_classified.index), len(dataframe_all_joined_classified.columns)))
-                #Just testing purposes:
-                dataframe_all_joined_classified_file = folder_results + 'dataframe_all_joined_classified'
-                dataframe_all_joined_classified.to_csv(dataframe_all_joined_classified_file, sep = '\t', encoding = 'utf-8', index = False)
             else:
                 LOGGER.info('Joining all dataframes without outlier elimination')
                 dataframe_all_joined_classified = join_dataframes_by_column_name([dataframe_joined_stack_bands_metrics, dataframe_joined_stack_indexes_metrics, dataframe_joined_aux_files, dataframe_texture_features, dataframe_of_pure_objects_of_training_data], 'id')
                 LOGGER.info('Number of rows and columns of dataframe joined: (%s,%s)' %(len(dataframe_all_joined_classified.index), len(dataframe_all_joined_classified.columns)))
-                dataframe_all_joined_classified_file = folder_results + 'dataframe_all_joined_classified'
-                dataframe_all_joined_classified.to_csv(dataframe_all_joined_classified_file, sep = '\t', encoding = 'utf-8', index = False)
+
             
             LOGGER.info('Joining all dataframes for classifying')
             dataframe_all_joined_for_classifying = join_dataframes_by_column_name([dataframe_joined_stack_bands_metrics, dataframe_joined_stack_indexes_metrics, dataframe_joined_aux_files, dataframe_texture_features], 'id')
             dataframe_all_joined_for_classifying['given'] = '?'
             LOGGER.info('Number of rows and columns of dataframe joined: (%s,%s)' %(len(dataframe_all_joined_for_classifying.index), len(dataframe_all_joined_for_classifying.columns)))
-            dataframe_all_joined_for_classifying_file = folder_results + 'dataframe_all_joined_for_classifying'
-            dataframe_all_joined_for_classifying.to_csv(dataframe_all_joined_for_classifying_file, sep = '\t', encoding = 'utf-8', index = False)            
+            
+            LOGGER.info('Generating data file')
+            dataframe_all_joined_classified_file = folder_results + 'C5.data'
+            dataframe_all_joined_classified.to_csv(dataframe_all_joined_classified_file, sep = ',', encoding = 'utf-8', index = False)
+            LOGGER.info('Generating cases file')
+            dataframe_all_joined_for_classifying_file = folder_results + 'C5.cases'
+            dataframe_all_joined_for_classifying.to_csv(dataframe_all_joined_for_classifying_file, sep = ',', encoding = 'utf-8', index = False)
+            LOGGER.info('Generating names file')
+            unique_classes = numpy.unique(dataframe_all_joined_classified['given'].values)
+            name_namesfile = folder_results + 'C5.names'
+            generate_namesfile(dataframe_all_joined_classified.columns, unique_classes,name_namesfile, 'id', 'given')
+            
+            #Running C5 classification:
+            #/usr/local/bin/c5.0 -b -f C5
+            #/usr/local/bin/predict -f C5|tail -n +4|sed -nE 's/\s{2,}/,/g;p'|cut -d',' -f1,3,4|sed -n 's/\[//;p'|sed -n 's/\]//;p'|sed -n '1s/^/id,predicted,confidence\n/;p' > C5.result          
+
+            LOGGER.info('Using result of C5 for generating land cover shapefile and raster image')        
+            C5_result = folder_results + 'C5.result'
+            image_segmentation_shp_file = folder_results + 'NDVImetrics_3_02_08.tif.shp'
+            dataframe_c5_result = pandas.read_csv(C5_result)
+            FORMAT =  'ESRI Shapefile'
+            image_segmentation_shp_class = vector.Data(image_segmentation_shp_file,  FORMAT)
+            LOGGER.info('Joining dataframe %s to %s' %(C5_result, image_segmentation_shp_file))
+            dataframe_joined_shp_segmentation_and_c5_result = join_C5_dataframe_and_shape(image_segmentation_shp_class, 'id', dataframe_c5_result, 'id')
+            LOGGER.info('Number of rows and columns of dataframe joined: (%s,%s)' %(len(dataframe_joined_shp_segmentation_and_c5_result.index), len(dataframe_joined_shp_segmentation_and_c5_result.columns)))
+            dataframe_joined_shp_segmentation_and_c5_result_file = folder_results + 'dataframe_joined_shp_segmentation_and_c5_result.csv'
+            LOGGER.info('Writing csv of join between c5 result and segmentation shape: %s' % dataframe_joined_shp_segmentation_and_c5_result_file)            
+            dataframe_joined_shp_segmentation_and_c5_result.to_csv(dataframe_joined_shp_segmentation_and_c5_result_file, sep =',', encoding = 'utf8', index = False)
+            LOGGER.info('Writing C5 result joined with segmentation shape to shapefile')
+            #segmentation_and_c5_result_file_vectorized_file = folder_results +'segmentation_and_c5_result_file_vectorized_vectorized.shp'
+            #write_C5_dataframe_to_shape(dataframe_joined_shp_segmentation_and_c5_result, image_segmentation_shp_class, segmentation_and_c5_result_file_vectorized_file)        
+            segmentation_and_c5_result_file_vectorized_folder = folder_results + 'segmentation_and_c5_result_vectorized/'
+            create_directory_path(segmentation_and_c5_result_file_vectorized_folder)
+            sql = "SELECT a.id, a.predicted, a.confidence, st_geomfromtext(a.geom," + image_segmentation_shp_class.srid+ ") as geometry "
+            sql+= "from dataframe_joined_shp_segmentation_and_c5_result a"
+            shp_result = segmentation_and_c5_result_file_vectorized_folder + '/C5_result_joined_segmentation_shape.shp'
+            command = [
+                    'ogr2ogr', shp_result,
+                    dataframe_joined_shp_segmentation_and_c5_result_file,
+                    '-dialect', 'sqlite', '-sql', sql
+                    ]
+            subprocess.call(command)       
+            LOGGER.info('Rasterizing segmentation and c5 result shape of folder %s' % segmentation_and_c5_result_file_vectorized_folder)
+            LOGGER.info('Identifying segmentation and c5 shape folder %s' % segmentation_and_c5_result_file_vectorized_folder)
+            bundle = _get_bundle_from_path(segmentation_and_c5_result_file_vectorized_folder)
+            if bundle:
+                LOGGER.info('Directory %s is a %s bundle', segmentation_and_c5_result_file_vectorized_folder, bundle.get_name())
+                LOGGER.info('Rasterizing vector shape to get land cover tif')
+                options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.DATA_SHAPE, (int(extents_dictionary['x_range']), int(extents_dictionary['y_range']), 1), {})
+                dataset_shape_sg_and_c5_rasterized = create_raster_tiff_from_reference(extents_dictionary, '', None, options_to_create)
+                bundle.rasterize(dataset_shape_sg_and_c5_rasterized, [1], None, ["ATTRIBUTE=predicted" ]) #the rasterized process changes the dataset
+                options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], {})            
+                image =folder_results + 'madmex_lcc_prueba.tif'
+                #TODO: check why using this option doesn't write the image to disk: new_options_for_create_raster_from_reference(extents_dictionary, raster.DATASET, dataset_landmask_rasterized, options_to_create)
+                create_raster_tiff_from_reference(extents_dictionary, image, dataset_shape_sg_and_c5_rasterized.ReadAsArray(), options_to_create)
+                LOGGER.info('Finished rasterizing vector shape')
+                LOGGER.info('Rasterizing vector shape to get confidence tif')
+                options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.DATA_SHAPE, (int(extents_dictionary['x_range']), int(extents_dictionary['y_range']), 1), {})
+                bundle.rasterize(dataset_shape_sg_and_c5_rasterized, [1], None, ["ATTRIBUTE=confidence" ])
+                image =folder_results + 'madmex_lcc_confidence_prueba.tif'
+                #TODO: check why using this option doesn't write the image to disk: new_options_for_create_raster_from_reference(extents_dictionary, raster.DATASET, dataset_landmask_rasterized, options_to_create)
+                options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], {})            
+                create_raster_tiff_from_reference(extents_dictionary, image, dataset_shape_sg_and_c5_rasterized.ReadAsArray(), options_to_create)
+                LOGGER.info('Finished rasterizing vector shape')
+        
+        LOGGER.info('Finished workflow classification :)')
+             

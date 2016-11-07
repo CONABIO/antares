@@ -634,7 +634,7 @@ class Command(BaseCommand):
                 options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], {})            
                 image =folder_results + 'madmex_lcc_prueba.tif'
                 #TODO: check why using this option doesn't write the image to disk: new_options_for_create_raster_from_reference(extents_dictionary, raster.DATASET, dataset_landmask_rasterized, options_to_create)
-                create_raster_tiff_from_reference(extents_dictionary, image, dataset_shape_sg_and_c5_rasterized.ReadAsArray(), options_to_create)
+                create_raster_tiff_from_reference(extents_dictionary, image, dataset_shape_sg_and_c5_rasterized.ReadAsArray(), options_to_create, data_type = gdal.GDT_Int32)
                 LOGGER.info('Finished rasterizing vector shape')
                 LOGGER.info('Rasterizing vector shape to get confidence tif')
                 options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.DATA_SHAPE, (int(extents_dictionary['x_range']), int(extents_dictionary['y_range']), 1), {})
@@ -646,4 +646,3 @@ class Command(BaseCommand):
                 LOGGER.info('Finished rasterizing vector shape')
         
         LOGGER.info('Finished workflow classification :)')
-             

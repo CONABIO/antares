@@ -8,6 +8,9 @@ import numpy
 import pandas
 from sklearn.decomposition import PCA
 from scipy import stats
+from madmex.mapper.data import vector
+from madmex.mapper.data.vector import create_empty_layer
+import ogr
 LOGGER = logging.getLogger(__name__)
 
 def reduce_dimensionality(dataframe, maxvariance, columns_to_drop):
@@ -143,3 +146,69 @@ def histogram_trimming(dataframe, object_ids, threshold, name_of_class):
     ix = numpy.in1d(numpy.array(object_ids),thisclassinliers)
     ix = object_ids[ix]
     return pandas.DataFrame(ix)
+def generate_namesfile(columns, unique_classes, name_namesfile, column_name_of_ids, column_name_of_classes):
+    f = open(name_namesfile, 'w+')
+    f.write(column_name_of_classes + '.\n\n')
+    for c in columns:
+        if c == column_name_of_ids:
+            f.write(c+ ':label.\n')
+        elif c == column_name_of_classes:
+            f.write(c + ': ' + ','.join(map(str,unique_classes)) + '.\n')
+        else:
+            f.write(c + ': continuous.\n')
+    f.close()
+    return name_namesfile
+def join_dataframes_by_column_name(list_of_dataframes, column_name):
+    dataframe = list_of_dataframes[0]
+    for i in range(1, len(list_of_dataframes)):
+        dataframe = pandas.merge(dataframe, list_of_dataframes[i], on = column_name, how = 'inner')
+    return dataframe
+def join_C5_dataframe_and_shape(shape_class, shape_column, dataframe, dataframe_column):
+    feature = shape_class.layer.GetNextFeature()
+    feature_list = []
+    while feature is not None:
+        object_id = feature.GetField(shape_column)
+        feature_list.append([feature.GetGeometryRef().ExportToWkt(), object_id])
+        feature = shape_class.layer.GetNextFeature()
+    shape_dataframe = pandas.DataFrame(feature_list)
+    shape_dataframe.columns = ['geom', shape_column]
+    LOGGER.info('Joining segmentation shape and C5 data frame')
+    return join_dataframes_by_column_name([shape_dataframe, dataframe], dataframe_column)
+def write_C5_dataframe_to_shape(dataframe, shape_class, out_file):
+    data_layer, ds_layer = create_empty_layer(out_file, 'export', shape_class.srid)
+    fid = ogr.FieldDefn('gid', ogr.OFTInteger)
+    data_layer.CreateField(fid) 
+    table_types = dataframe.dtypes
+    table_columns = dataframe.columns   
+    geomcolumn = 'geom'     
+    for c in range(table_columns.shape[0]):
+        dt = table_types[c]
+        n = table_columns[c]
+        if "float" in str(dt) :
+            FieldType = ogr.OFTReal
+        elif "int" in str(dt)  :
+            FieldType = ogr.OFTInteger 
+        elif "object" in str(dt)  :
+            FieldType = ogr.OFTString 
+        else:
+            FieldType = ogr.OFTString 
+        fd = ogr.FieldDefn(n, FieldType) 
+        if not n ==  geomcolumn: 
+            data_layer.CreateField(fd) 
+    for i in range(dataframe.shape[0]):
+        data = dataframe.iloc[i].values
+        feature = ogr.Feature(data_layer.GetLayerDefn())
+        gfi = feature.GetFieldIndex('gid')
+        feature.SetField(gfi, i+1)
+        for c in range(table_columns.shape[0]):
+            d = data[c]
+            n = table_columns[c]
+            if n ==  geomcolumn:
+                feature.SetGeometry(ogr.CreateGeometryFromWkt(d))
+            else:
+                gfi = feature.GetFieldIndex(n)
+                feature.SetField(gfi, str(d))
+            data_layer.CreateFeature(feature)  
+        feature.Destroy()      
+        data_source = None
+

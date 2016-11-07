@@ -28,13 +28,13 @@ class Bundle(VectorBaseBundle):
     def get_vector(self):
         if self.vector is None:
             self.vector = vector.Data(self.file_dictionary['.*.shp$'], FORMAT)
-            return self.vector
-    def rasterize(self, target, band_list, burn_values):
+        return self.vector
+    def rasterize(self, target, band_list, burn_values, options=None):
         '''
         The target needs to be an output of the function Create of gdal
         The burn values are the data that we consider as relevant data
         '''
-        if rasterize_vector(target, self.get_vector().layer, band_list, burn_values) != 0:
+        if rasterize_vector(target, self.get_vector().layer, band_list, burn_values, options) != 0:
             LOGGER.info('Error when rasterizing the vector layer : %s' % self.get_vector().image_path)
 if __name__ == '__main__':
     folder = '/Users/erickpalacios/Documents/CONABIO/MADMEXdata/eodata/footprints/country_mexico/'

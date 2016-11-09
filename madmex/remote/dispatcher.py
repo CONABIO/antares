@@ -32,7 +32,7 @@ class RemoteProcessLauncher():
         self.host = host
         self.ssh_client = None
         
-    def execute(self, shell_string):
+    def execute(self, shell_string, write_output = False):
         '''
         This method calls the given shell command in the remote host and prints
         out the response from the host.
@@ -50,7 +50,11 @@ class RemoteProcessLauncher():
         stdin, stdout, stderr = self._get_ssh_client().exec_command(shell_string)
         stdin.close()
         LOGGER.info('stdout:')
-        print Colors.OKGREEN + stdout.read() + Colors.ENDC
+        if write_output:
+            return stdout.read()
+        else:
+            print Colors.OKGREEN + stdout.read() + Colors.ENDC
+
         self._get_ssh_client().close()
         
     def _get_ssh_client(self):

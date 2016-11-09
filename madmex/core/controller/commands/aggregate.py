@@ -23,10 +23,19 @@ from madmex.mapper.data._gdal import create_empty_raster_from_reference, \
 from madmex.util import get_base_name, create_file_name, get_parent
 
 
-INITIAL_ARRAY = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,123,124,200,210],
-                 [27,28,30,31],
-                 [29,98,99]]
-FINAL_ARRAY = [1,2,3]
+#INITIAL_ARRAY = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,123,124,200,210],
+#                 [27,28,30,31],
+#                 [29,98,99]]
+#FINAL_ARRAY = [1,2,3]
+
+INITIAL_ARRAY = [[1,2,3,4,5,6],
+                 [7,8,9,10,11,12,13],
+                 [22,23,24,25,26,27,28],
+                 [29],
+                 [30],
+                 [32],
+                 [14,15,16,17,18,19,20,21,31]]
+FINAL_ARRAY = [1,2,3,4,5,6,7]
 
 MASK_ARRAY =[32]
 
@@ -57,63 +66,28 @@ class Command(BaseCommand):
         parser.add_argument('--path', nargs='*')
         parser.add_argument('--output', nargs='*')
 
-    def method_one(self, path, output):
-        
-        print path
-        print INITIAL_ARRAY
-        print FINAL_ARRAY
-        #data_array = open_handle(path)
-        
+    def mask_by_row(self, path, output):
+        '''
+        This method replaces the masked value for ones in the target array, one row at a time. 
+        '''
         outDataset = create_empty_raster_from_reference(output, path, data_type=gdal.GDT_Byte)
-        
-        print 'back from dataset creation.'
-        
         dataset = gdal.Open(path, gdalconst.GA_ReadOnly)
-        
-        print 'hello'
-        
         if dataset is None:
             print "The dataset could not be opened"
-        
             sys.exit(-1)
-            
         classification_band = dataset.GetRasterBand(1)
-        
         rows = classification_band.YSize
         cols = classification_band.XSize
-        
         print rows
-        
         for row in range(rows):
             outputLine = str('')
             scanline = classification_band.ReadRaster( 0, row, classification_band.XSize, 1, classification_band.XSize, 1, gdal.GDT_Float32 )
             row_tuple = struct.unpack('f' * classification_band.XSize, scanline)
-            
             new_row = numpy.zeros(len(row_tuple))
-            
             old_row = numpy.array(row_tuple)
-            
-            new_row[old_row==32] = 1
-            
-            
+            new_row[old_row==MASK_ARRAY] = 1
             new_row.astype('f').tostring()
-            
-            '''
-            for i in range(len(row_tuple)):
-                #print row_tuple[i]
-                
-                if row_tuple[i] in MASK_ARRAY:
-                    new_pixel = 1
-                else:
-                    new_pixel = 0
-                outputLine = str(outputLine) + struct.pack('f', new_pixel)
-            '''
             outDataset.GetRasterBand(1).WriteArray(numpy.resize(new_row, (1, cols)), 0, row)
-            
-            
-            if row%10000==0:
-                print 'Line %s was processed' % row
-            
             del outputLine
             del old_row
             del new_row
@@ -187,12 +161,10 @@ class Command(BaseCommand):
 
         create_raster_from_reference(output + "two.tif", new_array.reshape(original_shape), path)
         
-    def method_three(self, options):
+    def method_three(self, path, output):
         '''
         This method replaces the incidences of the given list with the final list.
         '''
-        path = options['path'][0]
-        output = options['output'][0]
         
         print path
         
@@ -203,7 +175,7 @@ class Command(BaseCommand):
         
         to_vector_array = replace_in_array(data_array, my_dictionary)
         
-        
+        print numpy.unique(to_vector_array)
         
         create_raster_from_reference(output, to_vector_array, path, gdal.GDT_Byte)
         
@@ -259,6 +231,8 @@ class Command(BaseCommand):
             print image_path
             
             basename = '%s.tif' % get_base_name(image_path)
+            
+            print basename
                 
             target = create_file_name(output, basename)
             
@@ -266,7 +240,8 @@ class Command(BaseCommand):
         
         
             start_time = time.time()
-            self.method_by_block(image_path, target)
+            #self.method_by_block(image_path, target)
+            self.method_three(image_path, target)
             print("--- %s seconds ---" % (time.time() - start_time))
         
             print 'Dataset was written.'

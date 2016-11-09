@@ -31,7 +31,8 @@ import pandas
 import subprocess
 from madmex.mapper.data.dataframe import reduce_dimensionality,\
     outlier_elimination_for_dataframe, generate_namesfile,\
-    join_C5_dataframe_and_shape, join_dataframes_by_column_name
+    join_C5_dataframe_and_shape, join_dataframes_by_column_name,\
+    write_C5_result_to_csv
 LOGGER = logging.getLogger(__name__)
 BUNDLE_PACKAGE = 'madmex.mapper.bundle'
 FMASK_LAND = 0
@@ -595,6 +596,26 @@ class Command(BaseCommand):
             #Running C5 classification:
             #/usr/local/bin/c5.0 -b -f C5
             #/usr/local/bin/predict -f C5|tail -n +4|sed -nE 's/\s{2,}/,/g;p'|cut -d',' -f1,3,4|sed -n 's/\[//;p'|sed -n 's/\]//;p'|sed -n '1s/^/id,predicted,confidence\n/;p' > C5.result          
+
+            command = 'segmentation_mac'
+            hosts_from_command = get_host_from_command(command)
+            LOGGER.info('The command to be executed is %s in the host %s' % (command, hosts_from_command[0].hostname))
+            remote = RemoteProcessLauncher(hosts_from_command[0])
+            folder_and_bind_c5 = folder_results + ':/datos'
+                
+            arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' c5/c5_execution:v1 ' + 'c5.0 -b -f /datos/C5'
+            LOGGER.info('Beginning C5') 
+            remote.execute(arguments)
+    
+            LOGGER.info('Begining predict')
+            arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' c5/c5_execution:v1 ' + 'predict -f /datos/C5'
+            remote = RemoteProcessLauncher(hosts_from_command[0])
+            output = remote.execute(arguments, True)
+            LOGGER.info('Writing C5 result to csv')
+            C5_result = write_C5_result_to_csv(output, folder_results)  
+            LOGGER.info('Using result of C5: %s for generating land cover shapefile and raster image' % C5_result)
+
+
 
             LOGGER.info('Using result of C5 for generating land cover shapefile and raster image')        
             C5_result = folder_results + 'C5.result'

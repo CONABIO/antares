@@ -284,7 +284,7 @@ def append_labels_to_array(array, labels):
     return numpy.concatenate((labels.reshape(1, len(labels)), array), axis = 0)
     #return numpy.concatenate((labels.reshape(len(labels), 1), array), axis = 1)
 def build_dataframe_from_array(array):
-    return DataFrame(array)
+    return pandas.DataFrame(array)
 def create_names_of_dataframe_from_filename(dataframe_class, number_of_columns, filename):
     col_labels = []
     col_labels.append('id')

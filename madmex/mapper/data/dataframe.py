@@ -11,6 +11,7 @@ from scipy import stats
 from madmex.mapper.data import vector
 from madmex.mapper.data.vector import create_empty_layer
 import ogr
+import re
 LOGGER = logging.getLogger(__name__)
 
 def reduce_dimensionality(dataframe, maxvariance, columns_to_drop):
@@ -174,6 +175,21 @@ def join_C5_dataframe_and_shape(shape_class, shape_column, dataframe, dataframe_
     shape_dataframe.columns = ['geom', shape_column]
     LOGGER.info('Joining segmentation shape and C5 data frame')
     return join_dataframes_by_column_name([shape_dataframe, dataframe], dataframe_column)
+def write_C5_result_to_csv(output_c5, output_folder):
+    with open(output_folder + "C5_result_unformatted", "w") as text_file:
+        text_file.write("%s" % output_c5)
+    c5_result = output_folder + "C5_result.csv"
+    f = open(output_folder + "C5_result_unformatted", 'r')
+    f2 = open(c5_result, 'w+')
+    f2.write('id,predicted,confidence\n')
+    for _ in xrange(3):
+        next(f)
+    for line in f:
+        id_object,given,predicted,confidence=re.sub(r'\s{2,}', ',', line).split(',')
+        f2.write(id_object +','+predicted+','+re.sub(r'\]','',re.sub(r'\[','',confidence)))
+    f.close()
+    f2.close()
+    return c5_result
 def write_C5_dataframe_to_shape(dataframe, shape_class, out_file):
     data_layer, ds_layer = create_empty_layer(out_file, 'export', shape_class.srid)
     fid = ogr.FieldDefn('gid', ogr.OFTInteger)

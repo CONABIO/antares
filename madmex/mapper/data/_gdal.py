@@ -208,7 +208,7 @@ def create_raster(image_path,
                 data.GetRasterBand(band + 1).WriteArray(array[band, :, :])
         data.FlushCache()
         LOGGER.debug('Raster file was successfully created on %s.', image_path)
-def warp_raster_from_reference(input_path, reference_path, output_path, data_type=gdal.GDT_Float32):
+def warp_raster_from_reference(input_path, reference, output_path, data_type=gdal.GDT_Float32):
     '''
     This function will warp the input image to a new one using the reference
     projection and size.
@@ -217,7 +217,12 @@ def warp_raster_from_reference(input_path, reference_path, output_path, data_typ
     We have a different way to warp an image with gdal version 2.1.1:
     http://gis.stackexchange.com/questions/177193/raster-interpolation-with-gdalwarp-and-replicating-with-python-api
     '''
-    reference_dataset = gdal.Open(reference_path, GA_ReadOnly)
+    #import os
+    #if os.path.isfile(reference):
+        #reference_dataset = gdal.Open(reference, GA_ReadOnly)
+    #else:
+    #    reference_dataset = reference
+    reference_dataset = reference
     input_dataset = gdal.Open(input_path, GA_ReadOnly)
     reference_projection = _get_projection(reference_dataset)
     reference_dataset = None

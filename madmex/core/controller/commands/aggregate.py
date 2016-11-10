@@ -161,6 +161,6 @@ class Command(BaseCommand):
             print target
             start_time = time.time()
             #self.method_by_block(image_path, target)
-            self.method_three(image_path, target)
+            self.mask_iterating_values(image_path, target)
             print("--- %s seconds ---" % (time.time() - start_time))
             print 'Dataset was written.'

@@ -24,6 +24,7 @@ def reduce_dimensionality(dataframe, maxvariance, columns_to_drop):
     print dataframe_without_columns.columns
     LOGGER.info('Adding noise to dataframe')
     dataframe_without_columns = dataframe_without_columns + numpy.random.normal(size = dataframe_without_columns.shape)*1.e-19 
+    LOGGER.info('Starting PCA')
     pca = PCA(n_components = 'mle')
     pca.fit(dataframe_without_columns)
     # transform

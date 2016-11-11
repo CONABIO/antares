@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import os
 import struct
 import sys
+import time
 
 import gdal
 import gdalconst
@@ -27,7 +28,6 @@ from madmex.util import get_base_name, create_file_name, get_parent
 #                 [27,28,30,31],
 #                 [29,98,99]]
 #FINAL_ARRAY = [1,2,3]
-
 INITIAL_ARRAY = [[1,2,3,4,5,6],
                  [7,8,9,10,11,12,13],
                  [22,23,24,25,26,27,28],
@@ -39,6 +39,8 @@ FINAL_ARRAY = [1,2,3,4,5,6,7]
 
 MASK_ARRAY =[32]
 
+MASK = 32
+
 def dictionary_from_list(key_list, value_list):
     new_dict = {}
     for i in range(len(key_list)):
@@ -48,10 +50,8 @@ def dictionary_from_list(key_list, value_list):
 
 def replace_in_array(data_array, dictionary):
     for key, value in dictionary.iteritems():
-        print key, value
-        data_array[(data_array==key)] = value
+        data_array[data_array==key] = value
     return data_array
-
 
 class Command(BaseCommand):
     '''
@@ -92,16 +92,16 @@ class Command(BaseCommand):
             del old_row
             del new_row
             del row_tuple
-            
-    def method_by_block(self, path, output, block_size=8192):
+
+    def mask_by_block(self, path, output, block_size=8192):
         '''
-        Method to create a mask from a given raster writing by block.
+        Method to create a mask from a given raster writing by block. This is attained by reading the
+        dataset in blocks, this is useful when the original raster is really big.
         '''
         outDataset = create_empty_raster_from_reference(output, path, data_type=gdal.GDT_Byte)
         dataset = gdal.Open(path, gdalconst.GA_ReadOnly)
         if dataset is None:
             print "The dataset could not be opened"
-        
             sys.exit(-1)        
         classification_band = dataset.GetRasterBand(1) 
         y_size = classification_band.YSize
@@ -127,126 +127,40 @@ class Command(BaseCommand):
                 outDataset.GetRasterBand(1).WriteArray(data_array,j,i)
                 aux = current
                 current = count * 100 / total
-                
                 if aux != current:
-                    print current
-                
+                    print current                
         outDataset = None
-        
-        
-                
-    def method_two(self, options):
-        '''
-        This method replaces the incidences of the given list with the final list.
-        
-        This is a new part of the comment.
-        '''
-        path = options['path'][0]
-        output = options['output'][0]
-        
-        print path
-        
-        data_array = open_handle(path)
-        original_shape = data_array.shape
-        new_array = numpy.ravel(data_array)
-        
-        for i in xrange(len(INITIAL_ARRAY)):
-            # list to numpy array
-            nparray = numpy.array(INITIAL_ARRAY[i])
-            print(nparray)
-            found_idx = numpy.in1d(data_array,nparray)
-            print(FINAL_ARRAY[i])
-            new_array[found_idx] = FINAL_ARRAY[i]
-        print output
 
-        create_raster_from_reference(output + "two.tif", new_array.reshape(original_shape), path)
-        
-    def method_three(self, path, output):
+    def mask_iterating_values(self, path, output):
         '''
-        This method replaces the incidences of the given list with the final list.
+        Iterating over the values in the initial and final arrays this replaces the
+        desired values one by one.
         '''
-        
-        print path
-        
         data_array = open_handle(path)
-
-        
         my_dictionary = dictionary_from_list(INITIAL_ARRAY, FINAL_ARRAY)
-        
         to_vector_array = replace_in_array(data_array, my_dictionary)
-        
-        print numpy.unique(to_vector_array)
-        
         create_raster_from_reference(output, to_vector_array, path, gdal.GDT_Byte)
-        
-        
-    
-    def method_four(self, path, output):
-        '''
-        This method replaces the incidences of the given list with the final list.
-        '''
-        print path
-        
-        data_array = open_handle(path)
-
-        create_raster_from_reference(output, data_array, path, gdal.GDT_Byte)
 
     def method_five(self, path, output):
         '''
-        This method replaces the incidences of the given list with the final list.
+        Using numpy utilities, this method mask the desired value.
         '''
-        
-        print 'loading file'
-        
         data_array = open_handle(path)
-        
-        print 'file was loaded'
-        
-        
-        data_array[data_array!=32] = 0
-        data_array[data_array==32] = 1
-
+        data_array[data_array!=MASK] = 0
+        data_array[data_array==MASK] = 1
         create_raster_from_reference(output, data_array, path, gdal.GDT_Byte)
-        
         del data_array
-        
-    
-    
-    def handle(self, **options):
-        import time
-        #start_time = time.time()
-        #self.method_one(options)
-        #print("--- %s seconds ---" % (time.time() - start_time))
-        
-        
-        #start_time = time.time()
-        #self.method_two(options)
-        #print("--- %s seconds ---" % (time.time() - start_time))
 
-        #print 'Dataset was written.'
-        
+    def handle(self, **options):
         output = options['output'][0]
-        
         for image_path in options['path']:
             print image_path
-            
             basename = '%s.tif' % get_base_name(image_path)
-            
             print basename
-                
             target = create_file_name(output, basename)
-            
             print target
-        
-        
             start_time = time.time()
             #self.method_by_block(image_path, target)
-            self.method_three(image_path, target)
+            self.mask_iterating_values(image_path, target)
             print("--- %s seconds ---" % (time.time() - start_time))
-        
             print 'Dataset was written.'
-        
-        #start_time = time.time()
-        #self.method_four(options)
-        #print("--- %s seconds ---" % (time.time() - start_time))
-        #print 'Dataset was written.'

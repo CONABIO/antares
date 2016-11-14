@@ -115,16 +115,19 @@ def histogram_trimming(dataframe, object_ids, threshold, name_of_class):
     crit = 1
     iteration = 1
     thisfeatureinliers = object_ids
+    thisthreshold = threshold
     prev_obj = 1.e6
     if data.shape[1] > 30: # preserve at least 30 samples
         LOGGER.info('Reducing number of objects of class: %s' % name_of_class)
         LOGGER.info('Class %s found %s objects, continue with outlier elimination' %(name_of_class, data.shape[1]))
         while crit > 0 and data.shape[1] > 30:
+            thisfeatureinliers_aux = thisfeatureinliers
+            data_aux_shape = data.shape[1]
             my_pdf = stats.kde.gaussian_kde(data[:,:])
             ddev = my_pdf.evaluate(my_pdf.dataset)
             p1 = stats.scoreatpercentile(ddev,25)
             adjust = False      
-            if (p1 < threshold) and (adjust == False):
+            if (p1 < thisthreshold) and (adjust == False):
                 thisthreshold = p1    
                 adjust = True      
             idx = ddev > thisthreshold
@@ -144,7 +147,12 @@ def histogram_trimming(dataframe, object_ids, threshold, name_of_class):
         LOGGER.info('Class: %s have less than 30 objects, so this are preserved' % name_of_class)
         LOGGER.info('Number of objects: %s' % len(object_ids.index))
     #get indices of inlier ids
-    thisclassinliers = numpy.unique(thisfeatureinliers)
+    if data.shape[1] < 1:
+        LOGGER.info('process of histogram trimming was too abrupt, so we keep object_ids of iteration: %s' % str(iteration-2))
+        thisclassinliers = numpy.unique(thisfeatureinliers_aux)
+        LOGGER.info('Number of objects: %s' % data_aux_shape)
+    else:
+        thisclassinliers = numpy.unique(thisfeatureinliers)
     ix = numpy.in1d(numpy.array(object_ids),thisclassinliers)
     ix = object_ids[ix]
     return pandas.DataFrame(ix)

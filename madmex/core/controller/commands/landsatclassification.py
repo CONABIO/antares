@@ -203,6 +203,10 @@ class Command(BaseCommand):
             #this is with landmask: index_masked_pixels_over_all_images = numpy.array((numpy.invert(ndarray.all(numpy.array(list_fmask_arrays_resized_and_boolean)==0,axis=0))*landmask_array) == 0, dtype = bool)
             
             index_fmask_over_all_images = numpy.array((numpy.invert(ndarray.all(numpy.array(list_fmask_arrays_resized_and_boolean)==0,axis=0))) == 0, dtype = bool)
+            #TODO: consider
+                    #using and 'or' operator instead of 'ndarray.all' for getting index_fmask_over_all_images: ndarray.all
+            
+            
             #The next lines just for checking, uncomment if want to write in disk the last image of fmask
             #file_masked_overall = '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/fmask_mask_overall_images.tif'
             #options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], {})
@@ -311,9 +315,13 @@ class Command(BaseCommand):
                 #for j in range(array_metrics.shape[0]):
                     #array_metrics[j,:,:][index_masked_pixels_over_all_images] = 0
                 if i == 0:
-                    LOGGER.info('Changing value of fmask of -9999 to 9999 overall images in for segmentation')
-                    index_fmask_for_ndvi_metrics = numpy.array( index_fmask_over_all_images == 1, dtype = bool)
+                    #TODO: Next line for flag 'fill_holes'
+                    #TODO: value of 9999 or what value do we use ???
+                    LOGGER.info('Changing value of fmask of -9999 to 9999 for ndvi metrics to pass to segmentation')
+                    index_fmask_for_ndvi_metrics = numpy.array( index_fmask_over_all_images == 1, dtype = bool)#TODO: consider
+                    #using and 'or' operator instead of 'ndarray.all' for getting index_fmask_over_all_images
                     index_landmask_for_ndvi_metrics = numpy.array(landmask_array == 1, dtype = bool)
+                    index_ndvi_metrics_overall_bands_minus_9999 =numpy.array(ndarray.all(array==-9999,axis=0), dtype=bool)                      
                     for j in range(array_metrics.shape[0]):
                         #array_for_masking = list_fmask_arrays_resized_and_boolean[j]
                         index_fmask_and_landmask_for_ndvi_metrics = numpy.logical_and(index_fmask_for_ndvi_metrics, index_landmask_for_ndvi_metrics)
@@ -364,6 +372,7 @@ class Command(BaseCommand):
             #TODO: Do we need to have separate values for  the mask of zeros and  Nans values to segmentation tif ??
             #Right now the segmentation tif have the value of zero as the no data value
 
+            #TODO: next lines for flag 'fill_holes'
             LOGGER.info('Changing value of fmask of 9999 to -9999 overall images in %s for segmentation for consistency with other indexes' % output_file_stack_indexes_list_metrics[0])  
             #output_file_stack_indexes_list_metrics[0][index_masked_pixels_over_all_images] = -9999
             LOGGER.info('Rewriting %s' %output_file_stack_indexes_list_metrics[0] )
@@ -408,11 +417,11 @@ class Command(BaseCommand):
                 dataframe_list_stack_indexes_list_metrics.append(create_names_of_dataframe_from_filename(build_dataframe_from_array(array_zonal_statistics_labeled.T), array_zonal_statistics_labeled.shape[0], get_basename_of_file(output_file_stack_indexes_list_metrics[i])))
                 #LOGGER.info('Changing value of fmask overall images to numpy.NaN for dataframe of: %s' %output_file_stack_indexes_list_metrics[i])
                 LOGGER.info('Changing value of fmask overall images to zero for dataframe')
-                index_fmask_dataframe = dataframe_list_stack_indexes_list_metrics[i]['id'] == 9999 #this is id of fmask objects
+                #index_fmask_dataframe = dataframe_list_stack_indexes_list_metrics[i]['id'] == 9999 #this is id of fmask objects
                 #dataframe_list_stack_indexes_list_metrics[i].loc[index_fmask_dataframe, 1:] = numpy.NaN
                 #dataframe_list_stack_indexes_list_metrics[i] = dataframe_list_stack_indexes_list_metrics[i].fillna(dataframe_list_stack_indexes_list_metrics[i].median())
                 #dataframe_list_stack_indexes_list_metrics[i].loc[index_fmask_dataframe, 1:] = 0
-                dataframe_list_stack_indexes_list_metrics[i].loc[index_fmask_dataframe, 1:] = numpy.NaN
+                #dataframe_list_stack_indexes_list_metrics[i].loc[index_fmask_dataframe, 1:] = numpy.NaN
                 LOGGER.info('Filling NaN with zeros')
                 #dataframe_list_stack_indexes_list_metrics[i] = dataframe_list_stack_indexes_list_metrics[i].fillna(dataframe_list_stack_indexes_list_metrics[i].median())
                 dataframe_list_stack_indexes_list_metrics[i] = dataframe_list_stack_indexes_list_metrics[i].fillna(0)
@@ -446,11 +455,11 @@ class Command(BaseCommand):
 
                 #LOGGER.info('Changing value of fmask overall images to numpy.NaN for dataframe of: %s' %output_file_stack_indexes_list_metrics[i])
                 LOGGER.info('Changing value of fmask overall images to zero for dataframe')
-                index_fmask_dataframe = dataframe_list_stack_bands_list_metrics[i]['id'] == 9999 #this is id of fmask objects
+                #index_fmask_dataframe = dataframe_list_stack_bands_list_metrics[i]['id'] == 9999 #this is id of fmask objects
                 #dataframe_list_stack_indexes_list_metrics[i].loc[index_fmask_dataframe, 1:] = numpy.NaN
                 #dataframe_list_stack_indexes_list_metrics[i] = dataframe_list_stack_indexes_list_metrics[i].fillna(dataframe_list_stack_indexes_list_metrics[i].median())
                 #dataframe_list_stack_bands_list_metrics[i].loc[index_fmask_dataframe, 1:] = 0
-                dataframe_list_stack_bands_list_metrics[i].loc[index_fmask_dataframe, 1:] = numpy.NaN 
+                #dataframe_list_stack_bands_list_metrics[i].loc[index_fmask_dataframe, 1:] = numpy.NaN 
                 LOGGER.info('Filling NaN with zeros')
                 dataframe_list_stack_bands_list_metrics[i] = dataframe_list_stack_bands_list_metrics[i].fillna(0)
                 
@@ -464,7 +473,8 @@ class Command(BaseCommand):
             dataframe_joined_stack_bands_metrics = None
             
             dataframe_joined_stack_bands_metrics = pandas.read_csv(file_name, sep='\t')
-               
+          
+       
             LOGGER.info('Working with auxiliary files')
             dem_file = getattr(SETTINGS, 'DEM')
             aspect_file = getattr(SETTINGS, 'ASPECT')
@@ -489,7 +499,7 @@ class Command(BaseCommand):
                 aux_file_clipped = folder_results  + get_basename_of_file(aux_file) + '_cropped_subprocess_call.tif'
                 command = [
                        'gdalwarp', '-cutline', landmask_file,
-                       '-crop_to_cutline', '-of', 'GTiff', '-dstnodata', '-9999', aux_file, aux_file_clipped
+                       '-crop_to_cutline', '-of', 'GTiff', '-co', 'compress=lzw', '-co', 'tiled=yes','-ot', 'Int32','-dstnodata', '-9999', aux_file, aux_file_clipped
                        ]
                 subprocess.call(command)
                 LOGGER.info('Finished clipping of aux file')
@@ -535,11 +545,11 @@ class Command(BaseCommand):
 
                 #LOGGER.info('Changing value of fmask overall images to numpy.NaN for dataframe of: %s' %output_file_stack_indexes_list_metrics[i])
                 #LOGGER.info('Changing value of fmask overall images to zero for dataframe')
-                index_fmask_dataframe = dataframe_list_aux_files_warped[i]['id'] == 9999 #this is id of fmask objects
+                #index_fmask_dataframe = dataframe_list_aux_files_warped[i]['id'] == 9999 #this is id of fmask objects
                 #dataframe_list_stack_indexes_list_metrics[i].loc[index_fmask_dataframe, 1:] = numpy.NaN
                 #dataframe_list_stack_indexes_list_metrics[i] = dataframe_list_stack_indexes_list_metrics[i].fillna(dataframe_list_stack_indexes_list_metrics[i].median())
                 #dataframe_list_aux_files_warped[i].loc[index_fmask_dataframe, 1:] = 0
-                dataframe_list_aux_files_warped[i].loc[index_fmask_dataframe, 1:] = numpy.NaN
+                #dataframe_list_aux_files_warped[i].loc[index_fmask_dataframe, 1:] = numpy.NaN
                 LOGGER.info('Filling NaN with zeros')
                 dataframe_list_aux_files_warped[i] = dataframe_list_aux_files_warped[i].fillna(0)
                 
@@ -553,7 +563,7 @@ class Command(BaseCommand):
             dataframe_joined_aux_files.to_csv(file_name, sep='\t', encoding='utf-8', index = False)
             dataframe_joined_aux_files = None
             dataframe_joined_aux_files = pandas.read_csv(file_name, sep='\t')
-            
+            array_sg_raster = None
             
             
             LOGGER.info('Getting gradient texture features of file %s' % output_file_stack_indexes_list_metrics[0])
@@ -561,10 +571,11 @@ class Command(BaseCommand):
             output_file_texture_sobel = output_file_stack_indexes_list_metrics[0] + 'gradient.tif'
             array_ndvi_metrics_texture = get_gradient_of_image(array_ndvi_metrics[3,:,:])
             LOGGER.info('Masking array of ndvi metrics texture with fmask and NaNs values of segmentation raster')
-            image_segmentation_file = folder_results + 'NDVImetrics_3_02_08.tif'
             array_sg_raster = get_array_from_image_path(image_segmentation_file)
-            index_nodata_value_pixels_ndvi = numpy.array(array_sg_raster==0, dtype = bool)
-            array_ndvi_metrics_texture[:, :] [index_nodata_value_pixels_ndvi] = -9999    
+            #index_nodata_value_pixels_ndvi = numpy.array(array_sg_raster==0, dtype = bool)
+            #array_ndvi_metrics_texture[:, :] [index_nodata_value_pixels_ndvi] = -9999 
+            index_nodata_value_pixels_ndvi = index_ndvi_metrics_overall_bands_minus_9999
+            array_ndvi_metrics_texture[:, :] [index_nodata_value_pixels_ndvi] = -9999 
             options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], {})
             create_raster_tiff_from_reference(extents_dictionary, output_file_texture_sobel, array_ndvi_metrics_texture, options_to_create)       
             LOGGER.info('Finished gradient texture features')    
@@ -576,11 +587,11 @@ class Command(BaseCommand):
             LOGGER.info('Building data frame')
             dataframe_texture_features = create_names_of_dataframe_from_filename(build_dataframe_from_array(array_zonal_statistics_labeled.T), array_zonal_statistics_labeled.shape[0], get_basename_of_file(output_file_texture_sobel))
 
-            index_fmask_dataframe = dataframe_texture_features['id'] == 9999 #this is id of fmask objects
+            #index_fmask_dataframe = dataframe_texture_features['id'] == 9999 #this is id of fmask objects
             #dataframe_list_stack_indexes_list_metrics[i].loc[index_fmask_dataframe, 1:] = numpy.NaN
             #dataframe_list_stack_indexes_list_metrics[i] = dataframe_list_stack_indexes_list_metrics[i].fillna(dataframe_list_stack_indexes_list_metrics[i].median())
             #dataframe_texture_features.loc[index_fmask_dataframe, 1:] = 0            
-            dataframe_texture_features.loc[index_fmask_dataframe, 1:] = numpy.NaN
+            #dataframe_texture_features.loc[index_fmask_dataframe, 1:] = numpy.NaN
             LOGGER.info('Filling NaN with zeros')            
             dataframe_texture_features = dataframe_texture_features.fillna(0)
             
@@ -588,19 +599,21 @@ class Command(BaseCommand):
             dataframe_texture_features.to_csv(file_name, sep='\t', encoding='utf-8', index = False)
             array_zonal_statistics_labeled = None
             dataframe_texture_features = None
-            
+            array_sg_raster = None
             dataframe_texture_features = pandas.read_csv(file_name, sep='\t')
-            
+        
             
             
             LOGGER.info('Working with the training data')
 
             training_data_file = getattr(SETTINGS, 'TRAINING_DATA')
+            array_sg_raster = get_array_from_image_path(image_segmentation_file)
+
             LOGGER.info('Clipping training_data_file: %s with: %s' % (training_data_file, landmask_file))
             training_data_file_clipped = folder_results  + get_basename_of_file(training_data_file) + '_cropped_subprocess_call.tif'
             command = [
                     'gdalwarp', '-cutline', landmask_file,
-                    '-crop_to_cutline', '-of', 'GTiff', '-dstnodata', '-9999', training_data_file, training_data_file_clipped
+                    '-crop_to_cutline', '-of', 'GTiff','-co', 'compress=lzw', '-co', 'tiled=yes','-ot', 'Int32', '-dstnodata', '-9999', training_data_file, training_data_file_clipped
                     ]
             subprocess.call(command)
             LOGGER.info('Finished clipping of training data file')
@@ -649,7 +662,7 @@ class Command(BaseCommand):
             dataframe_of_pure_objects_of_training_data = pandas.read_csv(file_name, sep='\t')
             
             
-            outlier = False
+            outlier = True
             if outlier:
                 LOGGER.info('Starting outlier elimination with dataframe of stack bands metrics and dataframe of pure objects of training data')
                 LOGGER.info('Number of rows and columns of dataframe of stack bands metrics %s %s' % (len(dataframe_joined_stack_bands_metrics.index), len(dataframe_joined_stack_bands_metrics.columns) ))

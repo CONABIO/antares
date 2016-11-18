@@ -30,11 +30,12 @@ class Command(BaseCommand):
         '''
         
         '''
-        parser.add_argument('tth', nargs='*', help='Some general help' )
-        parser.add_argument('--rasterPathIni', nargs='*', help='Some help on raster path initial')
-        parser.add_argument('--rasterPathFin', nargs='*', help='Some help on raster path initial')
+        parser.add_argument('tth', nargs='*', help='This script implements the tth analysis' )
+        parser.add_argument('--rasterPathIni', nargs='*', help='Path to the initial year raster')
+        parser.add_argument('--rasterPathFin', nargs='*', help='Path to the final year raster')
         parser.add_argument('--yearIni', nargs=1, help='Some help on initial year')
         parser.add_argument('--yearFin', nargs=1, help='Some help on final year')
+        parser.add_argument('--csvName', nargs=1, help='CSV file name with the tth results')
     
 
 
@@ -46,6 +47,7 @@ class Command(BaseCommand):
         rasterFin = options['rasterPathFin'][0]
         yearIni = options['yearIni'][0]
         yearFin = options['yearFin'][0]
+        csv_name = options['csvName'][0]
         
         
         pixel_area, info_at_open= self.pixel_info(rasterIni)
@@ -60,7 +62,7 @@ class Command(BaseCommand):
         orphan_class = list(set(list(arr_class_id_ini)).symmetric_difference(list(arr_class_id_fin)))
         
         LOGGER.info('Computing tth analysis in period: %s - %s'  % (yearIni,yearFin) )        
-        # computes the "tth" anaysis only for those classes in both rasters
+        # computes the "tth" analysis only for those classes in both rasters
         tth_arr = []
         clss_area_ini_arr = []
         clss_area_fin_arr = []
@@ -78,7 +80,14 @@ class Command(BaseCommand):
                 tth_arr.append( tth * 100 )
                 print 'Class ID: ', matching_class[i], '\t', 'S1 [ha]:  ',class_area_ini, '\t', 'S2 [ha]:  ', class_area_fin, '\t', 'TTH: ', tth * 100, '\t', '%'              
         
+<<<<<<< Updated upstream
         self.write_file(matching_class, clss_area_ini_arr, clss_area_fin_arr, tth_arr)     
+=======
+        if orphan_class:
+            LOGGER.info('There are %s classes with no match'  % (len(orphan_class)) )
+
+        self.write_file(matching_class, clss_area_ini_arr, clss_area_fin_arr, tth_arr, csv_name)     
+>>>>>>> Stashed changes
                     
                     
     
@@ -134,23 +143,23 @@ class Command(BaseCommand):
         
         return tth_class       
     
-    def write_file(self, match_class, area_ini, area_fin, tth):
+    def write_file(self, match_class, area_ini, area_fin, tth, file_name):
         '''
         '''
         titles = ['Class ID','S1 [ha]','S2 [ha]', 'tth [%]'] 
         rows = zip(match_class,area_ini,area_fin,tth)
         
         dir_path = './tth/'
-        csv_file = 'tth_result.csv' 
+        csv_file = file_name + '.csv'
         file_path = dir_path + csv_file
         LOGGER.info('Writing results in  %s', file_path)
 
-        if not os.path.exists(os.path.dirname(file_path)):
-            os.makedirs(os.path.dirname(file_path))
-        else:
-            shutil.rmtree(dir_path)
-            os.makedirs(os.path.dirname(file_path))
-
+        #if not os.path.exists(os.path.dirname(dir_path)):
+        #    os.makedirs(os.path.dirname(file_path))
+        #else:
+        #    shutil.rmtree(dir_path)
+        #    os.makedirs(os.path.dirname(file_path))
+        
         with open(file_path, 'wb') as f:
             wtr = csv.writer(f)
             wtr.writerows( [titles]) 

@@ -206,6 +206,23 @@ def get_product_type_object(product_type):
     finally:
         session.close()
     return product_type_object
+
+def get_states_names():
+    '''
+    '''
+    engine = create_engine('postgresql://postgres:postgres.@reddbase.conabio.gob.mx:5432/madmex_database')
+    session = sessionmaker(engine)()
+    query = 'SELECT nom_ent FROM vectordata.country_mexico_2012'
+    try:
+        result = session.execute(query)
+    except Exception:
+        LOGGER.error('Not expected error in host insertion.')
+        raise
+    finally:
+        session.close()
+    return result
+    
+
 def get_rapideye_footprints_from_state(state_name):
     '''
     This method will query the database to intersect the footprints that match the given

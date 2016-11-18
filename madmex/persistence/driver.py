@@ -8,7 +8,11 @@ from __future__ import unicode_literals
 
 import logging
 from unittest import result
+
 from sqlalchemy import tuple_
+from sqlalchemy.engine import create_engine
+from sqlalchemy.orm.session import sessionmaker
+
 from madmex.persistence.database.connection import SESSION_MAKER, \
     Product, Host, Command, RawProduct, Information, Sensor, \
     RapidEyeFootPrintsMexicoOld, Satellite, ProductType
@@ -202,6 +206,24 @@ def get_product_type_object(product_type):
     finally:
         session.close()
     return product_type_object
+def get_rapideye_footprints_from_state(state_name):
+    '''
+    This method will query the database to intersect the footprints that match the given
+    state name. It will perform a geographic query so the necessary extension must be
+    installed.
+    '''
+    engine = create_engine('postgresql://postgres:postgres.@reddbase.conabio.gob.mx:5432/madmex_database')
+    session = sessionmaker(engine)()
+    query = 'select distinct rapideye.code from vectordata.rapideye_footprints_mexico as rapideye, vectordata.country_mexico_2012 as estados where ST_Intersects(estados.geom,rapideye.the_geom) and estados.nom_ent=\'%s\';' % state_name
+    try:
+        result = session.execute(query)
+    except Exception:
+        LOGGER.error('Not expected error in host insertion.')
+        raise
+    finally:
+        session.close()
+    return result
+    
 if __name__ == '__main__':
     #images_paths = acquisitions_by_mapgrid_and_date('2013-12-31', 15462121, 100)
     #print images_paths

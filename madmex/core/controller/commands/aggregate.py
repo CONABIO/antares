@@ -21,6 +21,7 @@ from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands.indexes import open_handle
 from madmex.mapper.data._gdal import create_empty_raster_from_reference, \
     create_raster_from_reference
+from madmex.persistence.driver import get_rapideye_footprints_from_state
 from madmex.util import get_base_name, create_file_name, get_parent
 
 
@@ -65,6 +66,7 @@ class Command(BaseCommand):
         '''
         parser.add_argument('--path', nargs='*')
         parser.add_argument('--output', nargs='*')
+        parser.add_argument('--state', nargs='*')
 
     def mask_by_row(self, path, output):
         '''
@@ -153,6 +155,17 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         output = options['output'][0]
+        state = options['state'][0]
+        
+        
+        for footprint in get_rapideye_footprints_from_state(state):
+            print footprint[0]
+            
+        
+        import time
+        time.sleep(2)
+        
+        '''
         for image_path in options['path']:
             print image_path
             basename = '%s.tif' % get_base_name(image_path)
@@ -164,3 +177,4 @@ class Command(BaseCommand):
             self.mask_iterating_values(image_path, target)
             print("--- %s seconds ---" % (time.time() - start_time))
             print 'Dataset was written.'
+        '''

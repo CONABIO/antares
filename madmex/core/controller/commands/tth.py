@@ -80,14 +80,11 @@ class Command(BaseCommand):
                 tth_arr.append( tth * 100 )
                 print 'Class ID: ', matching_class[i], '\t', 'S1 [ha]:  ',class_area_ini, '\t', 'S2 [ha]:  ', class_area_fin, '\t', 'TTH: ', tth * 100, '\t', '%'              
         
-<<<<<<< Updated upstream
-        self.write_file(matching_class, clss_area_ini_arr, clss_area_fin_arr, tth_arr)     
-=======
         if orphan_class:
             LOGGER.info('There are %s classes with no match'  % (len(orphan_class)) )
 
         self.write_file(matching_class, clss_area_ini_arr, clss_area_fin_arr, tth_arr, csv_name)     
->>>>>>> Stashed changes
+
                     
                     
     

@@ -333,7 +333,6 @@ def get_grid(dimension, resolution,griddistance,chipsize,diagonal=True):
     blocksize = int(numpy.round(chipsize/resolution))
     distsize = int(numpy.round(griddistance/resolution))
     firstblock = numpy.zeros((blocksize,xsize))
-    
     xhalfoffset = int(numpy.round(blocksize/2))
     
     for x in range(xhalfoffset,xsize,distsize):

@@ -14,7 +14,7 @@ from osgeo import ogr
 
 from madmex.core.controller.base import BaseCommand
 from madmex.util import create_filename_from_string, create_file_name, \
-    create_directory_path
+    create_directory_path, get_base_name
 
 
 LOGGER = logging.getLogger(__name__)
@@ -68,6 +68,34 @@ def split_shape_into_features(shape_name, destination_directory, column):
         in_feature = layer.GetNextFeature()
     shape.Destroy()
     datasource.Destroy()
+    
+def get_convex_hull(shape_name, destination_directory):
+    '''
+    This method will read all objects from a shape file and create a new one
+    with the convex hull of all the geometry points of the first.
+    '''
+    driver = ogr.GetDriverByName(str('ESRI Shapefile'))
+    shape = driver.Open(shape_name, 0)
+    layer = shape.GetLayer()
+    layer_name = layer.GetName()
+    spatial_reference = layer.GetSpatialRef()
+    prefix = get_base_name(shape_name)
+    output_name = create_file_name(destination_directory, '%s-hull.shp' % prefix)
+    geometries = ogr.Geometry(ogr.wkbGeometryCollection)
+    for feature in layer:
+        geometries.AddGeometry(feature.GetGeometryRef())
+    if os.path.exists(output_name):
+        driver.DeleteDataSource(output_name)
+    datasource = driver.CreateDataSource(output_name)
+    out_layer = datasource.CreateLayer(str('states_convexhull'), spatial_reference, geom_type=ogr.wkbPolygon)
+    out_layer.CreateField(ogr.FieldDefn(str('id'), ogr.OFTInteger))
+    featureDefn = out_layer.GetLayerDefn()
+    feature = ogr.Feature(featureDefn)
+    feature.SetGeometry(geometries.ConvexHull())
+    feature.SetField(str('id'), 1)
+    out_layer.CreateFeature(feature)
+    shape.Destroy()
+    datasource.Destroy()
 
 def world_to_pixel(geotransform, x, y):
     '''
@@ -111,4 +139,4 @@ class Command(BaseCommand):
             LOGGER.info('The file %s was found.' % shape_name)
 
 
-        split_shape_into_features(shape_name, destination, 2)
+        get_convex_hull(shape_name, destination)

@@ -285,14 +285,6 @@ def append_labels_to_array(array, labels):
     #return numpy.concatenate((labels.reshape(len(labels), 1), array), axis = 1)
 def build_dataframe_from_array(array):
     return pandas.DataFrame(array)
-def create_names_of_dataframe_from_filename(dataframe_class, number_of_columns, filename):
-    col_labels = []
-    col_labels.append('id')
-    for i in range(number_of_columns -1):
-        col_labels.append("feature_"+ filename + "_" + str(i+1))
-    print col_labels
-    dataframe_class.columns = col_labels
-    return dataframe_class
 def resample_numpy_array(array, width, height, interpolation = None, mode = 'F'):
     if len(array.shape) == 3:
         bands, y, x= array.shape
@@ -386,31 +378,44 @@ def get_pure_objects_from_raster_as_dataframe(array_histogram_of_objects, unique
     df = pandas.DataFrame(numpy.vstack([subset_objects,class_list]).T) # stack and create dataframe
     df.columns = [names_of_columns[0], names_of_columns[1]]
     return df
-def reduce_dimensionality(dataframe, maxvariance,columns_to_drop):
+def get_objects_by_relative_proportion_from_raster_as_dataframe(array_histogram_of_objects, unique_objects, unique_classes, names_of_columns, proportion):
     '''
-    Performs PCA on feature pandas dataframe and reduces number of
-    principal components to those which explain a defined variance
+    Get objects which at least have a proportion of a class inside them
     '''
-    dataframe_without_columns = dataframe.drop(columns_to_drop, axis = 1)
-    LOGGER.info('Columns to be used by pca:')
-    print dataframe_without_columns.columns
-    LOGGER.info('Adding noise to dataframe')
-    dataframe_without_columns = dataframe_without_columns + numpy.random.normal(size = dataframe_without_columns.shape)*1.e-19 
-    pca = PCA(n_components = 'mle')
-    pca.fit(dataframe_without_columns)
-    # transform
-    samples = pca.transform(dataframe_without_columns)
-    # aggregated sum of variances
-    sum_variance = sum(pca.explained_variance_)
-    #print sum_variance, pca.explained_variance_
-    # get those having aggregated variance below threshold
-    scomp = 0
-    ncomp = 0
-    while scomp < maxvariance:
-        c = pca.explained_variance_[ncomp]
-        scomp = scomp + c/sum_variance
-        ncomp = ncomp+1
-    # reduce dimensionality
-    samples = samples[:,:ncomp]  
-    LOGGER.info("Number of features after PCA transformation %s" % samples.shape[1])    
-    return samples
+    print unique_classes
+    #if 0 in unique_classes:
+        #index_of_class_nonzero_numbered = [k for k in range(0,len(unique_classes)) if unique_classes[k] > 0]
+        #print index_of_class_nonzero_numbered
+        #array_histogram_of_objects = array_histogram_of_objects[:, index_of_class_nonzero_numbered]
+        #array_histogram_of_objects = array_histogram_of_objects[:, 1:]
+    #LOGGER.info("Shape of array histogram removing class zero, number_of_objects: %s, number_of classes: %s" % (array_histogram_of_objects.shape[0], array_histogram_of_objects.shape[1]))
+    #index_of_class_nonzero = numpy.array(unique_classes > 0, dtype = bool)
+    #unique_classes = unique_classes[index_of_class_nonzero]
+    #print unique_classes
+    n_sum = numpy.sum(array_histogram_of_objects, axis = 1)
+    indexes_of_objects_with_a_class_label = n_sum > 0
+    subset_objects = unique_objects[indexes_of_objects_with_a_class_label]
+    subset_histogram = array_histogram_of_objects[indexes_of_objects_with_a_class_label, :]
+    LOGGER.info("Shape of array histogram with at least a class per object, number_of_objects: %s, number_of classes: %s" % (array_histogram_of_objects.shape[0], array_histogram_of_objects.shape[1]))
+    class_list = numpy.zeros(subset_histogram.shape[0]) 
+    class_range = numpy.arange(max(unique_classes)+1) 
+    LOGGER.info("Class range %s" % str(class_range))
+    i=0
+    for o in range(subset_histogram.shape[0]):
+        nr = numpy.sum(subset_histogram[o,:]) 
+        rel = subset_histogram[o,:]*1.0/nr*1.0        
+        max_class = numpy.max(subset_histogram[o,:]) #TODO: this is different in old code of madmex
+        if i < 5:
+            print max_class
+        idx = subset_histogram[o,:] == max_class
+        if sum(idx) == 1 and rel[idx] >= proportion: #The object needs to have at least a given proportion
+            class_list[o] = class_range[idx]
+        else:
+            class_list[o] = 0
+        i+=1
+    nonzero_classes =  class_list > 0 # index of classes with value greater 0 (we ignore the zero class, cause is nodata: fmask or NaN's values)
+    class_list = class_list[nonzero_classes] # all non zero class labels
+    subset_objects = subset_objects[nonzero_classes] # final object 
+    df = pandas.DataFrame(numpy.vstack([subset_objects,class_list]).T) # stack and create dataframe
+    df.columns = [names_of_columns[0], names_of_columns[1]]
+    return df

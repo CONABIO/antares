@@ -12,6 +12,7 @@ import dateutil
 import numpy
 import osgeo
 from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode
+from scipy.ndimage.filters import sobel, gaussian_filter
 
 from madmex.configuration import SETTINGS
 from madmex.mapper.base import BaseBundle
@@ -25,6 +26,7 @@ from madmex.preprocessing import masking
 from madmex.preprocessing import maskingwithreference
 from madmex.preprocessing.topofatmosphere import calculate_distance_sun_earth, \
     calculate_toa_rapideye, calculate_rad_rapideye
+from madmex.processing.raster import calculate_index
 from madmex.util import get_path_from_list, create_file_name, \
     create_directory_path, get_base_name, get_parent
 
@@ -39,6 +41,11 @@ _METADATA = r'^(\d{4}-\d{2}-\d{2}T1)?\d{5}(\d{2})?(_\d{4}-\d{2}-\d{2})?_RE\d_3A(
 _README = r'^(\d{4}-\d{2}-\d{2}T1)?\d{5}(\d{2})?(_\d{4}-\d{2}-\d{2})?_RE\d_3A(-NAC)?(_\d{8})?_\d{6}_readme\.txt$'
 _UDM = r'^(\d{4}-\d{2}-\d{2}T1)?\d{5}(\d{2})?(_\d{4}-\d{2}-\d{2})?_RE\d_3A(-NAC)?(_\d{8})?_\d{6}_udm\.tif$'
 LOGGER = logging.getLogger(__name__)
+BLUE = 0
+GREEN = 1
+RED = 2
+RED_EDGE = 3
+NIR = 4
 class Bundle(BaseBundle):
     '''
     classdocs
@@ -126,12 +133,17 @@ class Bundle(BaseBundle):
         Returns the database object that represents this sensor.
         '''
         return driver.get_sensor_object(self.get_sensor_name())
+    def get_raster_file(self):
+        '''
+        Returns the file name of the raster that this bundle represents.
+        '''
+        return self.file_dictionary[_IMAGE]
     def get_raster(self):
         '''
         Lazily creates and returns a raster object for this bundle.
         '''
         if self.raster is None:
-            self.raster = raster.Data(self.file_dictionary[_IMAGE], self.FORMAT)
+            self.raster = raster.Data(self.get_raster_file(), self.FORMAT)
         return self.raster
     def get_output_directory(self):
         '''
@@ -309,6 +321,52 @@ class Bundle(BaseBundle):
                      data_type=NumericTypeCodeToGDALTypeCode(numpy.float32)
                      )
         LOGGER.info('Cloud mask was created.')
+    def get_NDVI(self):
+        '''
+        Index calculation for rapideye bundle.
+        '''
+        array = self.get_raster().read_data_file_as_array()
+        red_array = array[RED]
+        nir_array = array[NIR]
+        return calculate_index(nir_array, red_array)
+    def get_red_edge_NDVI(self):
+        '''
+        Index calculation for rapideye bundle.
+        '''
+        array = self.get_raster().read_data_file_as_array()
+        red_array = array[RED]
+        red_edge_array = array[RED_EDGE]
+        return calculate_index(red_edge_array, red_array)
+    def get_gndvi(self):
+        '''
+        Index calculation for rapideye bundle.
+        '''
+        array = self.get_raster().read_data_file_as_array()
+        nir_array = array[NIR]
+        green_array = array[GREEN]
+        return calculate_index(nir_array, green_array)
+    def get_ndre(self):
+        '''
+        Index calculation for rapideye bundle.
+        '''
+        array = self.get_raster().read_data_file_as_array()
+        red_edge_array = array[RED_EDGE]
+        nir_array = array[NIR]
+        return calculate_index(nir_array, red_edge_array)
+    def get_sobel_filter(self, sigma=2, mode_type="constant"):
+        '''
+        The sobel filter is use to calculate edges in an image. The filter is
+        calculated over a gaussian filter on the mean of the bands.
+        '''
+        array = self.get_raster().read_data_file_as_array()
+        
+        flat = numpy.mean(array, axis = 0)
+        print flat.shape
+        blurred = gaussian_filter(flat, sigma)
+        sx = sobel(blurred, axis=0, mode=mode_type)
+        sy = sobel(blurred, axis=1, mode=mode_type)
+        return numpy.hypot(sx, sy)
+        
 
 if __name__ == '__main__':
     #path = '/Users/amaury/Documents/rapideye/df/1447813/2012/2012-03-14/l3a'

@@ -14,6 +14,14 @@ import ogr
 import re
 LOGGER = logging.getLogger(__name__)
 
+def create_names_of_dataframe_from_filename(dataframe_class, number_of_columns, filename):
+    col_labels = []
+    col_labels.append('id')
+    for i in range(number_of_columns -1):
+        col_labels.append("feature_"+ filename + "_" + str(i+1))
+    print col_labels
+    dataframe_class.columns = col_labels
+    return dataframe_class
 def reduce_dimensionality(dataframe, maxvariance, columns_to_drop):
     '''
     Performs PCA on feature pandas dataframe and reduces number of
@@ -76,22 +84,29 @@ def outlier_elimination_for_dataframe(dataframe, column_name_of_ids,  column_nam
         if y > max_number_of_objects:
             LOGGER.info('Class %s have more than %s objects' %(list_of_classes[i], max_number_of_objects))
             LOGGER.info('Class %s will be processed by chunks' % list_of_classes[i])
-            number_of_bins = y / max_number_of_objects
+            number_of_bins = int(y / max_number_of_objects)
             if y % max_number_of_objects == 0:
                 maxcounter = number_of_bins+1
             else:
                 maxcounter = number_of_bins+2
+            print 'maaax counter'
+            print maxcounter
             for j in range(1,maxcounter):
                 if j*max_number_of_objects > y:
                     LOGGER.info('Chunk: %s' % j)
-                    ind_ids = (j-1)*max_number_of_objects+j-2
+                    ind_ids = int((j-1)*max_number_of_objects+j-2)
+                    print 'ind ids first if'
+                    print ind_ids
                     ids_kept = histogram_trimming(df.iloc[ind_ids:], object_ids_per_class.iloc[ind_ids:], probability, list_of_classes[i])
                     ids_kept.columns = [column_name_of_ids]
                     list_ids_kept.append(ids_kept)
                 else:
                     LOGGER.info('Chunk: %s' % j)
-                    ind_ids_1 = max_number_of_objects*(j-1)
-                    ind_ids_2 = max_number_of_objects*(j-1)+max_number_of_objects
+                    ind_ids_1 = int(max_number_of_objects*(j-1))
+                    ind_ids_2 = int(max_number_of_objects*(j-1)+max_number_of_objects)
+                    print 'int ids second if'
+                    print ind_ids_1
+                    print ind_ids_2
                     ids_kept = histogram_trimming(df.iloc[ind_ids_1:ind_ids_2], object_ids_per_class.iloc[ind_ids_1:ind_ids_2], probability, list_of_classes[i])       
                     ids_kept.columns = [column_name_of_ids]
                     list_ids_kept.append(ids_kept)
@@ -140,7 +155,7 @@ def histogram_trimming(dataframe, object_ids, threshold, name_of_class):
                 crit = 0
             if iter == 20:
                 crit = 0
-            LOGGER.info('Class: %s , iteration: %s, objects: %s, current threshold: %s, current minimum probability %s' %(name_of_class, iteration, data.shape[1], threshold, min(ddev)))
+            LOGGER.info('Class: %s , iteration: %s, objects: %s, current threshold: %s, current minimum probability %s' %(name_of_class, iteration, data.shape[1], thisthreshold, min(ddev)))
             iteration = iteration + 1
         LOGGER.info('Class: %s conserved: %s objects' %(name_of_class, data.shape[1]))
     else:

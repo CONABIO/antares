@@ -16,7 +16,7 @@ from madmex.processing.raster import mask_values, \
     calculate_ndvi_2, calculate_sr, calculate_evi, calculate_arvi,\
     calculate_tasseled_caps, calculate_statistics_metrics, vectorize_raster,\
     calculate_zonal_statistics, append_labels_to_array, build_dataframe_from_array,\
-    create_names_of_dataframe_from_filename, resample_numpy_array,\
+    resample_numpy_array,\
     get_gradient_of_image, get_grid, calculate_zonal_histograms,\
     get_pure_objects_from_raster_as_dataframe
 from madmex.configuration import SETTINGS
@@ -32,7 +32,7 @@ import subprocess
 from madmex.mapper.data.dataframe import reduce_dimensionality,\
     outlier_elimination_for_dataframe, generate_namesfile,\
     join_C5_dataframe_and_shape, join_dataframes_by_column_name,\
-    write_C5_result_to_csv
+    write_C5_result_to_csv, create_names_of_dataframe_from_filename
 LOGGER = logging.getLogger(__name__)
 BUNDLE_PACKAGE = 'madmex.mapper.bundle'
 FMASK_LAND = 0
@@ -85,6 +85,11 @@ class Command(BaseCommand):
         product = 7 #This is fmask product
         fmask_image_paths = find_datasets(start_date, end_date, satellite, product, cloud, gridid)
         print fmask_image_paths
+
+        #TODO: Add a flags of types: 'fill_no_data_fmask_values', 'speed'
+        #TODO: For flag fill_no_data_fmask_values we don't filter out the id zero of dataframe: dataframe_all_joined_for_classifying (after outlier elimination)
+        #TODO: one option for filling no data and fmask values is using the tool: http://www.gdal.org/gdal_fillnodata.html
+
 
         #sr_image_paths = [u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-15/sr', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-31/sr', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-02-16/sr', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-03-04/sr']
         #fmask_image_paths = [u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-15/fmask', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-01-31/fmask', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-02-16/fmask', u'/LUSTRE/MADMEX/staging/antares_test/oli_tirs/21048/2015/2015-03-04/fmask']
@@ -388,9 +393,9 @@ class Command(BaseCommand):
             #The first entry of output_file_stack_indexes_list_metrics is NDVImetrics
             image_segmentation_file =  output_file_stack_indexes_list_metrics[0] + '_' + str(val_t) + '_' + ''.join(str(val_s).split('.'))+ '_' + ''.join(str(val_c).split('.')) + '.tif'
             LOGGER.info('Starting vectorization of segmentation file: %s' % image_segmentation_file)
-            image_segmentation_shp = image_segmentation_file + '.shp'
-            vectorize_raster(image_segmentation_file, 1, image_segmentation_shp, 'objects', 'id')
-            LOGGER.info('Finished vectorization: %s' % image_segmentation_shp)
+            image_segmentation_shp_file = image_segmentation_file + '.shp'
+            vectorize_raster(image_segmentation_file, 1, image_segmentation_shp_file, 'objects', 'id')
+            LOGGER.info('Finished vectorization: %s' % image_segmentation_shp_file)
             LOGGER.info('Preparation for classification')
             #LOGGER.info('Reading raster of segmentation file: %s' % image_segmentation_file)
             #array_sg_raster = get_array_from_image_path(image_segmentation_file)
@@ -504,8 +509,11 @@ class Command(BaseCommand):
                 subprocess.call(command)
                 LOGGER.info('Finished clipping of aux file')
                 LOGGER.info('Starting warping of file: %s according to %s ' % (aux_file_clipped, image_segmentation_file))
-                #dataset_warped_aux_file = warp_raster_from_reference(aux_file_clipped, image_segmentation_file, None)
                 dataset_warped_aux_file = warp_raster_from_reference(aux_file_clipped, image_segmentation_file_class.data_file, None)
+                
+                #LOGGER.info('Starting warping of file: %s according to %s ' % (aux_file, image_segmentation_file))
+                #dataset_warped_aux_file = warp_raster_from_reference(aux_file, image_segmentation_file_class.data_file, None)
+                
                 LOGGER.info('Starting resizing of array of auxiliary file: %s' % aux_file)
                 array_resized_and_warped_aux_file = get_array_resized_from_reference_dataset(dataset_warped_aux_file, image_segmentation_file_class.data_file)
                 #The next lines of creation just for testing purposes:
@@ -613,7 +621,8 @@ class Command(BaseCommand):
             training_data_file_clipped = folder_results  + get_basename_of_file(training_data_file) + '_cropped_subprocess_call.tif'
             command = [
                     'gdalwarp', '-cutline', landmask_file,
-                    '-crop_to_cutline', '-of', 'GTiff','-co', 'compress=lzw', '-co', 'tiled=yes','-ot', 'Int32', '-dstnodata', '-9999', training_data_file, training_data_file_clipped
+                    #'-crop_to_cutline', '-of', 'GTiff','-co', 'compress=lzw', '-co', 'tiled=yes','-ot', 'Int32', '-dstnodata', '-9999', training_data_file, training_data_file_clipped
+                    '-crop_to_cutline', '-of', 'GTiff','-co', 'compress=lzw', '-co', 'tiled=yes', training_data_file, training_data_file_clipped                    
                     ]
             subprocess.call(command)
             LOGGER.info('Finished clipping of training data file')
@@ -621,6 +630,13 @@ class Command(BaseCommand):
             LOGGER.info('Starting warping of file: %s according to %s ' % (training_data_file_clipped, image_segmentation_file))
             dataset_warped_training_data_file = warp_raster_from_reference(training_data_file_clipped, image_segmentation_file_class.data_file, None)
             LOGGER.info('Starting resizing of array of training file: %s' % training_data_file_clipped)
+            
+
+            #LOGGER.info('Starting warping of file: %s according to %s ' % (training_data_file, image_segmentation_file))
+            #dataset_warped_training_data_file = warp_raster_from_reference(training_data_file, image_segmentation_file_class.data_file, None)
+            #LOGGER.info('Starting resizing of array of training file: %s' % training_data_file)
+            
+            
             array_resized_and_warped_training_data_file = get_array_resized_from_reference_dataset(dataset_warped_training_data_file, image_segmentation_file_class.data_file)
 
 
@@ -636,9 +652,9 @@ class Command(BaseCommand):
             #LOGGER.info('Masking training data file: %s with fmask and NaNs of NDVI segmentation raster' % training_data_file_resampled)
             #index_nodata_value_pixels_ndvi = numpy.array(array_sg_raster==0, dtype = bool)
             #array_training_data_resampled[index_nodata_value_pixels_ndvi] = -9999
-            LOGGER.info('Changing  value of nodata 0 to -9999 for training data: %s' % training_data_file_resampled) #TODO: This only to training data ???
-            index_zeros_training_data = numpy.array(array_training_data_resampled == 0, dtype = bool)
-            array_training_data_resampled[index_zeros_training_data] = -9999
+            #LOGGER.info('Changing  value of nodata 0 to -9999 for training data: %s' % training_data_file_resampled) #TODO: This only to training data ???
+            #index_zeros_training_data = numpy.array(array_training_data_resampled == 0, dtype = bool)
+            #array_training_data_resampled[index_zeros_training_data] = -9999
             #The next lines of creation just for testing purposes:
             create_raster_tiff_from_reference(extents_dictionary, training_data_file_resampled, array_training_data_resampled, options_to_create, data_type = gdal.GDT_Int32)
             LOGGER.info('Applying chipping to training data file %s:' % training_data_file_resampled)
@@ -706,8 +722,8 @@ class Command(BaseCommand):
             dataframe_all_joined_for_classifying = join_dataframes_by_column_name([dataframe_joined_stack_bands_metrics, dataframe_joined_stack_indexes_metrics, dataframe_joined_aux_files, dataframe_texture_features], 'id')
             dataframe_all_joined_for_classifying['given'] = '?'
             LOGGER.info('Number of rows and columns of dataframe joined: (%s,%s)' %(len(dataframe_all_joined_for_classifying.index), len(dataframe_all_joined_for_classifying.columns)))
-            index_of_objects_not__id_zero = dataframe_all_joined_for_classifying['id'] > 0
-            dataframe_all_joined_for_classifying = dataframe_all_joined_for_classifying[index_of_objects_not__id_zero]
+            index_of_objects_not_id_zero = dataframe_all_joined_for_classifying['id'] > 0
+            dataframe_all_joined_for_classifying = dataframe_all_joined_for_classifying[index_of_objects_not_id_zero]
             LOGGER.info('Number of rows and columns of dataframe joined after removing object with id zero: (%s,%s)' %(len(dataframe_all_joined_for_classifying.index), len(dataframe_all_joined_for_classifying.columns)))
             
             LOGGER.info('Generating data file')
@@ -745,7 +761,6 @@ class Command(BaseCommand):
 
             LOGGER.info('Using result of C5 for generating land cover shapefile and raster image')        
             C5_result = folder_results + 'C5_result.csv'
-            image_segmentation_shp_file = folder_results + 'NDVImetrics_3_02_08.tif.shp'
             dataframe_c5_result = pandas.read_csv(C5_result)
             FORMAT =  'ESRI Shapefile'
             image_segmentation_shp_class = vector.Data(image_segmentation_shp_file,  FORMAT)

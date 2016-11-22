@@ -58,7 +58,6 @@ def outlier_elimination_for_dataframe(dataframe, column_name_of_ids,  column_nam
     LOGGER.info('Number of columns of dataframe without columns :%s', number_of_columns)
     dataframe = None
     dataframe_new_indexing = dataframe_without_columns.set_index(column_name_of_classes)
-    #dataframe_new_indexing = dataframe.set_index(column_name_of_classes)   
     number_of_columns_new_indexing = len(dataframe_new_indexing.columns) 
     LOGGER.info('Number of columns of dataframe new indexing :%s', number_of_columns_new_indexing)
     print 'columns new indexing'
@@ -89,14 +88,10 @@ def outlier_elimination_for_dataframe(dataframe, column_name_of_ids,  column_nam
                 maxcounter = number_of_bins+1
             else:
                 maxcounter = number_of_bins+2
-            print 'maaax counter'
-            print maxcounter
             for j in range(1,maxcounter):
                 if j*max_number_of_objects > y:
                     LOGGER.info('Chunk: %s' % j)
                     ind_ids = int((j-1)*max_number_of_objects+j-2)
-                    print 'ind ids first if'
-                    print ind_ids
                     ids_kept = histogram_trimming(df.iloc[ind_ids:], object_ids_per_class.iloc[ind_ids:], probability, list_of_classes[i])
                     ids_kept.columns = [column_name_of_ids]
                     list_ids_kept.append(ids_kept)
@@ -104,9 +99,6 @@ def outlier_elimination_for_dataframe(dataframe, column_name_of_ids,  column_nam
                     LOGGER.info('Chunk: %s' % j)
                     ind_ids_1 = int(max_number_of_objects*(j-1))
                     ind_ids_2 = int(max_number_of_objects*(j-1)+max_number_of_objects)
-                    print 'int ids second if'
-                    print ind_ids_1
-                    print ind_ids_2
                     ids_kept = histogram_trimming(df.iloc[ind_ids_1:ind_ids_2], object_ids_per_class.iloc[ind_ids_1:ind_ids_2], probability, list_of_classes[i])       
                     ids_kept.columns = [column_name_of_ids]
                     list_ids_kept.append(ids_kept)
@@ -251,4 +243,3 @@ def write_C5_dataframe_to_shape(dataframe, shape_class, out_file):
             data_layer.CreateFeature(feature)  
         feature.Destroy()      
         data_source = None
-

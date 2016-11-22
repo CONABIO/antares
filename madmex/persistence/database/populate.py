@@ -1776,7 +1776,10 @@ if __name__ == '__main__':
         delete_database()
         print 'database deleted'
         path_query = getattr(SETTINGS, 'RAPIDEYE_FOOTPRINTS_MEXICO_OLD')
-        create_vector_tables(path_query)
+        if path_query == 'False':
+            pass
+        else:
+            create_vector_tables(path_query)
         print 'vector tables created'
         create_database()
         print 'database created'

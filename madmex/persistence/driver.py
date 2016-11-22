@@ -52,10 +52,6 @@ def persist_bundle(bundle, keep=False):
                 bundle.get_database_object(),
                 session)
                 )
-            actions.append(database.InsertAction(
-                bundle.get_information_object(),
-                session)
-                )
             import madmex.mapper.bundle.rapideye as re
             if isinstance(bundle, re.Bundle):
                 actions.append(database.InsertAction(

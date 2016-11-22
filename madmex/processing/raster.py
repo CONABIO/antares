@@ -359,6 +359,7 @@ def get_pure_objects_from_raster_as_dataframe(array_histogram_of_objects, unique
     '''
     Remove mixed objects (those which have more than one class) and keep the pure ones
     '''
+    print unique_classes
     n_objects, n_classes = array_histogram_of_objects.shape
     n_zeros = numpy.sum(array_histogram_of_objects == 0, axis = 1) 
     one_class_in_histogram_index = n_zeros == n_classes-1 #get the indexes of pure objects

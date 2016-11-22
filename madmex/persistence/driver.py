@@ -56,10 +56,12 @@ def persist_bundle(bundle, keep=False):
                 bundle.get_information_object(),
                 session)
                 )
-            actions.append(database.InsertAction(
-                bundle.get_features_object(),
-                session)
-                )
+            import madmex.mapper.bundle.rapideye as re
+            if isinstance(bundle, re.Bundle):
+                actions.append(database.InsertAction(
+                     bundle.get_features_object(),
+                     session)
+                    )
             def do_result(action):
                 '''
                 Lambda function to perform an action and return the result.

@@ -625,5 +625,4 @@ class Command(BaseCommand):
                 image =folder_results + 'madmex_lcc_confidence_prueba.tif'
                 create_raster_tiff_from_reference(extents_dictionary, image, dataset_shape_sg_and_c5_rasterized.ReadAsArray(), options_to_create)
                 LOGGER.info('Finished rasterizing vector shape')
-        
         LOGGER.info('Finished workflow classification :)')

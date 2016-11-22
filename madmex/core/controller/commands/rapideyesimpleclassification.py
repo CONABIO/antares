@@ -131,7 +131,7 @@ class Command(BaseCommand):
         
         
         LOGGER.info('Working with the training data')
-        training_data_file = getattr(SETTINGS, 'TRAINING_DATA')
+        training_data_file = getattr(SETTINGS, 'TRAINING_DATA_CARIBE')
         LOGGER.info('Clipping training_data_file: %s with: %s' % (training_data_file, landmask_file))
         
         training_data_file_clipped = folder_results  + get_basename_of_file(training_data_file) + '_cropped_subprocess_call.tif'
@@ -174,7 +174,7 @@ class Command(BaseCommand):
         dataframe_all_joined_classified = join_dataframes_by_column_name([dataframe_zonal_statistics, dataframe_of_objects_for_training_data], 'id')
         LOGGER.info('Number of rows and columns of dataframe joined %s %s' % (len(dataframe_all_joined_classified.index), len(dataframe_all_joined_classified.columns) ))        
             
-        if outlier:
+        if outlier == 'True':
                 LOGGER.info('Starting outlier elimination with dataframe of zonal statistics and dataframe of pure objects of training data')
                 LOGGER.info('Starting principal component analysis')
                 array_reduced_pca = reduce_dimensionality(dataframe_all_joined_classified, .95, ['id', 'given'])

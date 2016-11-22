@@ -268,10 +268,7 @@ class Command(BaseCommand):
                     for j in range(array_metrics.shape[0]):
                         index_fmask_and_landmask_for_ndvi_metrics = numpy.logical_and(index_fmask_for_ndvi_metrics, index_landmask_for_ndvi_metrics)
                         array_metrics[j, :, :][index_fmask_and_landmask_for_ndvi_metrics] = 9999
-                    array_ndvi_metrics = array_metrics
-                    #options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], {})            
-                    #image = folder_results + 'rasterize_fmask_last_image_without_landmask.tif'
-                    #create_raster_tiff_from_reference(extents_dictionary,image, index_fmask_and_landmask_for_ndvi_metrics, options_to_create)                                            
+                    array_ndvi_metrics = array_metrics                                            
                 image_result = output_file_stack_indexes_list[i] + 'metrics'     
                 options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND'], {})
                 create_raster_tiff_from_reference(extents_dictionary, image_result, array_metrics, options_to_create)
@@ -311,7 +308,6 @@ class Command(BaseCommand):
                     image_result = output_file_stack_indexes_list[0] + 'metrics'     
                     options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND'], {})
                     create_raster_tiff_from_reference(extents_dictionary, image_result, array_ndvi_metrics, options_to_create)
-                #array_ndvi_metrics = None
                 
             image_segmentation_file =  output_file_stack_indexes_list_metrics[0] + '_' + str(val_t) + '_' + ''.join(str(val_s).split('.'))+ '_' + ''.join(str(val_c).split('.')) + '.tif'
             LOGGER.info('Starting vectorization of segmentation file: %s' % image_segmentation_file)
@@ -442,7 +438,6 @@ class Command(BaseCommand):
             
             
             LOGGER.info('Getting gradient texture features of file %s' % output_file_stack_indexes_list_metrics[0])
-            #array_ndvi_metrics = get_array_from_image_path(output_file_stack_indexes_list_metrics[0])            
             output_file_texture_sobel = output_file_stack_indexes_list_metrics[0] + 'gradient.tif'
             array_ndvi_metrics_texture = get_gradient_of_image(array_ndvi_metrics[3,:,:])
             LOGGER.info('Masking array of ndvi metrics texture with fmask and NaNs values of segmentation raster')

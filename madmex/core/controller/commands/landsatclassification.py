@@ -555,7 +555,8 @@ class Command(BaseCommand):
             array_ndvi_metrics = get_array_from_image_path(output_file_stack_indexes_list_metrics[0])
             index_ndvi_metrics_overall_bands_minus_9999 =numpy.array(ndarray.all(array_ndvi_metrics==-9999,axis=0), dtype=bool)                      
             dataframe_of_pure_objects_of_training_data = pandas.read_csv('dataframe_pure_objects_of_training_data', sep='\t')
-            dataframe_joined_aux_files = pandas.read_csv('dataframe_joined_for_aux_files', sep = '\t')
+            if with_auxiliary_files == 'True':
+                dataframe_joined_aux_files = pandas.read_csv('dataframe_joined_for_aux_files', sep = '\t')
             dataframe_joined_stack_indexes_metrics = pandas.read_csv('dataframe_joined_for_stack_indexes', sep = '\t')
             dataframe_texture_features = pandas.read_csv('dataframe_texture_features', sep = '\t')
             dataframe_joined_stack_bands_metrics = pandas.read_csv('dataframe_joined_for_stack_bands', sep = '\t')

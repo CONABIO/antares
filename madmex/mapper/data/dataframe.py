@@ -85,8 +85,8 @@ def outlier_elimination_for_dataframe(dataframe, column_name_of_ids,  column_nam
             LOGGER.info('Number of objects: %s in class %s' % (df.shape[1], list_of_classes[i]))
             y=len(df.columns)
         else:
-            LOGGER.info('Number of objects: %s in class %s' % (df.shape[0], list_of_classes[i]))
-            y= df.shape[0]
+            LOGGER.info('Number of objects: %s in class %s' % (1, list_of_classes[i]))
+            y= 1
         #LOGGER.info('Just checking : number of objects: %s in class %s of object_ids_per_class dataframe' %(len(object_ids_per_class.index), list_of_classes[i]))
         if list_of_classes[i] == 90.0:
             print 'dataframe subset'
@@ -179,10 +179,11 @@ def histogram_trimming(dataframe, object_ids, threshold, name_of_class):
             LOGGER.info('Number of objects: %s' % data_aux_shape)
         else:
             thisclassinliers = numpy.unique(thisfeatureinliers)
+        ix = numpy.in1d(numpy.array(object_ids),thisclassinliers)
+        ix = object_ids[ix]
     else:
         thisclassinliers = numpy.unique(thisfeatureinliers)
-    ix = numpy.in1d(numpy.array(object_ids),thisclassinliers)
-    ix = object_ids[ix]
+        ix = object_ids
     return pandas.DataFrame(ix)
 def generate_namesfile(columns, unique_classes, name_namesfile, column_name_of_ids, column_name_of_classes):
     f = open(name_namesfile, 'w+')

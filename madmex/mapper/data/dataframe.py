@@ -75,6 +75,7 @@ def outlier_elimination_for_dataframe(dataframe, column_name_of_ids,  column_nam
     max_number_of_objects = 5.e4
     list_ids_kept = []
     LOGGER.info('Classes to be processed: %s' % list_of_classes)
+    
     for i in range(len(list_of_classes)):
         df = dataframe_subset.loc[list_of_classes[i]]
         object_ids_per_class = object_ids_new_indexing.loc[list_of_classes[i]][column_name_of_ids]

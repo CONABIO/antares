@@ -119,6 +119,8 @@ def histogram_trimming(dataframe, object_ids, threshold, name_of_class):
     data = dataframe.convert_objects(convert_numeric=True)
     data = data.astype(numpy.int16)
     data = (data.values).T
+    LOGGER.info('Shape of data to be trimmed')
+    print data.shape
     crit = 1
     iteration = 1
     thisfeatureinliers = object_ids

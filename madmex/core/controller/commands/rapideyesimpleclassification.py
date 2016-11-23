@@ -222,7 +222,7 @@ class Command(BaseCommand):
         remote = RemoteProcessLauncher(hosts_from_command[0])
         folder_and_bind_c5 = folder_results + ':/datos'
                 
-        arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + 'madmex/c5_execution ' + 'c5.0 -b -f /datos/C5'
+        arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'c5.0 -b -f /datos/C5'
         LOGGER.info('Beginning C5') 
         remote.execute(arguments)
     

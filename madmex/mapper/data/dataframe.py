@@ -79,14 +79,22 @@ def outlier_elimination_for_dataframe(dataframe, column_name_of_ids,  column_nam
     for i in range(len(list_of_classes)):
         df = dataframe_subset.loc[list_of_classes[i]]
         object_ids_per_class = object_ids_new_indexing.loc[list_of_classes[i]][column_name_of_ids]
-        LOGGER.info('Number of objects: %s in class %s' % (len(df.index), list_of_classes[i]))
-        LOGGER.info('Just checking : number of objects: %s in class %s of object_ids_per_class dataframe' %(len(object_ids_per_class.index), list_of_classes[i]))
+        #LOGGER.info('Number of objects: %s in class %s' % (len(df.index), list_of_classes[i]))
+        #LOGGER.info('Number of objects: %s in class %s' % (len(df.columns), list_of_classes[i]))
+        if len(df.shape) == 2:
+            LOGGER.info('Number of objects: %s in class %s' % (df.shape[1], list_of_classes[i]))
+            y=len(df.columns)
+        else:
+            LOGGER.info('Number of objects: %s in class %s' % (1, list_of_classes[i]))
+            y= 1
+        #LOGGER.info('Just checking : number of objects: %s in class %s of object_ids_per_class dataframe' %(len(object_ids_per_class.index), list_of_classes[i]))
         if list_of_classes[i] == 90.0:
             print 'dataframe subset'
             print df
             print 'object ids_per_class'
             print object_ids_per_class
-        y = len(df.index)
+        #y = len(df.index)
+
         if y > max_number_of_objects:
             LOGGER.info('Class %s have more than %s objects' %(list_of_classes[i], max_number_of_objects))
             LOGGER.info('Class %s will be processed by chunks' % list_of_classes[i])
@@ -134,45 +142,52 @@ def histogram_trimming(dataframe, object_ids, threshold, name_of_class):
     thisthreshold = threshold
     prev_obj = 1.e6
     
-    if data.shape[1] > 30: # preserve at least 30 samples
-        LOGGER.info('Reducing number of objects of class: %s' % name_of_class)
-        LOGGER.info('Class %s found %s objects, continue with outlier elimination' %(name_of_class, data.shape[1]))
-        while crit > 0 and data.shape[1] > 30:
-            thisfeatureinliers_aux = thisfeatureinliers
-            data_aux_shape = data.shape[1]
-            my_pdf = stats.kde.gaussian_kde(data[:,:])
-            ddev = my_pdf.evaluate(my_pdf.dataset)
-            p1 = stats.scoreatpercentile(ddev,25)
-            adjust = False      
-            if (p1 < thisthreshold) and (adjust == False):
-                thisthreshold = p1    
-                adjust = True      
-            idx = ddev > thisthreshold
-            data = data[:,idx]
-            thisfeatureinliers = thisfeatureinliers[idx] 
-            crit = ddev.shape[0] > sum(idx)
-            n_obj_changed = prev_obj - data.shape[1]
-            prev_obj = data.shape[1]
-            if n_obj_changed < 5:
-                crit = 0
-            if iter == 20:
-                crit = 0
-            LOGGER.info('Class: %s , iteration: %s, objects: %s, current threshold: %s, current minimum probability %s' %(name_of_class, iteration, data.shape[1], thisthreshold, min(ddev)))
-            iteration = iteration + 1
-        LOGGER.info('Class: %s conserved: %s objects' %(name_of_class, data.shape[1]))
+    if len(data.shape) == 2:
+        if data.shape[1] > 30: # preserve at least 30 samples
+            LOGGER.info('Reducing number of objects of class: %s' % name_of_class)
+            LOGGER.info('Class %s found %s objects, continue with outlier elimination' %(name_of_class, data.shape[1]))
+            while crit > 0 and data.shape[1] > 30:
+                thisfeatureinliers_aux = thisfeatureinliers
+                data_aux_shape = data.shape[1]
+                my_pdf = stats.kde.gaussian_kde(data[:,:])
+                ddev = my_pdf.evaluate(my_pdf.dataset)
+                p1 = stats.scoreatpercentile(ddev,25)
+                adjust = False      
+                if (p1 < thisthreshold) and (adjust == False):
+                    thisthreshold = p1    
+                    adjust = True      
+                idx = ddev > thisthreshold
+                data = data[:,idx]
+                thisfeatureinliers = thisfeatureinliers[idx] 
+                crit = ddev.shape[0] > sum(idx)
+                n_obj_changed = prev_obj - data.shape[1]
+                prev_obj = data.shape[1]
+                if n_obj_changed < 5:
+                    crit = 0
+                if iter == 20:
+                    crit = 0
+                LOGGER.info('Class: %s , iteration: %s, objects: %s, current threshold: %s, current minimum probability %s' %(name_of_class, iteration, data.shape[1], thisthreshold, min(ddev)))
+                iteration = iteration + 1
+            LOGGER.info('Class: %s conserved: %s objects' %(name_of_class, data.shape[1]))
+        else:
+            LOGGER.info('Class: %s have less than 30 objects, so this are preserved' % name_of_class)
+            LOGGER.info('Number of objects: %s in class %s' % (len(object_ids.index), name_of_class))
+        #get indices of inlier ids
+        if data.shape[1] < 1:
+            LOGGER.info('process of histogram trimming was too abrupt, so we keep object_ids of iteration: %s' % str(iteration-2))
+            thisclassinliers = numpy.unique(thisfeatureinliers_aux)
+            LOGGER.info('Number of objects: %s' % data_aux_shape)
+        else:
+            thisclassinliers = numpy.unique(thisfeatureinliers)
+        ix = numpy.in1d(numpy.array(object_ids),thisclassinliers)
+        ix = object_ids[ix]
+        df_result = pandas.DataFrame(ix)
     else:
-        LOGGER.info('Class: %s have less than 30 objects, so this are preserved' % name_of_class)
-        LOGGER.info('Number of objects: %s in class %s' % (len(object_ids.index), name_of_class))
-    #get indices of inlier ids
-    if data.shape[1] < 1:
-        LOGGER.info('process of histogram trimming was too abrupt, so we keep object_ids of iteration: %s' % str(iteration-2))
-        thisclassinliers = numpy.unique(thisfeatureinliers_aux)
-        LOGGER.info('Number of objects: %s' % data_aux_shape)
-    else:
-        thisclassinliers = numpy.unique(thisfeatureinliers)
-    ix = numpy.in1d(numpy.array(object_ids),thisclassinliers)
-    ix = object_ids[ix]
-    return pandas.DataFrame(ix)
+        #thisclassinliers = numpy.unique(thisfeatureinliers)
+        #ix = object_ids
+        d = {'dummy':pandas.Series(object_ids)}
+        df_result = pandas.DataFrame(d)
+    return df_result
 def generate_namesfile(columns, unique_classes, name_namesfile, column_name_of_ids, column_name_of_classes):
     f = open(name_namesfile, 'w+')
     f.write(column_name_of_classes + '.\n\n')

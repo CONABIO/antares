@@ -79,6 +79,7 @@ def outlier_elimination_for_dataframe(dataframe, column_name_of_ids,  column_nam
         df = dataframe_subset.loc[list_of_classes[i]]
         object_ids_per_class = object_ids_new_indexing.loc[list_of_classes[i]][column_name_of_ids]
         LOGGER.info('Number of objects: %s in class %s' % (len(df.index), list_of_classes[i]))
+        LOGGER.info('Just checking : number of objects: %s in class %s of object_ids_per_class dataframe' %(len(object_ids_per_class.index), list_of_classes[i]))
         y = len(df.index)
         if y > max_number_of_objects:
             LOGGER.info('Class %s have more than %s objects' %(list_of_classes[i], max_number_of_objects))
@@ -126,6 +127,7 @@ def histogram_trimming(dataframe, object_ids, threshold, name_of_class):
     thisfeatureinliers = object_ids
     thisthreshold = threshold
     prev_obj = 1.e6
+    
     if data.shape[1] > 30: # preserve at least 30 samples
         LOGGER.info('Reducing number of objects of class: %s' % name_of_class)
         LOGGER.info('Class %s found %s objects, continue with outlier elimination' %(name_of_class, data.shape[1]))
@@ -154,7 +156,7 @@ def histogram_trimming(dataframe, object_ids, threshold, name_of_class):
         LOGGER.info('Class: %s conserved: %s objects' %(name_of_class, data.shape[1]))
     else:
         LOGGER.info('Class: %s have less than 30 objects, so this are preserved' % name_of_class)
-        LOGGER.info('Number of objects: %s' % len(object_ids.index))
+        LOGGER.info('Number of objects: %s in class %s' % (len(object_ids.index), name_of_class))
     #get indices of inlier ids
     if data.shape[1] < 1:
         LOGGER.info('process of histogram trimming was too abrupt, so we keep object_ids of iteration: %s' % str(iteration-2))

@@ -69,7 +69,7 @@ class Command(BaseCommand):
         folder_and_bind_license = getattr(SETTINGS, 'FOLDER_SEGMENTATION_LICENSE')
         folder_and_bind_image= folder_results  +  ':/results'
         LOGGER.info('starting segmentation')
-        command = 'segmentation_mac'
+        command = 'run_container'
         hosts_from_command = get_host_from_command(command)
         LOGGER.info('The command to be executed is %s in the host %s' % (command, hosts_from_command[0].hostname))
         remote = RemoteProcessLauncher(hosts_from_command[0])
@@ -216,7 +216,7 @@ class Command(BaseCommand):
         unique_classes = numpy.unique(dataframe_all_joined_classified['given'].values)
         name_namesfile = folder_results + 'C5.names'
         generate_namesfile(dataframe_all_joined_classified.columns, unique_classes,name_namesfile, 'id', 'given')
-        command = 'segmentation_mac'
+        command = 'run_container'
         hosts_from_command = get_host_from_command(command)
         LOGGER.info('The command to be executed is %s in the host %s' % (command, hosts_from_command[0].hostname))
         remote = RemoteProcessLauncher(hosts_from_command[0])

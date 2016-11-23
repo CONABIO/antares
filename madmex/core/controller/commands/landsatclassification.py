@@ -294,7 +294,7 @@ class Command(BaseCommand):
             folder_and_bind_ndvimetrics = get_parent(output_file_stack_indexes_list_metrics[0]) + ':/results'
             ndvimetrics = '/results/' +  get_basename_of_file(output_file_stack_indexes_list_metrics[0])
             LOGGER.info('starting segmentation')
-            command = 'segmentation_mac'
+            command = 'run_container'
             hosts_from_command = get_host_from_command(command)
             LOGGER.info('The command to be executed is %s in the host %s' % (command, hosts_from_command[0].hostname))
             remote = RemoteProcessLauncher(hosts_from_command[0])
@@ -581,7 +581,7 @@ class Command(BaseCommand):
             name_namesfile = folder_results + 'C5.names'
             generate_namesfile(dataframe_all_joined_classified.columns, unique_classes,name_namesfile, 'id', 'given')
 
-            command = 'segmentation_mac'
+            command = 'run_container'
             hosts_from_command = get_host_from_command(command)
             LOGGER.info('The command to be executed is %s in the host %s' % (command, hosts_from_command[0].hostname))
             remote = RemoteProcessLauncher(hosts_from_command[0])

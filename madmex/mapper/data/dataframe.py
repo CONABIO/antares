@@ -83,8 +83,10 @@ def outlier_elimination_for_dataframe(dataframe, column_name_of_ids,  column_nam
         #LOGGER.info('Number of objects: %s in class %s' % (len(df.columns), list_of_classes[i]))
         if len(df.shape) == 2:
             LOGGER.info('Number of objects: %s in class %s' % (df.shape[1], list_of_classes[i]))
+            y=len(df.columns)
         else:
             LOGGER.info('Number of objects: %s in class %s' % (df.shape[0], list_of_classes[i]))
+            y= df.shape[0]
         #LOGGER.info('Just checking : number of objects: %s in class %s of object_ids_per_class dataframe' %(len(object_ids_per_class.index), list_of_classes[i]))
         if list_of_classes[i] == 90.0:
             print 'dataframe subset'
@@ -92,7 +94,7 @@ def outlier_elimination_for_dataframe(dataframe, column_name_of_ids,  column_nam
             print 'object ids_per_class'
             print object_ids_per_class
         #y = len(df.index)
-        y=len(df.columns)
+
         if y > max_number_of_objects:
             LOGGER.info('Class %s have more than %s objects' %(list_of_classes[i], max_number_of_objects))
             LOGGER.info('Class %s will be processed by chunks' % list_of_classes[i])

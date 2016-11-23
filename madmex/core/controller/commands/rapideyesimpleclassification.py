@@ -56,7 +56,7 @@ class Command(BaseCommand):
         shutil.copy(image_to_be_classified, folder_results)
         image_to_be_classified = folder_results +  get_basename_of_file(image_to_be_classified)
         
-        '''
+        
         image_for_segmentation = '/results/' +  get_basename_of_file(image_to_be_classified)
         LOGGER.info('Starting segmentation with: %s' % image_for_segmentation)   
         val_t = 50
@@ -218,15 +218,7 @@ class Command(BaseCommand):
         unique_classes = numpy.unique(dataframe_all_joined_classified['given'].values)
         name_namesfile = folder_results + 'C5.names'
         generate_namesfile(dataframe_all_joined_classified.columns, unique_classes,name_namesfile, 'id', 'given')
-        '''
         
-        
-                
-        gdal_format = 'GTiff'
-        image_to_be_classified_class = raster.Data(image_to_be_classified, gdal_format)
-        image_segmentation_shp_file = folder_results + '1947604_2015-01-05_RE1_3A_298768.tif_50_07_03.tif.shp'
-        width, height, bands = image_to_be_classified_class.get_attribute(raster.DATA_SHAPE)
-        import gdal
         
         
         command = 'run_container'

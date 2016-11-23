@@ -185,7 +185,8 @@ def histogram_trimming(dataframe, object_ids, threshold, name_of_class):
     else:
         #thisclassinliers = numpy.unique(thisfeatureinliers)
         #ix = object_ids
-        df_result = object_ids
+        d = {'dummy':pandas.Series(object_ids)}
+        df_result = pandas.DataFrame(d)
     return df_result
 def generate_namesfile(columns, unique_classes, name_namesfile, column_name_of_ids, column_name_of_classes):
     f = open(name_namesfile, 'w+')

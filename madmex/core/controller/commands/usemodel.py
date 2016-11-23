@@ -58,6 +58,8 @@ class Command(BaseCommand):
             for i in range(5000):
                 step = numpy.transpose(image_array[:,i,:])
                 final[i] = model.predict(step)
+                if i % 100 == 0:
+                    print i
             print("--- %s seconds ---" % (time.time() - start_time))
             classification = create_file_name(output, '%s.tif' % basename)
             create_raster_from_reference(classification, final.reshape(5000, 5000), path, data_type=gdal.GDT_Byte, creating_options=['COMPRESS=LZW'])

@@ -303,6 +303,7 @@ class Command(BaseCommand):
             remote.execute(arguments)
             LOGGER.info('Finished segmentation')
 
+
             if fill_holes == 'True':
                 LOGGER.info('Changing value of fmask of 9999 to -9999 overall images in %s for segmentation for consistency with other indexes' % output_file_stack_indexes_list_metrics[0])  
                 LOGGER.info('Rewriting %s' %output_file_stack_indexes_list_metrics[0] )

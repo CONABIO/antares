@@ -52,7 +52,7 @@ class Command(BaseCommand):
         image_to_be_classified = options['image'][0]
         landmask_path = options['landmask_path'][0]
         outlier = options['outlier'][0]
-        folder_results =  getattr(SETTINGS, 'BIG_FOLDER_RAPIDEYE')
+        folder_results =  getattr(SETTINGS, 'BIG_FOLDER')
         shutil.copy(image_to_be_classified, folder_results)
         image_to_be_classified = folder_results +  get_basename_of_file(image_to_be_classified)
         image_for_segmentation = '/results/' +  get_basename_of_file(image_to_be_classified)
@@ -131,7 +131,7 @@ class Command(BaseCommand):
         
         
         LOGGER.info('Working with the training data')
-        training_data_file = getattr(SETTINGS, 'TRAINING_DATA_CARIBE')
+        training_data_file = getattr(SETTINGS, 'TRAINING_DATA')
         LOGGER.info('Clipping training_data_file: %s with: %s' % (training_data_file, landmask_file))
         
         training_data_file_clipped = folder_results  + get_basename_of_file(training_data_file) + '_cropped_subprocess_call.tif'

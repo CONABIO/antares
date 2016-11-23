@@ -298,7 +298,7 @@ class Command(BaseCommand):
             hosts_from_command = get_host_from_command(command)
             LOGGER.info('The command to be executed is %s in the host %s' % (command, hosts_from_command[0].hostname))
             remote = RemoteProcessLauncher(hosts_from_command[0])
-            arguments = 'docker  run --rm -v ' + folder_and_bind_segmentation + ' -v ' + folder_and_bind_license + ' -v ' + folder_and_bind_ndvimetrics + ' segmentation/segmentation:v1 python /segmentation/segment.py ' + ndvimetrics
+            arguments = 'sudo docker  run --rm -v ' + folder_and_bind_segmentation + ' -v ' + folder_and_bind_license + ' -v ' + folder_and_bind_ndvimetrics + ' segmentation/segmentation:v1 python /segmentation/segment.py ' + ndvimetrics
             arguments+=  ' -t ' + str(val_t) + ' -s ' + str(val_s) + ' -c ' + str(val_c) + ' --tile ' + str(val_tile) + ' --mp ' + str(val_mp) + ' --xt ' + str(val_xt) + ' --rows ' + str(val_rows) + ' --nodata ' + str(val_nodata)
             remote.execute(arguments)
             LOGGER.info('Finished segmentation')
@@ -587,12 +587,12 @@ class Command(BaseCommand):
             remote = RemoteProcessLauncher(hosts_from_command[0])
             folder_and_bind_c5 = folder_results + ':/datos'
                 
-            arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' c5/c5_execution:v1 ' + 'c5.0 -b -f /datos/C5'
+            arguments = 'sudo docker  run --rm -v ' + folder_and_bind_c5  + ' c5/c5_execution:v1 ' + 'c5.0 -b -f /datos/C5'
             LOGGER.info('Beginning C5') 
             remote.execute(arguments)
     
             LOGGER.info('Begining predict')
-            arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' c5/c5_execution:v1 ' + 'predict -f /datos/C5'
+            arguments = 'sudo docker  run --rm -v ' + folder_and_bind_c5  + ' c5/c5_execution:v1 ' + 'predict -f /datos/C5'
             remote = RemoteProcessLauncher(hosts_from_command[0])
             output = remote.execute(arguments, True)
             LOGGER.info('Writing C5 result to csv')

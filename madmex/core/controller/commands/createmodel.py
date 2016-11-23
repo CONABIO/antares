@@ -80,7 +80,7 @@ class Command(BaseCommand):
         features_flatten = features_flatten[:,mask]
         training_flatten = training_flatten[mask]
         for i in range(10):
-            features_flatten[i] = MinMaxScaler().fit_transform(features_flatten[i])
+            #features_flatten[i] = MinMaxScaler().fit_transform(features_flatten[i])
             print '******** ',i
             print 'max:'
             print numpy.max(features_flatten[i])
@@ -93,8 +93,13 @@ class Command(BaseCommand):
         X_train, X_test, y_train, y_test = train_test_split(numpy.transpose(features_flatten), training_flatten, train_size=0.70)
         import time
         import warnings
+        
+        print X_train.shape
+        print y_train.shape
+        
+        print numpy.unique(y_train)
         start_time = time.time()
-        model = RandomForestClassifier(n_estimators=100,n_jobs=20)
+        model = RandomForestClassifier(n_estimators=200,n_jobs=20)
         #model = svm.LinearSVC(C=10)
         #model = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(100, 7), max_iter=400,verbose=10, random_state=1)
         model.fit(X_train, y_train)

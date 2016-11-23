@@ -146,7 +146,10 @@ def create_empty_raster_from_reference(image_path, reference_path, data_type=gda
         new_dataset.SetProjection(str(projection))
     LOGGER.debug('Done with dataset creation.')
     return new_dataset
-def create_raster_from_reference(image_path, array, reference_path, data_type=gdal.GDT_Float32):
+def create_raster_from_reference(image_path,
+                                 array, reference_path,
+                                 data_type=gdal.GDT_Float32,
+                                 creating_options=['COMPRESS=LZW']):
     '''
     This function creates a raster image with the info in the given array. It
     uses the reference path to extract the geotransform and the projection from
@@ -166,13 +169,15 @@ def create_raster_from_reference(image_path, array, reference_path, data_type=gd
                   geotransform,
                   projection,
                   driver_type,
-                  data_type)
+                  data_type,
+                  creating_options)
 def create_raster(image_path,
                   array,
                   geotransform=None,
                   projection=None,
                   driver_type=GTIFF,
-                  data_type=gdal.GDT_Float32):
+                  data_type=gdal.GDT_Float32,
+                  creating_options=['COMPRESS=LZW']):
     '''
     This method facilitates the creation of a raster image using gdal. By setting
     several attributes by default, it removes the overhead of creating images
@@ -196,7 +201,7 @@ def create_raster(image_path,
                                                        height,
                                                        bands,
                                                        data_type,
-                                                       ['COMPRESS=LZW'])
+                                                       creating_options)
         if geotransform:
             data.SetGeoTransform(geotransform)
         if projection:

@@ -81,7 +81,10 @@ def outlier_elimination_for_dataframe(dataframe, column_name_of_ids,  column_nam
         object_ids_per_class = object_ids_new_indexing.loc[list_of_classes[i]][column_name_of_ids]
         #LOGGER.info('Number of objects: %s in class %s' % (len(df.index), list_of_classes[i]))
         #LOGGER.info('Number of objects: %s in class %s' % (len(df.columns), list_of_classes[i]))
-        LOGGER.info('Number of objects: %s in class %s' % (df.shape[1], list_of_classes[i]))
+        if len(df.shape) == 2:
+            LOGGER.info('Number of objects: %s in class %s' % (df.shape[1], list_of_classes[i]))
+        else:
+            LOGGER.info('Number of objects: %s in class %s' % (df.shape[0], list_of_classes[i]))
         #LOGGER.info('Just checking : number of objects: %s in class %s of object_ids_per_class dataframe' %(len(object_ids_per_class.index), list_of_classes[i]))
         if list_of_classes[i] == 90.0:
             print 'dataframe subset'

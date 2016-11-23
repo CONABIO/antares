@@ -94,7 +94,7 @@ class Command(BaseCommand):
         import time
         import warnings
         start_time = time.time()
-        model = RandomForestClassifier(n_estimators=10,n_jobs=8)
+        model = RandomForestClassifier(n_estimators=1000,n_jobs=8)
         #model = svm.LinearSVC(C=10)
         #model = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(100, 7), max_iter=400,verbose=10, random_state=1)
         model.fit(X_train, y_train)

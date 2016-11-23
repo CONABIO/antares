@@ -80,7 +80,7 @@ def outlier_elimination_for_dataframe(dataframe, column_name_of_ids,  column_nam
         df = dataframe_subset.loc[list_of_classes[i]]
         object_ids_per_class = object_ids_new_indexing.loc[list_of_classes[i]][column_name_of_ids]
         LOGGER.info('Number of objects: %s in class %s' % (len(df.index), list_of_classes[i]))
-        LOGGER.info('Just checking : number of objects: %s in class %s of object_ids_per_class dataframe' %(len(object_ids_per_class.index), list_of_classes[i]))
+        #LOGGER.info('Just checking : number of objects: %s in class %s of object_ids_per_class dataframe' %(len(object_ids_per_class.index), list_of_classes[i]))
         if list_of_classes[i] == 90.0:
             print 'dataframe subset'
             print df

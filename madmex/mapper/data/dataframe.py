@@ -12,6 +12,7 @@ from madmex.mapper.data import vector
 from madmex.mapper.data.vector import create_empty_layer
 import ogr
 import re
+from sklearn.decomposition.truncated_svd import TruncatedSVD
 LOGGER = logging.getLogger(__name__)
 
 def create_names_of_dataframe_from_filename(dataframe_class, number_of_columns, filename):
@@ -33,14 +34,22 @@ def reduce_dimensionality(dataframe, maxvariance, columns_to_drop):
     LOGGER.info('Adding noise to dataframe')
     dataframe_without_columns = dataframe_without_columns + numpy.random.normal(size = dataframe_without_columns.shape)*1.e-19 
     LOGGER.info('Starting PCA')
-    pca = PCA(n_components = 'mle')
-    pca.fit(dataframe_without_columns)
-    # transform
-    samples = pca.transform(dataframe_without_columns)
-    # aggregated sum of variances
-    sum_variance = sum(pca.explained_variance_)
-    #print sum_variance, pca.explained_variance_
-    # get those having aggregated variance below threshold
+    try:
+        pca = PCA(n_components = 'mle')
+        pca.fit(dataframe_without_columns)
+        # transform
+        samples = pca.transform(dataframe_without_columns)
+        # aggregated sum of variances
+        sum_variance = sum(pca.explained_variance_)
+        #print sum_variance, pca.explained_variance_
+        # get those having aggregated variance below threshold
+    except ValueError:
+        LOGGER.info('PCA failed, using truncated SVD')
+        svd = TruncatedSVD(n_components=3)
+        svd.fit(dataframe_without_columns)
+        samples = svd.transform(dataframe_without_columns)
+        sum_variance = sum(svd.explained_variance_)
+        
     scomp = 0
     ncomp = 0
     while scomp < maxvariance:

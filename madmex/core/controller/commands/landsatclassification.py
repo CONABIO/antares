@@ -291,7 +291,7 @@ class Command(BaseCommand):
             val_mp = False
             folder_and_bind_segmentation = getattr(SETTINGS, 'FOLDER_SEGMENTATION')
             folder_and_bind_license = getattr(SETTINGS, 'FOLDER_SEGMENTATION_LICENSE')
-            folder_and_bind_ndvimetrics = get_parent(output_file_stack_indexes_list_metrics[0]) + ':/results'
+            folder_and_bind_ndvimetrics = getattr(SETTINGS, 'BIG_FOLDER_HOST')
             ndvimetrics = '/results/' +  get_basename_of_file(output_file_stack_indexes_list_metrics[0])
             LOGGER.info('starting segmentation')
             command = 'run_container'
@@ -586,14 +586,13 @@ class Command(BaseCommand):
             hosts_from_command = get_host_from_command(command)
             LOGGER.info('The command to be executed is %s in the host %s' % (command, hosts_from_command[0].hostname))
             remote = RemoteProcessLauncher(hosts_from_command[0])
-            folder_and_bind_c5 = folder_results + ':/datos'
-                
-            arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'c5.0 -b -f /datos/C5'
+            folder_and_bind_c5 = getattr(SETTINGS, 'BIG_FOLDER_HOST')    
+            arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'c5.0 -b -f /results/C5'
             LOGGER.info('Beginning C5') 
             remote.execute(arguments)
     
             LOGGER.info('Begining predict')
-            arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'predict -f /datos/C5'
+            arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'predict -f /results/C5'
             remote = RemoteProcessLauncher(hosts_from_command[0])
             output = remote.execute(arguments, True)
             LOGGER.info('Writing C5 result to csv')

@@ -21,7 +21,6 @@ import logging
 
 LOGGER = logging.getLogger(__name__)
 
-
 class Command(BaseCommand):
     '''
     classdocs
@@ -36,6 +35,7 @@ class Command(BaseCommand):
         parser.add_argument('--yearIni', nargs=1, help='Some help on initial year')
         parser.add_argument('--yearFin', nargs=1, help='Some help on final year')
         parser.add_argument('--csvName', nargs=1, help='CSV file name with the tth results')
+        parser.add_argument('--outputDir', nargs=1, help='CSV output directory')
     
 
 
@@ -48,6 +48,7 @@ class Command(BaseCommand):
         yearIni = options['yearIni'][0]
         yearFin = options['yearFin'][0]
         csv_name = options['csvName'][0]
+        output_dir = options['outputDir'][0]
         
         
         pixel_area, info_at_open= self.pixel_info(rasterIni)
@@ -60,6 +61,7 @@ class Command(BaseCommand):
 
         matching_class = list(set(arr_class_id_ini).intersection(arr_class_id_fin))
         orphan_class = list(set(list(arr_class_id_ini)).symmetric_difference(list(arr_class_id_fin)))
+        matching_class.pop(0)
         
         LOGGER.info('Computing tth analysis in period: %s - %s'  % (yearIni,yearFin) )        
         # computes the "tth" analysis only for those classes in both rasters
@@ -83,7 +85,7 @@ class Command(BaseCommand):
         if orphan_class:
             LOGGER.info('There are %s classes with no match'  % (len(orphan_class)) )
 
-        self.write_file(matching_class, clss_area_ini_arr, clss_area_fin_arr, tth_arr, csv_name)     
+        self.write_file(matching_class, clss_area_ini_arr, clss_area_fin_arr, tth_arr, csv_name, output_dir, yearIni, yearFin)     
 
                     
                     
@@ -140,14 +142,13 @@ class Command(BaseCommand):
         
         return tth_class       
     
-    def write_file(self, match_class, area_ini, area_fin, tth, file_name):
+    def write_file(self, match_class, area_ini, area_fin, tth, file_name, dir_path, year1, year2):
         '''
         '''
         titles = ['Class ID','S1 [ha]','S2 [ha]', 'tth [%]'] 
         rows = zip(match_class,area_ini,area_fin,tth)
         
-        dir_path = './tth/'
-        csv_file = file_name + '.csv'
+        csv_file = file_name + '_' + year1 + '_' + year2 + '.csv'
         file_path = dir_path + csv_file
         LOGGER.info('Writing results in  %s', file_path)
 

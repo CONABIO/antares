@@ -263,16 +263,16 @@ class Command(BaseCommand):
                 array_metrics = calculate_statistics_metrics(array, [-9999])
                 LOGGER.info('Calculating statistics: average, minimum, maximum, standard deviation, range of file %s' % output_file_stack_indexes_list[i])
                 LOGGER.info('Shape of array metrics: %s %s %s' % (array_metrics.shape[0], array_metrics.shape[1], array_metrics.shape[2]))
-                if i == 0 and fill_holes == 'True':
-                    LOGGER.info('Changing value of fmask of -9999 to 9999 for ndvi metrics to pass to segmentation')
+                if i == 0:
+                    array_ndvi_metrics = array_metrics   
                     index_fmask_for_ndvi_metrics = numpy.array( index_fmask_over_all_images == 1, dtype = bool)
                     index_landmask_for_ndvi_metrics = numpy.array(landmask_array == 1, dtype = bool)
-                    index_ndvi_metrics_overall_bands_minus_9999 =numpy.array(ndarray.all(array==-9999,axis=0), dtype=bool)                      
+                    index_ndvi_metrics_overall_bands_minus_9999 =numpy.array(ndarray.all(array==-9999,axis=0), dtype=bool)   
+                if i == 0 and fill_holes == 'True':
+                    LOGGER.info('Changing value of fmask of -9999 to 9999 for ndvi metrics to pass to segmentation')                   
                     for j in range(array_metrics.shape[0]):
                         index_fmask_and_landmask_for_ndvi_metrics = numpy.logical_and(index_fmask_for_ndvi_metrics, index_landmask_for_ndvi_metrics)
-                        array_metrics[j, :, :][index_fmask_and_landmask_for_ndvi_metrics] = 9999
-                if i == 0:
-                    array_ndvi_metrics = array_metrics                                            
+                        array_metrics[j, :, :][index_fmask_and_landmask_for_ndvi_metrics] = 9999                                         
                 image_result = output_file_stack_indexes_list[i] + 'metrics'     
                 options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND'], {})
                 create_raster_tiff_from_reference(extents_dictionary, image_result, array_metrics, options_to_create)

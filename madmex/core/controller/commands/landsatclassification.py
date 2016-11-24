@@ -84,14 +84,14 @@ class Command(BaseCommand):
         outlier = options['outlier'][0]
         fill_holes = options['fill_holes'][0]
         with_auxiliary_files = options['auxiliary_files'][0]
-        landmask_path = options['landmask_path'][0]
+        #landmask_path = options['landmask_path'][0]
         all_indexes = options['all_indexes'][0]
         sr_image_paths = find_datasets(start_date, end_date, satellite, product, cloud, gridid)
         print sr_image_paths
         product = 7 #This is fmask product
         fmask_image_paths = find_datasets(start_date, end_date, satellite, product, cloud, gridid)
         print fmask_image_paths
-        
+        landmask_path = getattr(SETTINGS, 'LANDMASK_PATH')
         sr_image_paths_l1t = []
         for path in sr_image_paths:
             bundle = _get_bundle_from_path(path)
@@ -219,6 +219,7 @@ class Command(BaseCommand):
                         LOGGER.info('Writing band %s of file %s in the stack: %s' % (str(i+1), bundle.path, output_file_stack_bands_list[i]))
                         new_options_for_create_raster_from_reference(extents_dictionary, raster.DATASET, datasets_stack_bands_list[i], options_to_create_empty_stacks)
                         create_raster_tiff_from_reference(extents_dictionary, output_file_stack_bands_list[i], data_array_resized[i, :, :], options_to_create_empty_stacks)
+                    bundle.get_raster().hdf_data_array = None
                     index_NaNs = numpy.array(data_array_resized== -9999, dtype = bool)
                     index_NaNs_2d = numpy.array(ndarray.all(data_array_resized==-9999,axis=0), dtype = bool)
                     LOGGER.info('Shape of hdf data array resized and masked  %s %s %s'  % (data_array_resized.shape[0], data_array_resized.shape[1], data_array_resized.shape[2]))

@@ -45,18 +45,18 @@ class Command(BaseCommand):
     '''
     def add_arguments(self, parser):
         parser.add_argument('--image', nargs='*')
-        parser.add_argument('--landmask_path', nargs='*')
+        #parser.add_argument('--landmask_path', nargs='*')
         parser.add_argument('--outlier', nargs='*')
         
     def handle(self, **options):
         image_to_be_classified = options['image'][0]
-        landmask_path = options['landmask_path'][0]
+        #landmask_path = options['landmask_path'][0]
         outlier = options['outlier'][0]
         folder_results =  getattr(SETTINGS, 'BIG_FOLDER')
         shutil.copy(image_to_be_classified, folder_results)
         image_to_be_classified = folder_results +  get_basename_of_file(image_to_be_classified)
         
-        
+        landmask_path = getattr(SETTINGS, 'LANDMASK_PATH')
         image_for_segmentation = '/results/' +  get_basename_of_file(image_to_be_classified)
         LOGGER.info('Starting segmentation with: %s' % image_for_segmentation)   
         val_t = 50

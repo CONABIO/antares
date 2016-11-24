@@ -71,6 +71,7 @@ class Command(BaseCommand):
         parser.add_argument('--fill_holes', nargs='*')
         parser.add_argument('--outlier', nargs='*')
         parser.add_argument('--auxiliary_files', nargs='*')
+        parser.add_argument('--all_indexes', nargs='*')     
 
 
     def handle(self, **options):
@@ -84,6 +85,7 @@ class Command(BaseCommand):
         fill_holes = options['fill_holes'][0]
         with_auxiliary_files = options['auxiliary_files'][0]
         landmask_path = options['landmask_path'][0]
+        all_indexes = options['all_indexes'][0]
         sr_image_paths = find_datasets(start_date, end_date, satellite, product, cloud, gridid)
         print sr_image_paths
         product = 7 #This is fmask product
@@ -171,8 +173,12 @@ class Command(BaseCommand):
             new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND'], options_to_create_empty_indexes_stacks)                
             output_file_stack_indexes_list = []
             datasets_stack_indexes_list = []
-            list_of_indexes = ['NDVI', 'SR', 'EVI', 'ARVI', 'TC']
-            list_of_indexes_functions = [calculate_ndvi_2, calculate_sr, calculate_evi, calculate_arvi, calculate_tasseled_caps]
+            if all_indexes == 'True':
+                list_of_indexes = ['NDVI', 'SR', 'EVI', 'ARVI', 'TC']
+                list_of_indexes_functions = [calculate_ndvi_2, calculate_sr, calculate_evi, calculate_arvi, calculate_tasseled_caps]
+            else:
+                list_of_indexes = ['NDVI']
+                list_of_indexes_functions = [calculate_ndvi_2]
             number_of_indexes = len(list_of_indexes)
             for i in range(number_of_indexes):
                 if list_of_indexes[i] == 'TC':

@@ -56,7 +56,7 @@ class Command(BaseCommand):
         shutil.copy(image_to_be_classified, folder_results)
         image_to_be_classified = folder_results +  get_basename_of_file(image_to_be_classified)
         
-        
+        '''
         image_for_segmentation = '/results/' +  get_basename_of_file(image_to_be_classified)
         LOGGER.info('Starting segmentation with: %s' % image_for_segmentation)   
         val_t = 50
@@ -69,8 +69,8 @@ class Command(BaseCommand):
         
         folder_and_bind_segmentation = getattr(SETTINGS, 'FOLDER_SEGMENTATION')
         folder_and_bind_license = getattr(SETTINGS, 'FOLDER_SEGMENTATION_LICENSE')
-        folder_and_bind_image= folder_results  +  ':/results'
-        folder_and_bind_image = getattr(SETTINGS, 'FOLDER_IMAGE_FOR_SEGMENTATION') + ':/results'
+        #folder_and_bind_image= folder_results  +  ':/results'
+        folder_and_bind_image = getattr(SETTINGS, 'BIG_FOLDER_HOST')
         
         LOGGER.info('starting segmentation')
         command = 'run_container'
@@ -220,6 +220,14 @@ class Command(BaseCommand):
         unique_classes = numpy.unique(dataframe_all_joined_classified['given'].values)
         name_namesfile = folder_results + 'C5.names'
         generate_namesfile(dataframe_all_joined_classified.columns, unique_classes,name_namesfile, 'id', 'given')
+        '''
+        
+        gdal_format = 'GTiff'
+        image_to_be_classified_class = raster.Data(image_to_be_classified, gdal_format)
+        image_segmentation_shp_file = folder_results + '1947604_2015-01-05_RE1_3A_298768.tif_50_07_03.tif.shp'
+        width, height, bands = image_to_be_classified_class.get_attribute(raster.DATA_SHAPE)
+        import gdal
+        
         
         
         
@@ -227,14 +235,15 @@ class Command(BaseCommand):
         hosts_from_command = get_host_from_command(command)
         LOGGER.info('The command to be executed is %s in the host %s' % (command, hosts_from_command[0].hostname))
         remote = RemoteProcessLauncher(hosts_from_command[0])
-        folder_and_bind_c5 = folder_results + ':/datos'
-                
-        arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'c5.0 -b -f /datos/C5'
+        #folder_and_bind_c5 = folder_results + ':/datos'
+        folder_and_bind_c5 = getattr(SETTINGS, 'BIG_FOLDER_HOST')
+        #arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'c5.0 -b -f /datos/C5'
+        arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'c5.0 -b -f /results/C5'
         LOGGER.info('Beginning C5') 
         remote.execute(arguments)
     
         LOGGER.info('Begining predict')
-        arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'predict -f /datos/C5'
+        arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'predict -f /results/C5'
         remote = RemoteProcessLauncher(hosts_from_command[0])
         output = remote.execute(arguments, True)
         LOGGER.info('Writing C5 result to csv')

@@ -246,6 +246,7 @@ class Command(BaseCommand):
                                 new_options_for_create_raster_from_reference(extents_dictionary, raster.DATASET, datasets_stack_indexes_list[j], options_to_create_empty_indexes_stacks)
                                 create_raster_tiff_from_reference(extents_dictionary, output_file_stack_indexes_list[j], array, options_to_create_empty_indexes_stacks)
                             array = None
+                    bundle = None
                     subset_counter+=1
                 data_array_resized = None
 

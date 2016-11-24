@@ -271,6 +271,7 @@ class Command(BaseCommand):
                     for j in range(array_metrics.shape[0]):
                         index_fmask_and_landmask_for_ndvi_metrics = numpy.logical_and(index_fmask_for_ndvi_metrics, index_landmask_for_ndvi_metrics)
                         array_metrics[j, :, :][index_fmask_and_landmask_for_ndvi_metrics] = 9999
+                if i == 0:
                     array_ndvi_metrics = array_metrics                                            
                 image_result = output_file_stack_indexes_list[i] + 'metrics'     
                 options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND'], {})

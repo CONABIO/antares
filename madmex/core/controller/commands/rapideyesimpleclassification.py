@@ -70,6 +70,7 @@ class Command(BaseCommand):
         folder_and_bind_segmentation = getattr(SETTINGS, 'FOLDER_SEGMENTATION')
         folder_and_bind_license = getattr(SETTINGS, 'FOLDER_SEGMENTATION_LICENSE')
         folder_and_bind_image= folder_results  +  ':/results'
+        folder_and_bind_image = getattr(SETTINGS, 'FOLDER_IMAGE_FOR_SEGMENTATION') + ':/results'
         LOGGER.info('starting segmentation')
         command = 'run_container'
         hosts_from_command = get_host_from_command(command)

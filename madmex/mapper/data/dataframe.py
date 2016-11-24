@@ -41,6 +41,7 @@ def reduce_dimensionality(dataframe, maxvariance, columns_to_drop):
         samples = pca.transform(dataframe_without_columns)
         # aggregated sum of variances
         sum_variance = sum(pca.explained_variance_)
+        list_variance = pca.explained_variance_
         #print sum_variance, pca.explained_variance_
         # get those having aggregated variance below threshold
     except ValueError:
@@ -49,11 +50,13 @@ def reduce_dimensionality(dataframe, maxvariance, columns_to_drop):
         svd.fit(dataframe_without_columns)
         samples = svd.transform(dataframe_without_columns)
         sum_variance = sum(svd.explained_variance_)
+        list_variance = svd.explained_variance_
         
     scomp = 0
     ncomp = 0
     while scomp < maxvariance:
-        c = pca.explained_variance_[ncomp]
+        #c = pca.explained_variance_[ncomp]
+        c = list_variance[ncomp]
         scomp = scomp + c/sum_variance
         ncomp = ncomp+1
     # reduce dimensionality

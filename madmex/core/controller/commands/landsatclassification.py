@@ -513,7 +513,7 @@ class Command(BaseCommand):
             create_raster_tiff_from_reference(extents_dictionary, training_data_file_resampled, array_training_data_resampled, options_to_create, data_type = gdal.GDT_Int32)
             LOGGER.info('Applying chipping to training data file %s:' % training_data_file_resampled)
             geotransform = raster._get_attribute(raster.GEOTRANSFORM, extents_dictionary)
-            malla = get_grid(array_training_data_resampled.shape, geotransform[1] , 5000,1000,diagonal=True)
+            malla = get_grid(array_training_data_resampled.shape, geotransform[1] , 1000,1000,diagonal=True)
             array_training_data_resampled = array_training_data_resampled*malla
             training_data_file_resampled_grid = training_data_file_resampled +'grid.tif'
             create_raster_tiff_from_reference(extents_dictionary, training_data_file_resampled_grid, array_training_data_resampled, options_to_create, data_type = gdal.GDT_Int32)

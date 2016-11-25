@@ -13,6 +13,8 @@ import gdal
 from osgeo import ogr
 
 from madmex.core.controller.base import BaseCommand
+from madmex.core.controller.commands.tth import pixel_info
+from madmex.remote.dispatcher import LocalProcessLauncher
 from madmex.util import create_filename_from_string, create_file_name, \
     create_directory_path, get_base_name
 
@@ -32,7 +34,8 @@ def split_shape_into_features(shape_name, destination_directory, column):
     layer_name = layer.GetName()
     spatial_reference = layer.GetSpatialRef()
     in_feature = layer.GetNextFeature()
-
+    shape_files = []
+    
     while in_feature:
         encoding = 'utf-8'
         in_feature_name = create_filename_from_string(in_feature.GetField(column).decode(encoding))
@@ -40,6 +43,7 @@ def split_shape_into_features(shape_name, destination_directory, column):
         final_path = destination_directory + str(in_feature.GetField(0))
         create_directory_path(final_path)
         output_name = create_file_name(final_path, in_feature_name + '.shp')
+        shape_files.append(output_name)
 
         if os.path.exists(output_name):
             driver.DeleteDataSource(output_name)
@@ -68,6 +72,7 @@ def split_shape_into_features(shape_name, destination_directory, column):
         in_feature = layer.GetNextFeature()
     shape.Destroy()
     datasource.Destroy()
+    return shape_files
     
 def get_convex_hull(shape_name, destination_directory):
     '''
@@ -112,6 +117,8 @@ def world_to_pixel(geotransform, x, y):
     line = int((y - ulY) / yDist)
     return (pixel, line)
 
+
+
 class Command(BaseCommand):
     '''
     classdocs
@@ -121,10 +128,16 @@ class Command(BaseCommand):
         Adds the sum argument for this command, of course this will change in
         the final implementation.
         '''
+        parser.add_argument('--path', nargs='*', help='This is a stub for the, \
+            change detection command, right now all it does is sum numbers in \
+            the list.')
         parser.add_argument('--shape', nargs='*', help='This is a stub for the, \
             change detection command, right now all it does is sum numbers in \
             the list.')
         parser.add_argument('--dest', nargs='*', help='This is a stub for the, \
+            change detection command, right now all it does is sum numbers in \
+            the list.')
+        parser.add_argument('--raster', nargs='*', help='This is a stub for the, \
             change detection command, right now all it does is sum numbers in \
             the list.')
     def handle(self, **options):
@@ -134,9 +147,24 @@ class Command(BaseCommand):
         '''
         shape_name = options['shape'][0]
         destination = options['dest'][0]
-
+        target_raster = options['raster'][0]
+        paths = options['path']
         if os.path.exists(shape_name):
             LOGGER.info('The file %s was found.' % shape_name)
-
-
-        get_convex_hull(shape_name, destination)
+        shape_files = split_shape_into_features(shape_name, destination, str('nombre'))
+        process_launcher = LocalProcessLauncher()
+        for shape_file in shape_files:
+            basename = '%s.tif' % get_base_name(shape_file)
+            cut_files = []
+            for path in paths:
+                #pixel_resolution, dataset = pixel_info(path)
+                year = self.get_year_from_path(path)
+                raster_file = create_file_name(create_file_name(create_file_name(destination, 'landsat'), year), basename)
+                shell_command =  'gdalwarp -ot Byte -co "COMPRESS=LZW" -cutline %s -crop_to_cut_line %s %s' % (shape_file, target_raster, raster_file)
+                cut_files.append(raster_file)
+            for cut_file in cut_files:
+                print cut_file
+        
+        
+    def get_year_from_path(self, path):
+        return get_base_name(path)[19:23]

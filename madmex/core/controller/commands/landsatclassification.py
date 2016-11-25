@@ -72,7 +72,7 @@ class Command(BaseCommand):
         parser.add_argument('--outlier', nargs='*')
         parser.add_argument('--auxiliary_files', nargs='*')
         parser.add_argument('--all_indexes', nargs='*')     
-
+        parser.add_argument('--grid', nargs='*')  
 
     def handle(self, **options):
         start_date = datetime.strptime(options['start_date'][0], "%Y-%m-%d")
@@ -86,6 +86,7 @@ class Command(BaseCommand):
         with_auxiliary_files = options['auxiliary_files'][0]
         #landmask_path = options['landmask_path'][0]
         all_indexes = options['all_indexes'][0]
+        grid = options['grid']
         sr_image_paths = find_datasets(start_date, end_date, satellite, product, cloud, gridid)
         print sr_image_paths
         product = 7 #This is fmask product
@@ -116,7 +117,7 @@ class Command(BaseCommand):
                 if not bundle.get_datatype() == 'L1T':
                     LOGGER.info('The folder %s was dropped because of data type of metadata', bundle.path)
                     bundle = None
-        
+        '''
         if len(sr_image_paths_l1t) == len(fmask_image_paths_l1t):
             folder_results =  getattr(SETTINGS, 'BIG_FOLDER')
             LOGGER.info('Starting harmonize process of all sr images')
@@ -482,6 +483,54 @@ class Command(BaseCommand):
             dataframe_texture_features = None
             array_sg_raster = None
             dataframe_texture_features = pandas.read_csv(file_name, sep='\t')
+            '''
+            
+        if True:
+            #folder_results = '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/'
+            folder_results = getattr(SETTINGS, 'BIG_FOLDER')
+            val_t = 3
+            val_s = 0.2
+            val_c = 0.8
+            output_file_stack_indexes_list_metrics = [
+                                                        '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/NDVImetrics',
+                                                        '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/ARVImetrics',
+                                                        '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/EVImetrics',
+                                                        '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/SRmetrics',
+                                                        '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC1metrics',
+                                                        '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC2metrics',
+                                                        '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC3metrics',
+                                                        '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC4metrics',
+                                                        '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC5metrics',
+                                                        '/Users/erickpalacios/Documents/CONABIO/Tareas/Redisenio_MADMEX/clasificacion_landsat/landsat8/classification/TC6metrics']
+            #array_sg_raster = get_array_from_image_path(image_segmentation_file)        
+            
+            output_file_stack_indexes_list_metrics = [
+                                                    folder_results + 'NDVImetrics',
+                                                    folder_results + 'ARVImetrics',
+                                                    folder_results + 'EVImetrics',
+                                                                        ]
+            extents_dictionary = {u'x_range': 7351.0, u'y_range': 7271.0, u'properties': {u'projection': 'PROJCS["UTM Zone 17, Northern Hemisphere",GEOGCS["Unknown datum based upon the WGS 84 ellipsoid",DATUM["Not specified (based on WGS 84 spheroid)",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",-81],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",0],UNIT["Meter",1]]', u'geotransform': (661485.0, 30.0, 0.0, 2507415.0, 0.0, -30.0)}, u'x_offset': 'array([ 100.,   40.,    0.])', u'y_offset': 'array([  -0.,   -0.,  220.])'}
+            image_segmentation_file = output_file_stack_indexes_list_metrics[0] + '_' + str(val_t) + '_' + ''.join(str(val_s).split('.'))+ '_' + ''.join(str(val_c).split('.')) + '.tif'
+            LOGGER.info('Reading raster of segmentation file: %s' % image_segmentation_file)   
+            gdalformat = 'GTiff'
+            image_segmentation_shp_file = image_segmentation_file + '.shp'
+            image_segmentation_file_class = raster.Data(image_segmentation_file, gdalformat)
+            array_sg_raster = get_array_from_image_path(image_segmentation_file) 
+            width_sg_raster, height_sg_raster, bands_sg_raster = image_segmentation_file_class.get_attribute(raster.DATA_SHAPE)                
+            array_ndvi_metrics = get_array_from_image_path(output_file_stack_indexes_list_metrics[0])
+            index_ndvi_metrics_overall_bands_minus_9999 =numpy.array(ndarray.all(array_ndvi_metrics==-9999,axis=0), dtype=bool)                      
+            dataframe_of_pure_objects_of_training_data = pandas.read_csv('dataframe_pure_objects_of_training_data', sep='\t')
+            if with_auxiliary_files == 'True':
+                dataframe_joined_aux_files = pandas.read_csv('dataframe_joined_for_aux_files', sep = '\t')
+            dataframe_joined_stack_indexes_metrics = pandas.read_csv('dataframe_joined_for_stack_indexes', sep = '\t')
+            dataframe_texture_features = pandas.read_csv('dataframe_texture_features', sep = '\t')
+            dataframe_joined_stack_bands_metrics = pandas.read_csv('dataframe_joined_for_stack_bands', sep = '\t')
+            unique_labels_for_objects = numpy.unique(array_sg_raster)
+            landmask_folder = folder_results  + 'landmask_from_rasterize/'
+            layer_landmask = 'landmask'
+            landmask_file = landmask_folder + layer_landmask + '.shp'          
+            image_landmask_rasterize = folder_results +  'landmask_rasterize.tif'
+            import gdal
         
             
             
@@ -513,7 +562,7 @@ class Command(BaseCommand):
             create_raster_tiff_from_reference(extents_dictionary, training_data_file_resampled, array_training_data_resampled, options_to_create, data_type = gdal.GDT_Int32)
             LOGGER.info('Applying chipping to training data file %s:' % training_data_file_resampled)
             geotransform = raster._get_attribute(raster.GEOTRANSFORM, extents_dictionary)
-            malla = get_grid(array_training_data_resampled.shape, geotransform[1] , 1000,1000,diagonal=True)
+            malla = get_grid(array_training_data_resampled.shape, geotransform[1] , 5000, grid,diagonal=True)
             array_training_data_resampled = array_training_data_resampled*malla
             training_data_file_resampled_grid = training_data_file_resampled +'grid.tif'
             create_raster_tiff_from_reference(extents_dictionary, training_data_file_resampled_grid, array_training_data_resampled, options_to_create, data_type = gdal.GDT_Int32)

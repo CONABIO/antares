@@ -41,13 +41,12 @@ def area(class_pixels, pixel_resolution):
     class_area = (pixel_resolution * class_pixels) / hectare
     return class_area
 
-def class_info(raster, raster_name, pixel_area):
+def class_info(raster, pixel_area):
     '''
     Calculates the area in hectares for each class.
     '''
     raster_array   = np.array(raster.GetRasterBand(1).ReadAsArray())
     arr_class_info = np.unique(raster_array, return_counts=True)
-    LOGGER.info('Getting classification info from %s', os.path.basename(raster_name))
     area_arr = []
     for i in range(len(arr_class_info[0])):
         class_id = arr_class_info[0][i]
@@ -101,11 +100,13 @@ class Command(BaseCommand):
         
         pixel_area, info_at_open= pixel_info(rasterIni)
         LOGGER.info('Pixel area in raster %s: %s [m2]'  % ( os.path.basename(rasterIni), str(pixel_area) ))
-        arr_class_id_ini, area_arr_ini = class_info(info_at_open, rasterIni, pixel_area)
+        LOGGER.info('Getting classification info from %s', os.path.basename(rasterIni))
+        arr_class_id_ini, area_arr_ini = class_info(info_at_open, pixel_area)
                 
         pixel_area, info_at_open= pixel_info(rasterFin)
         LOGGER.info('Pixel area in raster %s: %s [m2]'  % ( os.path.basename(rasterFin), str(pixel_area) ))
-        arr_class_id_fin, area_arr_fin = class_info(info_at_open, rasterFin, pixel_area)
+        LOGGER.info('Getting classification info from %s', os.path.basename(rasterFin))
+        arr_class_id_fin, area_arr_fin = class_info(info_at_open, pixel_area)
 
         matching_class = list(set(arr_class_id_ini).intersection(arr_class_id_fin))
         orphan_class = list(set(list(arr_class_id_ini)).symmetric_difference(list(arr_class_id_fin)))

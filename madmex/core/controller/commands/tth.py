@@ -21,6 +21,54 @@ import logging
 
 LOGGER = logging.getLogger(__name__)
 
+def pixel_info(path):
+    '''
+    Given a raster path, it opens it and returns the pixel resolution
+    and the dataset.
+    '''
+    LOGGER.info('Reading raster path: %s'  % (path) )
+    dataset = gdal.Open(path)
+    geotransform = dataset.GetGeoTransform()
+    x_resolution = geotransform[1]
+    y_resolution = geotransform[5]
+    pixel_area   = abs(x_resolution * y_resolution)
+    return pixel_area, dataset
+
+def area(class_pixels, pixel_resolution):
+    '''
+    This method returns the area of the given pixels per hectare
+    '''
+    class_area = (pixel_resolution * class_pixels) / hectare
+    return class_area
+
+def class_info(raster, raster_name, pixel_area):
+    '''
+    Calculates the area in hectares for each class.
+    '''
+    raster_array   = np.array(raster.GetRasterBand(1).ReadAsArray())
+    arr_class_info = np.unique(raster_array, return_counts=True)
+    LOGGER.info('Getting classification info from %s', os.path.basename(raster_name))
+    area_arr = []
+    for i in range(len(arr_class_info[0])):
+        class_id = arr_class_info[0][i]
+        num_pixels_per_class = arr_class_info[1][i]
+        area_per_class = area(num_pixels_per_class, pixel_area)
+        area_arr.append(area_per_class)
+        print 'Class ID: ', class_id, '\t', 'No. Pixels per class: ', num_pixels_per_class, '\t', 'Area per class [ha]:', area_per_class
+    return arr_class_info[0], area_arr
+            
+def tth(year_ini, year_fin, class_area_ini, class_area_fin):
+    '''
+    This method calculates the habitat transformation rate acording
+    to the formula: 
+    1 - (1 - (S1-S2)/S1)^(1/n)
+    '''
+    period = int(year_fin) - int(year_ini)
+    coef = Decimal(1.0 / period)
+    surface_class = Decimal((class_area_ini -class_area_fin) /  class_area_ini)
+    tth_class = 1- ((1 - surface_class)**(coef))
+    return tth_class 
+
 class Command(BaseCommand):
     '''
     classdocs
@@ -51,13 +99,13 @@ class Command(BaseCommand):
         output_dir = options['outputDir'][0]
         
         
-        pixel_area, info_at_open= self.pixel_info(rasterIni)
+        pixel_area, info_at_open= pixel_info(rasterIni)
         LOGGER.info('Pixel area in raster %s: %s [m2]'  % ( os.path.basename(rasterIni), str(pixel_area) ))
-        arr_class_id_ini, area_arr_ini = self.class_info(info_at_open, rasterIni, pixel_area)
+        arr_class_id_ini, area_arr_ini = class_info(info_at_open, rasterIni, pixel_area)
                 
-        pixel_area, info_at_open= self.pixel_info(rasterFin)
+        pixel_area, info_at_open= pixel_info(rasterFin)
         LOGGER.info('Pixel area in raster %s: %s [m2]'  % ( os.path.basename(rasterFin), str(pixel_area) ))
-        arr_class_id_fin, area_arr_fin = self.class_info(info_at_open, rasterFin, pixel_area)
+        arr_class_id_fin, area_arr_fin = class_info(info_at_open, rasterFin, pixel_area)
 
         matching_class = list(set(arr_class_id_ini).intersection(arr_class_id_fin))
         orphan_class = list(set(list(arr_class_id_ini)).symmetric_difference(list(arr_class_id_fin)))
@@ -78,7 +126,7 @@ class Command(BaseCommand):
                 class_area_fin = area_arr_fin[index_arr_class_fin]
                 clss_area_ini_arr.append(class_area_ini)
                 clss_area_fin_arr.append(class_area_fin)
-                tth = self.tth(int(yearIni), int(yearFin), class_area_ini, class_area_fin)
+                tth = tth(int(yearIni), int(yearFin), class_area_ini, class_area_fin)
                 tth_arr.append( tth * 100 )
                 print 'Class ID: ', matching_class[i], '\t', 'S1 [ha]:  ',class_area_ini, '\t', 'S2 [ha]:  ', class_area_fin, '\t', 'TTH: ', tth * 100, '\t', '%'              
         
@@ -86,61 +134,6 @@ class Command(BaseCommand):
             LOGGER.info('There are %s classes with no match'  % (len(orphan_class)) )
 
         self.write_file(matching_class, clss_area_ini_arr, clss_area_fin_arr, tth_arr, csv_name, output_dir, yearIni, yearFin)     
-
-                    
-                    
-    
-    def pixel_info(self, path):
-        '''
-        
-        '''
-        LOGGER.info('Reading raster path: %s'  % (path) )
-           
-        ds = gdal.Open(path)
-        bands = ds.RasterCount
-        geotransform = ds.GetGeoTransform()
-        x_resolution = geotransform[1]
-        y_resolution = geotransform[5]
-        pixel_area   = abs(x_resolution * y_resolution)
-        
-        return pixel_area, ds
-    
-    def class_info(self, raster, raster_name, pixel_area):
-        '''
-        
-        '''
-        
-        raster_array   = np.array(raster.GetRasterBand(1).ReadAsArray())
-        arr_class_info = np.unique(raster_array, return_counts=True)
-        LOGGER.info('Getting classification info from %s', os.path.basename(raster_name))
-        area_arr = []
-        for i in range(len(arr_class_info[0])):
-            class_id = arr_class_info[0][i]
-            num_pixels_per_class = arr_class_info[1][i]
-            area_per_class = self.area(num_pixels_per_class, pixel_area)
-            area_arr.append(area_per_class)
-            print 'Class ID: ', class_id, '\t', 'No. Pixels per class: ', num_pixels_per_class, '\t', 'Area per class [ha]:', area_per_class
-        
-        return arr_class_info[0], area_arr
-                    
-                    
-    def area(self, class_pixels, pixel_area):
-        '''
-        '''
-        area_class = (pixel_area * class_pixels) / hectare
-        return area_class
-    
-                
-    def tth(self, year_ini, year_fin, class_area_ini, class_area_fin):
-        '''
-        '''
-        period = int(year_fin) - int(year_ini)
-        coef = Decimal(1.0 / period)
-        surface_class = Decimal((class_area_ini -class_area_fin) /  class_area_ini)
-        
-        tth_class = 1- ((1 - surface_class)**(coef))
-        
-        return tth_class       
     
     def write_file(self, match_class, area_ini, area_fin, tth, file_name, dir_path, year1, year2):
         '''

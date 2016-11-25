@@ -86,7 +86,7 @@ class Command(BaseCommand):
         with_auxiliary_files = options['auxiliary_files'][0]
         #landmask_path = options['landmask_path'][0]
         all_indexes = options['all_indexes'][0]
-        grid = options['grid']
+        grid = options['grid'][0]
         sr_image_paths = find_datasets(start_date, end_date, satellite, product, cloud, gridid)
         print sr_image_paths
         product = 7 #This is fmask product

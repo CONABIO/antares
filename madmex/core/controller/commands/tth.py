@@ -61,7 +61,10 @@ def tth(year_ini, year_fin, class_area_ini, class_area_fin):
     This method calculates the habitat transformation rate acording
     to the formula: 
     1 - (1 - (S1-S2)/S1)^(1/n)
+    If any of the areas is 0 we return 0.
     '''
+    if class_area_ini == 0 or class_area_fin == 0:
+        return 0
     period = int(year_fin) - int(year_ini)
     coef = Decimal(1.0 / period)
     surface_class = Decimal((class_area_ini -class_area_fin) /  class_area_ini)

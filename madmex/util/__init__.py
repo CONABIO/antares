@@ -10,7 +10,9 @@ from __future__ import unicode_literals
 
 import os
 from os.path import isdir
+from shutil import rmtree
 import unicodedata
+import shutil
 
 
 def get_last_package_from_name(package):
@@ -97,6 +99,12 @@ def remove_file(path):
     Removes the file in the given path.
     '''
     os.remove(path)
+    
+def remove_directory(path):
+    '''
+    Removes the directory in the given path recursively.
+    '''
+    shutil.rmtree(path)
 
 def relative_path(path, relative):
     '''

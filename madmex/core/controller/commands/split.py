@@ -30,7 +30,7 @@ LOGGER = logging.getLogger(__name__)
 
 NUM_CLASSES= 8 + 1
 
-def split_shape_into_features(shape_name, destination_directory, column):
+def split_shape_into_features(shape_name, destination_directory, column, name, sep):
     '''
     This method will take a input shape and iterate over its features, creating
     a new shape file with each one of them. It copies all the fields and the
@@ -47,11 +47,12 @@ def split_shape_into_features(shape_name, destination_directory, column):
     
     while in_feature:
         encoding = 'utf-8'
-        in_feature_name = create_filename_from_string(in_feature.GetField(column).decode(encoding))
+        in_feature_name = in_feature.GetField(column)
+        in_name = create_filename_from_string(in_feature.GetField(name).decode(encoding))
 
         final_path = destination_directory + str(in_feature.GetField(0))
         create_directory_path(final_path)
-        output_name = create_file_name(final_path, in_feature_name + '.shp')
+        output_name = create_file_name(final_path, '%s__%s.shp' % (in_feature_name, in_name))
         shape_files.append(output_name)
 
         if os.path.exists(output_name):
@@ -163,21 +164,30 @@ class Command(BaseCommand):
         
         if os.path.exists(shape_name):
             LOGGER.info('The file %s was found.' % shape_name)
-        shape_files = split_shape_into_features(shape_name, destination, str('nombre'))
+        shape_files = split_shape_into_features(shape_name, destination, str('id'), str('nombre'), '__')
         process_launcher = LocalProcessLauncher()
         
         import time
         start_time = time.time()
         
+        cover_array = []
+        tth_array = []
+        cover_file = 'cover-stats.json'
+        tth_name = 'tth-stats.json'
+        json_directory = create_file_name(destination, 'cover_stats')
+        json_file = create_file_name(json_directory, cover_file.lower())
+        tth_file = create_file_name(json_directory, tth_name.lower())
+        
         for shape_file in shape_files:
-            basename = '%s.tif' % get_base_name(shape_file)
-            cover_file = '%s.json' % get_base_name(shape_file)
-            tth_name = '%s-tth.json' % get_base_name(shape_file)
+            shape_name = get_base_name(shape_file).split('__')
+            anp_id = shape_name[0]
+            anp_name = shape_name[1]
+            basename = '%s.tif' % anp_name
+
             dataframe = DataFrame(index=years, columns=[0, 1, 2 ,3 , 4, 5, 6, 7, 8])
-            json_directory = create_file_name(destination, 'cover_stats')
+            
             create_directory_path(json_directory)
-            json_file = create_file_name(json_directory, cover_file.lower())
-            tth_file = create_file_name(json_directory, tth_name.lower())
+            
             print shape_file
             for path in paths:
                 #pixel_resolution, dataset = pixel_info(path)
@@ -214,8 +224,8 @@ class Command(BaseCommand):
             index = list(dataframe.index.values)
 
             print dataframe
+            cover_array.append(self.dataframe_to_json(dataframe, anp_id, anp_name))
             
-            self.dataframe_to_json(json_file, dataframe)
             
             tth_dataframe = DataFrame(columns=columns)
             
@@ -229,11 +239,16 @@ class Command(BaseCommand):
             print tth_dataframe
 
 
-            self.dataframe_to_json(tth_file, tth_dataframe)
+            tth_array.append(self.dataframe_to_json(tth_dataframe, anp_id, anp_name))
+        
+        self.json_to_file(json_file, cover_array)
+        self.json_to_file(tth_file, tth_array)
+        
+        
         print("--- %s seconds ---" % (time.time() - start_time))
             
     
-    def dataframe_to_json(self, filename, dataframe):
+    def dataframe_to_json(self, dataframe, anp_id, anp_name):
         columns = list(dataframe.columns.values)
         index = list(dataframe.index.values)
         final = {}
@@ -244,6 +259,9 @@ class Command(BaseCommand):
             col =  list(dataframe[column])
             data.append(col)
         
+        
+        final['id'] = anp_id
+        final['name'] = anp_name
         
         final['labels'] = index
         final['series'] = data
@@ -256,8 +274,11 @@ class Command(BaseCommand):
                           'Urbano y Contruido',
                           'Suelo Desnudo',
                           'Agua']
+        return final
+        
+    def json_to_file(self, filename, final):
         with open(filename, 'w') as f:
-            f.write(simplejson.dumps(final, ignore_nan=True, indent=4 * ' '))
+            f.write(simplejson.dumps(final, ignore_nan=True, indent= 4 * ' '))
         
         
     def get_year_from_path(self, path):

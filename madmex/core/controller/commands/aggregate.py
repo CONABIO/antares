@@ -50,7 +50,9 @@ from madmex.util import get_base_name, create_file_name, get_parent
 #                  [28],
 #                  [31],
 #                  [30],
-#                  [29]]
+#                  [29],
+#                  [98,99]]
+# FINAL_ARRAY = [1,2,3,4,5,6,7,8,0]
 
 # Array for rapideye
 INITIAL_ARRAY = [[1,2,3,4,5,6],

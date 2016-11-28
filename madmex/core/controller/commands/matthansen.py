@@ -5,6 +5,7 @@ Created on Nov 28, 2016
 '''
 from __future__ import unicode_literals
 
+from subprocess import call
 from zipfile import ZipFile
 
 import gdal
@@ -22,9 +23,10 @@ from madmex.util import get_contents_from_folder, create_file_name, \
 
 def tile_map(image_path, output, x_tile_size, y_tile_size, x_offset, y_offset):
     gdaltranString = ['gdal_translate', '-of', 'GTIFF', '-srcwin', str(x_offset),  str(y_offset) , str(x_tile_size) ,  str(y_tile_size) , image_path, output]
-    shell_string = ' '.join(gdaltranString)    
-    launcher = LocalProcessLauncher()
-    launcher.execute(shell_string)
+    call(gdaltranString)
+    #shell_string = ' '.join(gdaltranString)    
+    #launcher = LocalProcessLauncher()
+    #launcher.execute(shell_string)
 
 class Command(BaseCommand):
     '''

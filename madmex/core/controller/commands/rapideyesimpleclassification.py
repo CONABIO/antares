@@ -45,18 +45,18 @@ class Command(BaseCommand):
     '''
     def add_arguments(self, parser):
         parser.add_argument('--image', nargs='*')
-        parser.add_argument('--landmask_path', nargs='*')
+        #parser.add_argument('--landmask_path', nargs='*')
         parser.add_argument('--outlier', nargs='*')
         
     def handle(self, **options):
         image_to_be_classified = options['image'][0]
-        landmask_path = options['landmask_path'][0]
+        #landmask_path = options['landmask_path'][0]
         outlier = options['outlier'][0]
         folder_results =  getattr(SETTINGS, 'BIG_FOLDER')
         shutil.copy(image_to_be_classified, folder_results)
         image_to_be_classified = folder_results +  get_basename_of_file(image_to_be_classified)
         
-        
+        landmask_path = getattr(SETTINGS, 'LANDMASK_PATH')
         image_for_segmentation = '/results/' +  get_basename_of_file(image_to_be_classified)
         LOGGER.info('Starting segmentation with: %s' % image_for_segmentation)   
         val_t = 50
@@ -69,7 +69,8 @@ class Command(BaseCommand):
         
         folder_and_bind_segmentation = getattr(SETTINGS, 'FOLDER_SEGMENTATION')
         folder_and_bind_license = getattr(SETTINGS, 'FOLDER_SEGMENTATION_LICENSE')
-        folder_and_bind_image= folder_results  +  ':/results'
+        folder_and_bind_image = getattr(SETTINGS, 'BIG_FOLDER_HOST')
+        
         LOGGER.info('starting segmentation')
         command = 'run_container'
         hosts_from_command = get_host_from_command(command)
@@ -218,21 +219,19 @@ class Command(BaseCommand):
         unique_classes = numpy.unique(dataframe_all_joined_classified['given'].values)
         name_namesfile = folder_results + 'C5.names'
         generate_namesfile(dataframe_all_joined_classified.columns, unique_classes,name_namesfile, 'id', 'given')
-        
-        
-        
+
+
         command = 'run_container'
         hosts_from_command = get_host_from_command(command)
         LOGGER.info('The command to be executed is %s in the host %s' % (command, hosts_from_command[0].hostname))
         remote = RemoteProcessLauncher(hosts_from_command[0])
-        folder_and_bind_c5 = folder_results + ':/datos'
-                
-        arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'c5.0 -b -f /datos/C5'
+        folder_and_bind_c5 = getattr(SETTINGS, 'BIG_FOLDER_HOST')
+        arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'c5.0 -b -f /results/C5'
         LOGGER.info('Beginning C5') 
         remote.execute(arguments)
     
         LOGGER.info('Begining predict')
-        arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'predict -f /datos/C5'
+        arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'predict -f /results/C5'
         remote = RemoteProcessLauncher(hosts_from_command[0])
         output = remote.execute(arguments, True)
         LOGGER.info('Writing C5 result to csv')

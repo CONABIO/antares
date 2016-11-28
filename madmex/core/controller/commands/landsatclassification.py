@@ -71,6 +71,7 @@ class Command(BaseCommand):
         parser.add_argument('--fill_holes', nargs='*')
         parser.add_argument('--outlier', nargs='*')
         parser.add_argument('--auxiliary_files', nargs='*')
+        parser.add_argument('--all_indexes', nargs='*')     
 
 
     def handle(self, **options):
@@ -83,13 +84,14 @@ class Command(BaseCommand):
         outlier = options['outlier'][0]
         fill_holes = options['fill_holes'][0]
         with_auxiliary_files = options['auxiliary_files'][0]
-        landmask_path = options['landmask_path'][0]
+        #landmask_path = options['landmask_path'][0]
+        all_indexes = options['all_indexes'][0]
         sr_image_paths = find_datasets(start_date, end_date, satellite, product, cloud, gridid)
         print sr_image_paths
         product = 7 #This is fmask product
         fmask_image_paths = find_datasets(start_date, end_date, satellite, product, cloud, gridid)
         print fmask_image_paths
-        
+        landmask_path = getattr(SETTINGS, 'LANDMASK_PATH')
         sr_image_paths_l1t = []
         for path in sr_image_paths:
             bundle = _get_bundle_from_path(path)
@@ -171,8 +173,12 @@ class Command(BaseCommand):
             new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND'], options_to_create_empty_indexes_stacks)                
             output_file_stack_indexes_list = []
             datasets_stack_indexes_list = []
-            list_of_indexes = ['NDVI', 'SR', 'EVI', 'ARVI', 'TC']
-            list_of_indexes_functions = [calculate_ndvi_2, calculate_sr, calculate_evi, calculate_arvi, calculate_tasseled_caps]
+            if all_indexes == 'True':
+                list_of_indexes = ['NDVI', 'SR', 'EVI', 'ARVI', 'TC']
+                list_of_indexes_functions = [calculate_ndvi_2, calculate_sr, calculate_evi, calculate_arvi, calculate_tasseled_caps]
+            else:
+                list_of_indexes = ['NDVI']
+                list_of_indexes_functions = [calculate_ndvi_2]
             number_of_indexes = len(list_of_indexes)
             for i in range(number_of_indexes):
                 if list_of_indexes[i] == 'TC':
@@ -213,6 +219,7 @@ class Command(BaseCommand):
                         LOGGER.info('Writing band %s of file %s in the stack: %s' % (str(i+1), bundle.path, output_file_stack_bands_list[i]))
                         new_options_for_create_raster_from_reference(extents_dictionary, raster.DATASET, datasets_stack_bands_list[i], options_to_create_empty_stacks)
                         create_raster_tiff_from_reference(extents_dictionary, output_file_stack_bands_list[i], data_array_resized[i, :, :], options_to_create_empty_stacks)
+                    bundle.get_raster().hdf_data_array = None
                     index_NaNs = numpy.array(data_array_resized== -9999, dtype = bool)
                     index_NaNs_2d = numpy.array(ndarray.all(data_array_resized==-9999,axis=0), dtype = bool)
                     LOGGER.info('Shape of hdf data array resized and masked  %s %s %s'  % (data_array_resized.shape[0], data_array_resized.shape[1], data_array_resized.shape[2]))
@@ -240,6 +247,7 @@ class Command(BaseCommand):
                                 new_options_for_create_raster_from_reference(extents_dictionary, raster.DATASET, datasets_stack_indexes_list[j], options_to_create_empty_indexes_stacks)
                                 create_raster_tiff_from_reference(extents_dictionary, output_file_stack_indexes_list[j], array, options_to_create_empty_indexes_stacks)
                             array = None
+                    bundle = None
                     subset_counter+=1
                 data_array_resized = None
 
@@ -263,15 +271,16 @@ class Command(BaseCommand):
                 array_metrics = calculate_statistics_metrics(array, [-9999])
                 LOGGER.info('Calculating statistics: average, minimum, maximum, standard deviation, range of file %s' % output_file_stack_indexes_list[i])
                 LOGGER.info('Shape of array metrics: %s %s %s' % (array_metrics.shape[0], array_metrics.shape[1], array_metrics.shape[2]))
-                if i == 0 and fill_holes == 'True':
-                    LOGGER.info('Changing value of fmask of -9999 to 9999 for ndvi metrics to pass to segmentation')
+                if i == 0:
+                    array_ndvi_metrics = array_metrics   
                     index_fmask_for_ndvi_metrics = numpy.array( index_fmask_over_all_images == 1, dtype = bool)
                     index_landmask_for_ndvi_metrics = numpy.array(landmask_array == 1, dtype = bool)
-                    index_ndvi_metrics_overall_bands_minus_9999 =numpy.array(ndarray.all(array==-9999,axis=0), dtype=bool)                      
+                    index_ndvi_metrics_overall_bands_minus_9999 =numpy.array(ndarray.all(array==-9999,axis=0), dtype=bool)   
+                if i == 0 and fill_holes == 'True':
+                    LOGGER.info('Changing value of fmask of -9999 to 9999 for ndvi metrics to pass to segmentation')                   
                     for j in range(array_metrics.shape[0]):
                         index_fmask_and_landmask_for_ndvi_metrics = numpy.logical_and(index_fmask_for_ndvi_metrics, index_landmask_for_ndvi_metrics)
-                        array_metrics[j, :, :][index_fmask_and_landmask_for_ndvi_metrics] = 9999
-                    array_ndvi_metrics = array_metrics                                            
+                        array_metrics[j, :, :][index_fmask_and_landmask_for_ndvi_metrics] = 9999                                         
                 image_result = output_file_stack_indexes_list[i] + 'metrics'     
                 options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['TILED=YES', 'COMPRESS=LZW', 'INTERLEAVE=BAND'], {})
                 create_raster_tiff_from_reference(extents_dictionary, image_result, array_metrics, options_to_create)
@@ -291,7 +300,7 @@ class Command(BaseCommand):
             val_mp = False
             folder_and_bind_segmentation = getattr(SETTINGS, 'FOLDER_SEGMENTATION')
             folder_and_bind_license = getattr(SETTINGS, 'FOLDER_SEGMENTATION_LICENSE')
-            folder_and_bind_ndvimetrics = get_parent(output_file_stack_indexes_list_metrics[0]) + ':/results'
+            folder_and_bind_ndvimetrics = getattr(SETTINGS, 'BIG_FOLDER_HOST')
             ndvimetrics = '/results/' +  get_basename_of_file(output_file_stack_indexes_list_metrics[0])
             LOGGER.info('starting segmentation')
             command = 'run_container'
@@ -586,14 +595,13 @@ class Command(BaseCommand):
             hosts_from_command = get_host_from_command(command)
             LOGGER.info('The command to be executed is %s in the host %s' % (command, hosts_from_command[0].hostname))
             remote = RemoteProcessLauncher(hosts_from_command[0])
-            folder_and_bind_c5 = folder_results + ':/datos'
-                
-            arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'c5.0 -b -f /datos/C5'
+            folder_and_bind_c5 = getattr(SETTINGS, 'BIG_FOLDER_HOST')    
+            arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'c5.0 -b -f /results/C5'
             LOGGER.info('Beginning C5') 
             remote.execute(arguments)
     
             LOGGER.info('Begining predict')
-            arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'predict -f /datos/C5'
+            arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'predict -f /results/C5'
             remote = RemoteProcessLauncher(hosts_from_command[0])
             output = remote.execute(arguments, True)
             LOGGER.info('Writing C5 result to csv')

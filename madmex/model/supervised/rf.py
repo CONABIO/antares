@@ -40,3 +40,8 @@ class Model(BaseModel):
         Loads an already train model from a file to perform predictions.
         '''
         self.model = joblib.load(filepath)
+    def score(self, X, y):
+        '''
+        Lets the user load a previously trained model to predict with it. 
+        '''
+        return self.model.score(X,y)

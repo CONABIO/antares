@@ -58,6 +58,7 @@ class Command(BaseCommand):
             model = load_model(model_name)
             model_instance = model.Model(persistence_directory)
             model_instance.load(persistence_directory)
+            step_step = 500
             for path in options['path']:
                 image_array = open_handle(path)
                 x = image_array.shape[1]
@@ -67,11 +68,12 @@ class Command(BaseCommand):
                 final = numpy.zeros((x,y))
                 import time
                 start_time = time.time()
-                for i in range(x):
-                    step = numpy.transpose(image_array[:,i,:])
-                    final[i] = model_instance.predict(step)
-                    if i % 100 == 0:
-                        print i
+                for i in range(0, x, step_step):
+                    for j in range(0, y, step_step):
+                        step = numpy.transpose(image_array[:,i:i+step_step,j:j+step_step])
+                        step_ravel = numpy.transpose(numpy.ravel(step).reshape(10, step_step * step_step))
+                        final[i:i+step_step,j:j+step_step] = model_instance.predict(step_ravel).reshape((step_step,step_step))
+                        print i,j
                 print("--- %s seconds ---" % (time.time() - start_time))
                 classification = create_file_name(output, '%s-%s.tif' % (basename, model_name))
                 create_raster_from_reference(classification, final.reshape(5000, 5000), path, data_type=gdal.GDT_Byte, creating_options=['COMPRESS=LZW'])

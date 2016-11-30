@@ -10,8 +10,8 @@ import abc
 import distutils
 import logging
 import os
-import subprocess
 
+from subprocess import check_output
 from paramiko import SSHClient
 from paramiko.client import AutoAddPolicy
 
@@ -96,7 +96,7 @@ class LocalProcessLauncher(BaseProcessLauncher):
         '''
         shell_string_array = shell_string.split(' ')
         shell_string_array[0]  = self._get_executable(shell_string_array [0])
-        subprocess.call(shell_string_array)
+        return check_output(shell_string_array)
     
     def _get_executable(self, executable):
         '''

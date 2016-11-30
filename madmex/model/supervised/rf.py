@@ -15,10 +15,11 @@ class Model(BaseModel):
     classdocs
     '''
 
-    def __init__(self, params):
+    def __init__(self, path):
         '''
         Constructor
         '''
+        self.path = path
         self.model = RandomForestClassifier(n_estimators=200,n_jobs=20)
     def fit(self, X, y):
         self.model.fit(X,y)

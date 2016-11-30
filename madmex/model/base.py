@@ -3,9 +3,15 @@ Created on Nov 24, 2016
 
 @author: agutierrez
 '''
+
+
+
 from __future__ import unicode_literals
 
 import abc
+
+import numpy
+from sklearn import metrics
 
 
 class BaseModel(object):
@@ -48,3 +54,13 @@ class BaseModel(object):
         Lets the user load a previously trained model to predict with it. 
         '''
         raise NotImplementedError('subclasses of BaseBundle must provide a score() method')
+    
+    def create_report(self, expected, predicted, filepath='report.txt'):
+        '''
+        Creates a report in the given filepath, it includes the confusion
+        matrix, and information about the score. It contrasts expected and
+        predicted outcomes.
+        '''
+        with open(filepath,'w') as report:
+            report.write('Classification report for classifier:\n%s\n' % metrics.classification_report(expected, predicted))
+            report.write('Confusion matrix:\n%s' % metrics.confusion_matrix(expected, predicted, labels=numpy.unique(expected)))

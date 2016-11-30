@@ -4,15 +4,16 @@ Created on Nov 24, 2016
 @author: agutierrez
 '''
 
-
-
 from __future__ import unicode_literals
 
 import abc
+import logging
 
 import numpy
 from sklearn import metrics
 
+
+LOGGER = logging.getLogger(__name__)
 
 class BaseModel(object):
     '''
@@ -63,4 +64,4 @@ class BaseModel(object):
         '''
         with open(filepath,'w') as report:
             report.write('Classification report for classifier:\n%s\n' % metrics.classification_report(expected, predicted))
-            report.write('Confusion matrix:\n%s' % metrics.confusion_matrix(expected, predicted, labels=numpy.unique(expected)))
+            report.write('Confusion matrix:\n%s\n' % metrics.confusion_matrix(expected, predicted, labels=numpy.unique(expected)))

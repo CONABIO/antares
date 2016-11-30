@@ -12,21 +12,12 @@ import traceback
 
 import numpy
 import pandas
-from sklearn import svm, metrics
 from sklearn.cross_validation import train_test_split
-from sklearn.ensemble.forest import RandomForestClassifier
-from sklearn.neural_network.multilayer_perceptron import MLPClassifier
-from sklearn.preprocessing.data import MinMaxScaler
 
-from madmex import _, load_class, find_in_dir
+from madmex import load_class
 from madmex.core.controller.base import BaseCommand
-from madmex.core.controller.commands import get_bundle_from_path
 from madmex.core.controller.commands.indexes import open_handle
-from madmex.core.controller.commands.ingest import _get_bundle_from_path
-from madmex.mapper.data._gdal import create_raster_from_reference, create_raster
-from madmex.model.supervised import c5, rf
-from madmex.util import create_file_name, get_base_name, relative_path, \
-    get_last_package_from_name, create_directory_path
+from madmex.util import create_file_name, create_directory_path
 
 
 SUPERVISED_PACKAGE = 'madmex.model.supervised'
@@ -46,6 +37,16 @@ def load_model(name):
     except Exception:
         traceback.print_exc()
         LOGGER.debug('No %s model found.', name)
+        
+def train_model(X_train, X_test, y_train, y_test, output, model_name):
+    model = load_model(model_name)
+    persistence_directory = create_file_name(output, model_name)
+    create_directory_path(persistence_directory)
+    model_instance = model.Model(persistence_directory)
+    model_instance.fit(X_train, y_train)
+    model_instance.save(persistence_directory)
+    predicted = model_instance.predict(X_test)
+    model_instance.create_report(y_test, predicted, create_file_name(persistence_directory, 'report.txt'))
 
 class Command(BaseCommand):
     '''
@@ -62,7 +63,7 @@ class Command(BaseCommand):
         parser.add_argument('--target', nargs='*', help='This is a stub for the, \
             change detection command, right now all it does is sum numbers in \
             the list.')
-        parser.add_argument('--model', nargs=1, help='This is a stub for the, \
+        parser.add_argument('--model', nargs='*', help='This is a stub for the, \
             change detection command, right now all it does is sum numbers in \
             the list.')
         parser.add_argument('--output', nargs=1, help='This is a stub for the, \
@@ -78,7 +79,7 @@ class Command(BaseCommand):
         training_template = options['training'][0]
         target_template = options['target'][0]
         output = options['output'][0]
-        model_name = options['model'][0]
+        models = options['model']
         features = training_template % random_int
         training = target_template % random_int
         features_array = open_handle(features)
@@ -96,18 +97,10 @@ class Command(BaseCommand):
         mask = training_flatten!=0
         features_flatten = features_flatten[:,mask]
         training_flatten = training_flatten[mask]
-        X_train, X_test, y_train, y_test = train_test_split(numpy.transpose(features_flatten), training_flatten, train_size=0.080, test_size=0.020)
+        X_train, X_test, y_train, y_test = train_test_split(numpy.transpose(features_flatten), training_flatten, train_size=0.30, test_size=0.20)
+
         import time
-
-        start_time = time.time()
-
-        model = load_model(model_name)
-
-        persistence_directory = create_file_name(output, model_name)
-        create_directory_path(persistence_directory)
-
-        model_instance = model.Model(persistence_directory)
-        model_instance.fit(X_train, y_train)
-        predicted = model_instance.predict(X_test)
-        model_instance.create_report(y_test, predicted, create_file_name(persistence_directory, 'report.txt'))
-        print "--- %s seconds ---" % (time.time() - start_time)
+        for model_name in models:
+            start_time = time.time()
+            train_model(X_train, X_test, y_train, y_test, output, model_name)
+            print "--- %s seconds training %s model---" % ((time.time() - start_time), model_name)

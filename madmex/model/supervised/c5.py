@@ -5,16 +5,11 @@ Created on Nov 25, 2016
 '''
 from __future__ import unicode_literals
 
-import distutils
-
-import docker
 import numpy
 import pandas
 
-from madmex.configuration import SETTINGS
 from madmex.model.base import BaseModel
-from madmex.persistence.driver import get_host_from_command
-from madmex.remote.dispatcher import RemoteProcessLauncher, LocalProcessLauncher
+from madmex.remote.dispatcher import LocalProcessLauncher
 from madmex.util import create_file_name
 
 
@@ -47,12 +42,9 @@ class Model(BaseModel):
         self.model_name = 'test'
 
     def fit(self, X, y):
-        
         train_data = numpy.column_stack((X, y))
-        
         save_to_file(train_data, create_file_name(self.path, '%s.data' % self.model_name))
         create_names_file(numpy.unique(y), X.shape[1],create_file_name(self.path, '%s.names' % self.model_name))
-        
         launcher = LocalProcessLauncher()
         shell_string = 'docker run -v %s:/results madmex/c5_execution c5.0 -f /results/%s' % (self.path, self.model_name)
         print shell_string
@@ -71,14 +63,11 @@ class Model(BaseModel):
             if len(array_predict) == 4:
                 y.append(int(float(array_predict[2])))
         return numpy.array(y)
-            
 
     def save(self, filepath):
-        return BaseModel.save(self, filepath)
-
-
+        pass
     def load(self, filepath):
-        return BaseModel.load(self, filepath)
+        pass
 
     
     

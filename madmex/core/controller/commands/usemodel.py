@@ -19,7 +19,7 @@ from madmex.core.controller.commands.createmodel import load_model
 from madmex.core.controller.commands.indexes import open_handle
 from madmex.core.controller.commands.ingest import _get_bundle_from_path
 from madmex.mapper.data._gdal import create_raster_from_reference
-from madmex.util import create_file_name, get_base_name
+from madmex.util import create_file_name, get_base_name, create_directory_path
 
 
 class Command(BaseCommand):
@@ -75,5 +75,6 @@ class Command(BaseCommand):
                         final[i:i+step_step,j:j+step_step] = model_instance.predict(step_ravel).reshape((step_step,step_step))
                         print i,j
                 print("--- %s seconds ---" % (time.time() - start_time))
+                create_directory_path(output)
                 classification = create_file_name(output, '%s-%s.tif' % (basename, model_name))
                 create_raster_from_reference(classification, final.reshape(5000, 5000), path, data_type=gdal.GDT_Byte, creating_options=['COMPRESS=LZW'])

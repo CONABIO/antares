@@ -57,7 +57,7 @@ class Command(BaseCommand):
             model = load_model(model_name)
             model_instance = model.Model(persistence_directory)
             model_instance.load(persistence_directory)
-            block_size = 456
+            block_size = 500
             for path in options['path']:
                 image_array = open_handle(path)
                 y_size = image_array.shape[1]

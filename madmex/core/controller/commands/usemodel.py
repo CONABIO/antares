@@ -4,7 +4,6 @@ Created on Nov 21, 2016
 @author: agutierrez
 '''
 
-
 from __future__ import unicode_literals
 
 import warnings
@@ -58,23 +57,31 @@ class Command(BaseCommand):
             model = load_model(model_name)
             model_instance = model.Model(persistence_directory)
             model_instance.load(persistence_directory)
-            step_step = 500
+            block_size = 500
             for path in options['path']:
                 image_array = open_handle(path)
-                x = image_array.shape[1]
-                y = image_array.shape[2]
+                y_size = image_array.shape[1]
+                x_size = image_array.shape[2]
                 basename = get_base_name(path)[:7]
                 warnings.filterwarnings('ignore')
-                final = numpy.zeros((x,y))
+                final = numpy.zeros((x_size,y_size))
                 import time
                 start_time = time.time()
-                for i in range(0, x, step_step):
-                    for j in range(0, y, step_step):
-                        step = numpy.transpose(image_array[:,i:i+step_step,j:j+step_step])
-                        step_ravel = numpy.transpose(numpy.ravel(step).reshape(10, step_step * step_step))
-                        final[i:i+step_step,j:j+step_step] = model_instance.predict(step_ravel).reshape((step_step,step_step))
-                        print i,j
+                for i in range(0, y_size, block_size):
+                    if i + block_size < y_size:
+                        rows = block_size
+                    else:
+                        rows = y_size - i
+                    for j in range(0, x_size, block_size):
+                        if j + block_size < x_size:
+                            cols = block_size
+                        else:
+                            cols = x_size - j
+                        step = image_array[:,i:i+rows,j:j+cols]
+                        step_ravel = step.reshape(10, -1)
+                        prediction = model_instance.predict(numpy.transpose(step_ravel))
+                        final[i:i+rows,j:j+cols] = prediction.reshape((rows,cols))
                 print("--- %s seconds ---" % (time.time() - start_time))
                 create_directory_path(output)
                 classification = create_file_name(output, '%s-%s.tif' % (basename, model_name))
-                create_raster_from_reference(classification, final.reshape(5000, 5000), path, data_type=gdal.GDT_Byte, creating_options=['COMPRESS=LZW'])
+                create_raster_from_reference(classification, final.reshape(x_size, y_size), path, data_type=gdal.GDT_Byte, creating_options=['COMPRESS=LZW'])

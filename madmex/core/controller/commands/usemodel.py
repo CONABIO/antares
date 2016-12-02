@@ -18,6 +18,7 @@ from madmex.core.controller.commands.createmodel import load_model
 from madmex.core.controller.commands.indexes import open_handle
 from madmex.core.controller.commands.ingest import _get_bundle_from_path
 from madmex.mapper.data._gdal import create_raster_from_reference
+from madmex.model.unsupervised import pca
 from madmex.util import create_file_name, get_base_name, create_directory_path
 
 
@@ -52,6 +53,9 @@ class Command(BaseCommand):
         models = options['modelname']
         model_directory = options['modeldir'][0]
         
+        pca_model = pca.Model(5)
+        pca_model.load(create_file_name(model_directory, 'pca'))
+        
         for model_name in models:
             persistence_directory = create_file_name(model_directory, model_name)
             model = load_model(model_name)
@@ -79,7 +83,7 @@ class Command(BaseCommand):
                             cols = x_size - j
                         step = image_array[:,i:i+rows,j:j+cols]
                         step_ravel = step.reshape(10, -1)
-                        prediction = model_instance.predict(numpy.transpose(step_ravel))
+                        prediction = model_instance.predict(pca_model.transform(numpy.transpose(step_ravel)))
                         final[i:i+rows,j:j+cols] = prediction.reshape((rows,cols))
                 print("--- %s seconds ---" % (time.time() - start_time))
                 create_directory_path(output)

@@ -13,10 +13,12 @@ import traceback
 import numpy
 import pandas
 from sklearn.cross_validation import train_test_split
+from sklearn.decomposition.pca import PCA
 
 from madmex import load_class
 from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands.indexes import open_handle
+from madmex.model.unsupervised import pca
 from madmex.util import create_file_name, create_directory_path
 
 
@@ -97,7 +99,21 @@ class Command(BaseCommand):
         mask = training_flatten!=0
         features_flatten = features_flatten[:,mask]
         training_flatten = training_flatten[mask]
-        X_train, X_test, y_train, y_test = train_test_split(numpy.transpose(features_flatten), training_flatten, train_size=0.30, test_size=0.20)
+        
+        
+        print features_flatten.shape
+        print training_flatten.shape
+        X_train, X_test, y_train, y_test = train_test_split(numpy.transpose(features_flatten), training_flatten, train_size=0.08, test_size=0.02)
+
+        unsupervised = pca.Model(5)
+        unsupervised.fit(X_train) 
+        
+        X_train = unsupervised.transform(X_train)
+        X_test = unsupervised.transform(X_test) 
+        
+        pca_path = create_file_name(output, 'pca')
+        create_directory_path(pca_path)
+        unsupervised.save(pca_path)
 
         import time
         for model_name in models:

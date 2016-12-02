@@ -71,14 +71,26 @@ class Command(BaseCommand):
         folder_and_bind_license = getattr(SETTINGS, 'FOLDER_SEGMENTATION_LICENSE')
         folder_and_bind_image = getattr(SETTINGS, 'BIG_FOLDER_HOST')
         
-        LOGGER.info('starting segmentation')
-        command = 'run_container'
-        hosts_from_command = get_host_from_command(command)
-        LOGGER.info('The command to be executed is %s in the host %s' % (command, hosts_from_command[0].hostname))
-        remote = RemoteProcessLauncher(hosts_from_command[0])
-        arguments = 'docker  run --rm -v ' + folder_and_bind_segmentation + ' -v ' + folder_and_bind_license + ' -v ' + folder_and_bind_image + ' madmex/segmentation python /segmentation/segment.py ' + image_for_segmentation
-        arguments+=  ' -t ' + str(val_t) + ' -s ' + str(val_s) + ' -c ' + str(val_c) + ' --tile ' + str(val_tile) + ' --mp ' + str(val_mp) + ' --xt ' + str(val_xt) + ' --rows ' + str(val_rows)
-        remote.execute(arguments)
+
+        command = [
+                       'ssh','-t', 'leica@172.17.0.1','sudo docker','run','--rm','-v',
+                       folder_and_bind_segmentation,
+                       '-v', folder_and_bind_license,
+                       '-v', folder_and_bind_image,
+                       'madmex/segmentation', 'python', '/segmentation/segment.py', image_for_segmentation,
+                        '-t',str(val_t),'-s',str(val_s),'-c',str(val_c),'--tile',str(val_tile),'--mp',str(val_mp),'--xt',str(val_xt),'--rows',str(val_rows)
+                     
+                  ]
+
+	subprocess.call(command)
+        #LOGGER.info('starting segmentation')
+        #command = 'run_container'
+        #hosts_from_command = get_host_from_command(command)
+        #LOGGER.info('The command to be executed is %s in the host %s' % (command, hosts_from_command[0].hostname))
+        #remote = RemoteProcessLauncher(hosts_from_command[0])
+        #arguments = 'docker  run --rm -v ' + folder_and_bind_segmentation + ' -v ' + folder_and_bind_license + ' -v ' + folder_and_bind_image + ' madmex/segmentation python /segmentation/segment.py ' + image_for_segmentation
+        #arguments+=  ' -t ' + str(val_t) + ' -s ' + str(val_s) + ' -c ' + str(val_c) + ' --tile ' + str(val_tile) + ' --mp ' + str(val_mp) + ' --xt ' + str(val_xt) + ' --rows ' + str(val_rows)
+        #remote.execute(arguments)
         
         LOGGER.info('Finished segmentation')
         
@@ -224,16 +236,33 @@ class Command(BaseCommand):
         command = 'run_container'
         hosts_from_command = get_host_from_command(command)
         LOGGER.info('The command to be executed is %s in the host %s' % (command, hosts_from_command[0].hostname))
-        remote = RemoteProcessLauncher(hosts_from_command[0])
+        #remote = RemoteProcessLauncher(hosts_from_command[0])
         folder_and_bind_c5 = getattr(SETTINGS, 'BIG_FOLDER_HOST')
-        arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'c5.0 -b -f /results/C5'
+        #arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'c5.0 -b -f /results/C5'
         LOGGER.info('Beginning C5') 
-        remote.execute(arguments)
+        #remote.execute(arguments)
+
+        command = [
+                       'ssh','-t', 'leica@172.17.0.1','sudo docker','run','--rm','-v',
+                      	folder_and_bind_c5,
+                       'madmex/c5_execution c5.0 -b -f /results/C5'                     
+                  ]
+
+
     
         LOGGER.info('Begining predict')
-        arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'predict -f /results/C5'
-        remote = RemoteProcessLauncher(hosts_from_command[0])
-        output = remote.execute(arguments, True)
+        #arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'predict -f /results/C5'
+        #remote = RemoteProcessLauncher(hosts_from_command[0])
+        #output = remote.execute(arguments, True)
+
+        command = [
+                       'ssh','-t', 'leica@172.17.0.1','sudo docker','run','--rm','-v',
+                        folder_and_bind_c5,
+                       'madmex/c5_execution predict -f /results/C5'                     
+                  ]
+
+
+
         LOGGER.info('Writing C5 result to csv')
         C5_result = write_C5_result_to_csv(output, folder_results)  
         LOGGER.info('Using result of C5: %s for generating land cover shapefile and raster image' % C5_result)

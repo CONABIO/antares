@@ -21,7 +21,7 @@ class Model(BaseModel):
         Constructor
         '''
         self.path = path
-        self.model = RandomForestClassifier(n_estimators=200,n_jobs=20)
+        self.model = RandomForestClassifier(n_estimators=150,n_jobs=8)
         self.model_name = 'rf'
 
     def fit(self, X, y):

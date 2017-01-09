@@ -71,6 +71,7 @@ class Command(BaseCommand):
         folder_and_bind_license = getattr(SETTINGS, 'FOLDER_SEGMENTATION_LICENSE')
         folder_and_bind_image = getattr(SETTINGS, 'BIG_FOLDER_HOST')
         
+
         LOGGER.info('starting segmentation')
         command = 'run_container'
         hosts_from_command = get_host_from_command(command)
@@ -229,13 +230,14 @@ class Command(BaseCommand):
         arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'c5.0 -b -f /results/C5'
         LOGGER.info('Beginning C5') 
         remote.execute(arguments)
-    
+
         LOGGER.info('Begining predict')
-        arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'predict -f /results/C5'
-        remote = RemoteProcessLauncher(hosts_from_command[0])
+       	arguments = 'docker  run --rm -v ' + folder_and_bind_c5  + ' madmex/c5_execution ' + 'predict -f /results/C5'
+       	remote = RemoteProcessLauncher(hosts_from_command[0])
         output = remote.execute(arguments, True)
+
         LOGGER.info('Writing C5 result to csv')
-        C5_result = write_C5_result_to_csv(output, folder_results)  
+	C5_result = write_C5_result_to_csv(output, folder_results)
         LOGGER.info('Using result of C5: %s for generating land cover shapefile and raster image' % C5_result)
         LOGGER.info('Using result of C5 for generating land cover shapefile and raster image')        
         C5_result = folder_results + 'C5_result.csv'

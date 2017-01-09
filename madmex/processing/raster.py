@@ -406,8 +406,6 @@ def get_objects_by_relative_proportion_from_raster_as_dataframe(array_histogram_
         nr = numpy.sum(subset_histogram[o,:]) 
         rel = subset_histogram[o,:]*1.0/nr*1.0        
         max_class = numpy.max(subset_histogram[o,:]) #TODO: this is different in old code of madmex
-        if i < 5:
-            print max_class
         idx = subset_histogram[o,:] == max_class
         if sum(idx) == 1 and rel[idx] >= proportion: #The object needs to have at least a given proportion
             class_list[o] = class_range[idx]

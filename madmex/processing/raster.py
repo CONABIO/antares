@@ -138,6 +138,10 @@ def calculate_arvi(array, type_satellite):
     index_inf_values  = abs(spectralindex) >= OVERFLOW_LEVEL
     spectralindex[index_inf_values] = -9999
     return spectralindex
+def phi (band1, band2):
+    return numpy.arctan2(band1, band2)
+def rho (band1, band2):
+    return numpy.abs(numpy.sqrt(numpy.square(band1) + numpy.square(band2)))
 def calculate_tasseled_caps(array, type_satellite):
     number_of_bands, height, width = array.shape
     bands = numpy.zeros((number_of_bands, width * height))

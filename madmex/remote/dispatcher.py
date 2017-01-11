@@ -108,4 +108,5 @@ class LocalProcessLauncher(BaseProcessLauncher):
                                                '/usr/sbin',
                                                '/sbin',
                                                '/usr/local/bin/',
-                                               '/Applications/Postgres.app/Contents/Versions/9.5/bin/']))  
+                                               '/Applications/Postgres.app/Contents/Versions/9.5/bin/',
+                                               '/Library/Frameworks/GDAL.framework/Programs/']))  

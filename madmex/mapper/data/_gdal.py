@@ -7,10 +7,13 @@ Created on Nov 4, 2015
 from __future__ import unicode_literals
 
 import logging
+from subprocess import call
 
 import gdal
 from osgeo._gdalconst import GA_ReadOnly
 import osr
+
+from madmex.remote.dispatcher import LocalProcessLauncher
 
 
 GTIFF = 'GTiff'
@@ -124,6 +127,11 @@ def _get_geotransform(dataset):
     '''
     geotransform = dataset.GetGeoTransform()
     return geotransform
+def tile_map(image_path, output, x_tile_size, y_tile_size, x_offset, y_offset):
+    gdaltranString = ['gdal_translate', '-of', 'GTIFF', '-srcwin', str(x_offset),  str(y_offset) , str(x_tile_size) ,  str(y_tile_size) , image_path, output]
+    shell_string = ' '.join(gdaltranString)    
+    launcher = LocalProcessLauncher()
+    launcher.execute(shell_string)
 def create_empty_raster_from_reference(image_path, reference_path, data_type=gdal.GDT_Float32, bands=1):
     '''
     This function creates an empty raster using the metadata found in the original

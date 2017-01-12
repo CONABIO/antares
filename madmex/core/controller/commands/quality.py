@@ -37,30 +37,17 @@ THRESHOLD_LOG = 270
 WINDOW_SIZE = 5
 
 def calculate_statistics_qa(image, reference, classes, minimum, maximum, threshold_cod, threshold_log):
-    
-    print image.shape
-    print reference.shape
-
-    print 'reference at beginning', reference.shape
-    print reference
-    
     for i in range(reference.shape[0]):
-        print 'band number %s' % i
         gauss = ndimage.filters.gaussian_filter(reference[i], sigma=1)
         laplace = ndimage.filters.laplace(gauss, mode='constant', cval=0.0)
         reference[i] = numpy.abs(laplace)
-    
-    print 'reference'
-    print reference
-        
+
     minband = reference.min(axis=0)
     numpy.core.numeric.putmask(minband, minband <= int(threshold_log), 0)
     numpy.core.numeric.putmask(minband, minband != 0, 1)
     log_mask = minband
     
-    print 'log_mask', log_mask.shape
-    
-    print log_mask
+
     
     for i in range(image.shape[0]):
         image[i] = image[i] * log_mask
@@ -70,14 +57,10 @@ def calculate_statistics_qa(image, reference, classes, minimum, maximum, thresho
     numpy.core.numeric.putmask(minband, minband <= float(threshold_cod), 0)
     numpy.core.numeric.putmask(minband, minband != 0, 1)
     cod_mask = minband
-    
-    print numpy.unique(cod_mask, return_counts=True)
-    
 
     for i in range(image.shape[0]):
         image[i] = cod_mask * image[i]
     
-    print 'Image', image
     
     stats = {}
     
@@ -187,30 +170,17 @@ class Command(BaseCommand):
                        '-max_gap',
                        '%s' % MAX_GAP]
         shell_string = ' '.join(shell_array)
-        
-
-        
-        
-        print shell_string
+         
+        LOGGER.debug(shell_string)
         
         if not is_file(result):
             log = local.execute(shell_string)
-            print log
+            LOGGER.debug(log)
         
         crosscorrelation = raster.Data(result, 'GTiff')
         
-        print crosscorrelation.get_attribute(raster.PROJECTION)
-        print crosscorrelation.get_attribute(raster.GEOTRANSFORM)
-        
-
-        
-        #tile_map(result, result)
-        
-        
         correlation_array = crosscorrelation.read_data_file_as_array()
-        
-        
-        
+         
         
         band_0 = correlation_array[0,:]
         band_1 = correlation_array[1,:]

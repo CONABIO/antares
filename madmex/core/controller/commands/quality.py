@@ -12,15 +12,14 @@ import logging
 import gdal
 import numpy
 from numpy.random.mtrand import np
-from scipy import ndimage
-import scipy
+from scipy import ndimage, stats
 
 from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands.ingest import _get_bundle_from_path
 from madmex.mapper.data import raster
 from madmex.mapper.data._gdal import create_raster_from_reference, tile_map
 from madmex.mapper.data.harmonized import harmonize_images
-from madmex.processing.raster import phi, rho, calculate_zonal_statistics
+from madmex.processing.raster import phi, rho
 from madmex.remote.dispatcher import LocalProcessLauncher
 from madmex.util import create_file_name, is_file
 
@@ -33,7 +32,7 @@ STAT_CLASSES = 14
 STAT_MAX = 7
 STAT_MIN = 0
 THRESHOLD = 30
-THRESHOLD_COD = 0.99
+THRESHOLD_COD = 0.8
 THRESHOLD_LOG = 270
 WINDOW_SIZE = 5
 
@@ -41,17 +40,30 @@ def calculate_statistics_qa(image, reference, classes, minimum, maximum, thresho
     
     print image.shape
     print reference.shape
+
+    print 'reference at beginning', reference.shape
+    print reference
     
     for i in range(reference.shape[0]):
         print 'band number %s' % i
         gauss = ndimage.filters.gaussian_filter(reference[i], sigma=1)
         laplace = ndimage.filters.laplace(gauss, mode='constant', cval=0.0)
         reference[i] = numpy.abs(laplace)
+    
+    print 'reference'
+    print reference
         
     minband = reference.min(axis=0)
     numpy.core.numeric.putmask(minband, minband <= int(threshold_log), 0)
     numpy.core.numeric.putmask(minband, minband != 0, 1)
     log_mask = minband
+    
+    print 'log_mask', log_mask.shape
+    
+    print log_mask
+    
+    for i in range(image.shape[0]):
+        image[i] = image[i] * log_mask
     
     
     minband = image.min(axis=0)
@@ -61,25 +73,39 @@ def calculate_statistics_qa(image, reference, classes, minimum, maximum, thresho
     
     print numpy.unique(cod_mask, return_counts=True)
     
-    image[2] = cod_mask * image[2]
-    
+
     for i in range(image.shape[0]):
-        label = numpy.zeros([image.shape[1],image.shape[2]])
+        image[i] = cod_mask * image[i]
     
-        zonal_stats_result = calculate_zonal_statistics(image[i], label, [0])
+    print 'Image', image
     
+    stats = {}
+    
+    for i in range(image.shape[0]):    
+        masked = numpy.ma.masked_equal(image[i], 0.0, copy=False)
         stat = {}
-        stat['minimum'] = zonal_stats_result[0]
-        stat['maximum'] = zonal_stats_result[1]
-        stat['mean'] = zonal_stats_result[2]
-        stat['std'] = zonal_stats_result[3]
-        stat['median'] = numpy.array([numpy.median(image[i])])
-        print stat
+        stat['minimum'] = masked.min()
+        stat['maximum'] = masked.max()
+        stat['mean'] = masked.mean()
+        stat['std'] = masked.mean()
+        stat['median'] = numpy.ma.median(masked).data[0]
+        histogram = numpy.histogram(masked.compressed(), classes, range=(minimum, maximum))
+        normalized_histogram = 1.0 * histogram[0] / len(masked.compressed())
+        stat['histogram_bins'] = histogram[1]
+        stat['histogram'] = normalized_histogram
+        stats['band_%s' % i] = stat
+    return stats
     
-    
-        
-    return reference
-    
+def calculate_decision(histogram, bins):
+    bins = bins[0:numpy.size(bins)-1]
+    thresh_above = histogram[numpy.where(bins>2)]
+    thresh_below = histogram[numpy.where(bins<=2)]
+    thresh_above = numpy.sort(thresh_above)
+    lower_quartile = stats.scoreatpercentile(thresh_above, 25)
+    upper_quartile = stats.scoreatpercentile(thresh_above, 75)
+    outlier = 2 * upper_quartile - lower_quartile
+    decision = bool(numpy.size(thresh_above[numpy.where(thresh_below > outlier)]))
+    return decision
 
 class Command(BaseCommand):
     '''
@@ -205,23 +231,12 @@ class Command(BaseCommand):
         y_offset = extents['y_offset'][1]
         x_tile_size = extents['x_range']
         y_tile_size = extents['y_range']
-        print x_offset        
-        
         aux_name = create_file_name(output, 'auxiliar.tif')
-        
-        
-        
         tile_map(reference_bundle.get_raster_file(), aux_name, x_tile_size, y_tile_size, x_offset, y_offset)
-        
-        
         aux_array = raster.Data(aux_name, 'GTiff').read_data_file_as_array()
         crosscorrelation_polar_array = crosscorrelation_polar.read_data_file_as_array()
-        
-        res = calculate_statistics_qa(crosscorrelation_polar_array, aux_array, STAT_CLASSES, STAT_MIN, STAT_MAX, THRESHOLD_COD, THRESHOLD_LOG)
-        
-        
-        to_see = create_file_name(output, 'just_to_see.tif')
-               
-        create_raster_from_reference(to_see, res, aux_name)
+        stats = calculate_statistics_qa(crosscorrelation_polar_array, aux_array, STAT_CLASSES, STAT_MIN, STAT_MAX, THRESHOLD_COD, THRESHOLD_LOG)
+        desision = calculate_decision(stats['band_1']['histogram'], stats['band_1']['histogram_bins'])
+        print desision
         
         

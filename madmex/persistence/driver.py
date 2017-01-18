@@ -101,6 +101,20 @@ def persist_command(command):
         raise
     finally:
         session.close()
+        
+def persist_quality(quality):
+    '''
+    Gets a Command object, and inserts it into the database.
+    '''
+    session = SESSION_MAKER()
+    try:
+        session.add(quality)
+        session.commit()
+    except Exception:
+        LOGGER.error('Not expected error in host insertion.')
+        raise
+    finally:
+        session.close()
 def persist_features(rapideye_features):
     '''
     Expects a RapideyeFeatures object and commits it to the database.
@@ -153,6 +167,18 @@ def acquisitions_by_mapgrid_and_date(date, mapgrid_target, day_buffer):
     images_paths = session.query(RawProduct.product_path, RapidEyeFootPrintsMexicoOld.code, RapidEyeFootPrintsMexicoOld.mapgrid2).distinct().join(RawProduct.information).filter(RawProduct.satellite_id == 1, RapidEyeFootPrintsMexicoOld.mapgrid2 == mapgrid_target, cast(RapidEyeFootPrintsMexicoOld.code, Integer) == cast(Information.grid_id, Integer), func.abs(cast(RawProduct.acquisition_date, Date) - date) < day_buffer).all()
     #RawProduct.sensor_id
     return images_paths
+def get_pair_quality(mapgrid_target):
+    
+    session = SESSION_MAKER()
+    query = 'select product.pk_id from product, information where information.pk_id = product.information_id and information.grid_id = \'%s\'' % mapgrid_target;
+    try:
+        result = session.execute(query)
+    except Exception:
+        LOGGER.error('Not expected error in host insertion.')
+        raise
+    finally:
+        session.close()
+    return result
 def get_sensor_object(sensor_name):
     session = SESSION_MAKER()
     try:

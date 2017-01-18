@@ -457,7 +457,25 @@ class RapideyeFeatures(BASE):
     time = Column(Float)
     footprint = Column(Integer)
     path = Column(String, unique=True)
+    product_id = Column(Integer, ForeignKey('product.pk_id'))
+    product = relationship('Product')
 
+class QualityAssessment(BASE):
+    '''
+    This table holds decision features about a rapideye scene.
+    '''
+    __tablename__ = 'quality_assessment'
+    pk_id = Column(Integer, primary_key=True)
+    decision = Column(Boolean)
+    max = Column(Float)
+    min = Column(Float)
+    median = Column(Float)
+    mean = Column(Float)
+    standard_deviation = Column(Float)
+    product_id = Column(Integer, ForeignKey('product.pk_id'))
+    product = relationship('Product', foreign_keys=product_id)
+    reference_id = Column(Integer, ForeignKey('product.pk_id'))
+    reference = relationship('Product', foreign_keys=reference_id)
 
 class RapidEyeFootPrintsMexicoOld(BASE):
     # TODO: this is just an example of three columns in the table and two columns mapped

@@ -19,9 +19,12 @@ from madmex.core.controller.commands.ingest import _get_bundle_from_path
 from madmex.mapper.data import raster
 from madmex.mapper.data._gdal import create_raster_from_reference, tile_map
 from madmex.mapper.data.harmonized import harmonize_images
+from madmex.persistence.database.connection import QualityAssessment
+from madmex.persistence.driver import find_datasets, \
+    acquisitions_by_mapgrid_and_date, get_pair_quality, persist_quality
 from madmex.processing.raster import phi, rho
 from madmex.remote.dispatcher import LocalProcessLauncher
-from madmex.util import create_file_name, is_file
+from madmex.util import create_file_name, is_file, adapt_numpy_float
 
 
 LOGGER = logging.getLogger(__name__)
@@ -37,17 +40,30 @@ THRESHOLD_LOG = 270
 WINDOW_SIZE = 5
 
 def calculate_statistics_qa(image, reference, classes, minimum, maximum, threshold_cod, threshold_log):
+    
+    print image.shape
+    print reference.shape
+
+    print 'reference at beginning', reference.shape
+    print reference
+    
     for i in range(reference.shape[0]):
+        print 'band number %s' % i
         gauss = ndimage.filters.gaussian_filter(reference[i], sigma=1)
         laplace = ndimage.filters.laplace(gauss, mode='constant', cval=0.0)
         reference[i] = numpy.abs(laplace)
-
+    
+    print 'reference'
+    print reference
+        
     minband = reference.min(axis=0)
     numpy.core.numeric.putmask(minband, minband <= int(threshold_log), 0)
     numpy.core.numeric.putmask(minband, minband != 0, 1)
     log_mask = minband
     
-
+    print 'log_mask', log_mask.shape
+    
+    print log_mask
     
     for i in range(image.shape[0]):
         image[i] = image[i] * log_mask
@@ -57,10 +73,14 @@ def calculate_statistics_qa(image, reference, classes, minimum, maximum, thresho
     numpy.core.numeric.putmask(minband, minband <= float(threshold_cod), 0)
     numpy.core.numeric.putmask(minband, minband != 0, 1)
     cod_mask = minband
+    
+    print numpy.unique(cod_mask, return_counts=True)
+    
 
     for i in range(image.shape[0]):
         image[i] = cod_mask * image[i]
     
+    print 'Image', image
     
     stats = {}
     
@@ -113,6 +133,16 @@ class Command(BaseCommand):
             the list.')
 
     def handle(self, **options):
+        
+        mapgrid = '1449619'
+        
+        acq = get_pair_quality(mapgrid)
+        
+        for image in acq:
+            
+            print image.pk_id
+            print image.pk_id
+            
         
         id = options["id"][0]
         image_path = options["image"][0]
@@ -170,17 +200,29 @@ class Command(BaseCommand):
                        '-max_gap',
                        '%s' % MAX_GAP]
         shell_string = ' '.join(shell_array)
-         
-        LOGGER.debug(shell_string)
+        
+
+        
+        
+        print shell_string
         
         if not is_file(result):
             log = local.execute(shell_string)
-            LOGGER.debug(log)
         
         crosscorrelation = raster.Data(result, 'GTiff')
+    
+        print crosscorrelation.get_attribute(raster.PROJECTION)
+        print crosscorrelation.get_attribute(raster.GEOTRANSFORM)
+        
+
+        
+        #tile_map(result, result)
+        
         
         correlation_array = crosscorrelation.read_data_file_as_array()
-         
+        
+        
+        
         
         band_0 = correlation_array[0,:]
         band_1 = correlation_array[1,:]
@@ -191,7 +233,7 @@ class Command(BaseCommand):
         correlation_array[0,:] = phi_band
         correlation_array[1,:] = rho_band
         
-        create_raster_from_reference(to_polar, correlation_array, result)
+        #create_raster_from_reference(to_polar, correlation_array, result)
 
 
         crosscorrelation_polar = raster.Data(to_polar, 'GTiff')
@@ -207,6 +249,23 @@ class Command(BaseCommand):
         crosscorrelation_polar_array = crosscorrelation_polar.read_data_file_as_array()
         stats = calculate_statistics_qa(crosscorrelation_polar_array, aux_array, STAT_CLASSES, STAT_MIN, STAT_MAX, THRESHOLD_COD, THRESHOLD_LOG)
         desision = calculate_decision(stats['band_1']['histogram'], stats['band_1']['histogram_bins'])
+        
+        
+        print stats
+        
+        quality = QualityAssessment(
+            decision=desision,
+            max=adapt_numpy_float(stats['band_1']['maximum']),
+            min=adapt_numpy_float(stats['band_1']['minimum']),
+            median=adapt_numpy_float(stats['band_1']['median']),
+            mean=adapt_numpy_float(stats['band_1']['mean']),
+            standard_deviation=adapt_numpy_float(stats['band_1']['std']),
+            product_id=1,
+            reference_id=2)
+        persist_quality(quality)
+        
+        
+        
         print desision
         
         

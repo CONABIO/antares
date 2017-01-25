@@ -67,6 +67,16 @@ INITIAL_ARRAY = [[1,2,3,4,5,6],
 FINAL_ARRAY = [1,2,3,4,5,6,7,8,0]
 
 
+INITIAL_IPCC = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,100,123,124,200,210],
+                 [27],
+                 [28],
+                 [29],
+                 [30],
+                 [31],
+                 [98,99]]
+FINAL_IPCC = [1,2,3,4,5,6,7]
+
+
 MASK_ARRAY =[32]
 
 MASK = 32
@@ -162,6 +172,46 @@ class Command(BaseCommand):
                 if aux != current:
                     print current                
         outDataset = None
+        
+    def aggregate_by_block(self, path, output, ini_arr, fin_arr, block_size=8192):
+        '''
+        Method to create a mask from a given raster writing by block. This is attained by reading the
+        dataset in blocks, this is useful when the original raster is really big.
+        '''
+        outDataset = create_empty_raster_from_reference(output, path, data_type=gdal.GDT_Byte)
+        dataset = gdal.Open(path, gdalconst.GA_ReadOnly)
+        my_dictionary = dictionary_from_list(ini_arr, fin_arr)
+        if dataset is None:
+            print "The dataset could not be opened"
+            sys.exit(-1)        
+        classification_band = dataset.GetRasterBand(1) 
+        y_size = classification_band.YSize
+        x_size = classification_band.XSize
+        value_to_mask = 32
+        total = (y_size + block_size) * (x_size + block_size) / block_size / block_size
+        count = 0
+        current = -1 
+        for i in range(0, y_size, block_size):
+            if i + block_size < y_size:
+                rows = block_size
+            else:
+                rows = y_size - i
+            for j in range(0, x_size, block_size):
+                if j + block_size < x_size:
+                    cols = block_size
+                else:
+                    cols = x_size - j
+                data_array = classification_band.ReadAsArray(j, i, cols, rows).astype(numpy.int16)
+                to_vector_array = replace_in_array(data_array, my_dictionary)
+                count = count + 1
+                outDataset.GetRasterBand(1).WriteArray(to_vector_array,j,i)
+                aux = current
+                current = count * 100 / total
+                if aux != current:
+                    print current                
+        outDataset = None        
+        
+        
 
     def mask_iterating_values(self, path, output, ini_arr, fin_arr):
         '''
@@ -182,7 +232,14 @@ class Command(BaseCommand):
         data_array[data_array==MASK] = 1
         create_raster_from_reference(output, data_array, path, gdal.GDT_Byte)
         del data_array
+        
+    def print_unique(self, path):
 
+        data_array = open_handle(path)
+        unique, counts = numpy.unique(data_array, return_counts=True)
+        print unique, counts
+        
+        
     def handle(self, **options):
         output = options['output'][0]
         #state = options['state'][0]
@@ -203,10 +260,13 @@ class Command(BaseCommand):
             basename = '%s.tif' % get_base_name(image_path)
             print basename
             target = create_file_name(output, basename)
-            print target
+            #print target
             start_time = time.time()
+            
+            self.aggregate_by_block(image_path, target, INITIAL_IPCC, FINAL_IPCC)
+            
             #self.method_by_block(image_path, target)
-            self.mask_iterating_values(image_path, target, INITIAL_ARRAY, FINAL_ARRAY)
+            #self.mask_iterating_values(image_path, target, INITIAL_ARRAY, FINAL_ARRAY)
             print("--- %s seconds ---" % (time.time() - start_time))
             print 'Dataset was written.'
         

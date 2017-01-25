@@ -6,6 +6,7 @@ Created on Jul 29, 2016
 
 from __future__ import unicode_literals
 
+import logging
 import os
 import struct
 import sys
@@ -21,11 +22,15 @@ from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands.indexes import open_handle
 from madmex.mapper.data._gdal import create_empty_raster_from_reference, \
     create_raster_from_reference
-from madmex.persistence.driver import get_rapideye_footprints_from_state,\
+from madmex.persistence.driver import get_rapideye_footprints_from_state, \
     get_states_names
 from madmex.util import get_base_name, create_file_name, get_parent
+
+
 #from build.lib.madmex.core.controller.commands.aggregate import INITIAL_ARRAY
 #from build.lib.madmex.core.controller.commands.aggregate import INITIAL_ARRAY,\
+LOGGER = logging.getLogger(__name__)
+
 #    FINAL_ARRAY
 
 
@@ -80,6 +85,7 @@ FINAL_IPCC = [1,2,3,4,5,6,7]
 MASK_ARRAY =[32]
 
 MASK = 32
+
 
 def dictionary_from_list(key_list, value_list):
     new_dict = {}
@@ -208,7 +214,7 @@ class Command(BaseCommand):
                 aux = current
                 current = count * 100 / total
                 if aux != current:
-                    print current                
+                    LOGGER.debug('%s' % current)              
         outDataset = None        
         
         
@@ -257,8 +263,8 @@ class Command(BaseCommand):
         
         for image_path in options['path']:
             print image_path
-            basename = '%s.tif' % get_base_name(image_path)
-            print basename
+            basename = '%s_ipcc.tif' % get_base_name(image_path)
+            LOGGER.info(basename)
             target = create_file_name(output, basename)
             #print target
             start_time = time.time()
@@ -267,6 +273,6 @@ class Command(BaseCommand):
             
             #self.method_by_block(image_path, target)
             #self.mask_iterating_values(image_path, target, INITIAL_ARRAY, FINAL_ARRAY)
-            print("--- %s seconds ---" % (time.time() - start_time))
-            print 'Dataset was written.'
+            LOGGER.info("--- %s seconds ---" % (time.time() - start_time))
+            LOGGER.info('Dataset was written.')
         

@@ -132,7 +132,7 @@ def tile_map(image_path, output, x_tile_size, y_tile_size, x_offset, y_offset):
     shell_string = ' '.join(gdaltranString)    
     launcher = LocalProcessLauncher()
     launcher.execute(shell_string)
-def create_empty_raster_from_reference(image_path, reference_path, data_type=gdal.GDT_Float32, bands=1):
+def create_empty_raster_from_reference(image_path, reference_path, data_type=gdal.GDT_Float32, bands=1, create_options=['COMPRESS=LZW']):
     '''
     This function creates an empty raster using the metadata found in the original
     raster.
@@ -147,7 +147,7 @@ def create_empty_raster_from_reference(image_path, reference_path, data_type=gda
                                                          dataset.RasterYSize,
                                                          bands,
                                                          data_type,
-                                                         ['COMPRESS=LZW'])
+                                                         create_options)
     if geotransform:
         new_dataset.SetGeoTransform(geotransform)
     if projection:   

@@ -184,7 +184,7 @@ class Command(BaseCommand):
         Method to create a mask from a given raster writing by block. This is attained by reading the
         dataset in blocks, this is useful when the original raster is really big.
         '''
-        outDataset = create_empty_raster_from_reference(output, path, data_type=gdal.GDT_Byte)
+        outDataset = create_empty_raster_from_reference(output, path, data_type=gdal.GDT_Byte, create_options=['COMPRESS=LZW BIGTIFF=YES'])
         dataset = gdal.Open(path, gdalconst.GA_ReadOnly)
         my_dictionary = dictionary_from_list(ini_arr, fin_arr)
         if dataset is None:

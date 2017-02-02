@@ -24,7 +24,7 @@ class Model(BaseModel):
         self.path = path
         self.model = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
         
-        self.model_name = 'mp'
+        self.model_name = 'mpl'
 
     def fit(self, X, y):
         self.model.fit(X,y)

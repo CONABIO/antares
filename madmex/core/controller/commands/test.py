@@ -71,14 +71,15 @@ class Command(BaseCommand):
             ndre_array[ndre_array>=1] = 1
             
             sobel_filter_array = bundle.get_sobel_filter(sigma=2)
-            sobel_filter_array[sobel_filter_array<=-1] = -1
-            sobel_filter_array[sobel_filter_array>=1] = 1
+            
+            #sobel_filter_array[sobel_filter_array<=-1] = -1
+            #sobel_filter_array[sobel_filter_array>=1] = 1
             
             #create_raster_from_reference(ndvi_file, ndvi_array, bundle.get_raster_file())
             #create_raster_from_reference(red_edge_ndvi_file, red_edge_ndvi_array, bundle.get_raster_file())
             #create_raster_from_reference(gndvi_file, gndvi_array, bundle.get_raster_file())
             #create_raster_from_reference(ndre_file, ndre_array, bundle.get_raster_file())
-            #create_raster_from_reference(sovel_file, sobel_filter_array, bundle.get_raster_file())
+            create_raster_from_reference(sovel_file, sobel_filter_array, bundle.get_raster_file())
 
             all_features = numpy.array([image_array[0],
                                         image_array[1],

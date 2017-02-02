@@ -11,8 +11,10 @@ from __future__ import unicode_literals
 import os
 from os.path import isdir
 from shutil import rmtree
-import unicodedata
 import shutil
+import unicodedata
+
+from psycopg2._psycopg import AsIs
 
 
 def get_last_package_from_name(package):
@@ -167,6 +169,9 @@ def create_file_at_home(filename):
     directory as base.
     '''
     return os.path.join(os.path.expanduser('~'), filename)
+
+def adapt_numpy_float(numpy_float):
+    return AsIs(numpy_float)
 
 def check_if_file_exists(filename):
     return os.path.isfile(filename)

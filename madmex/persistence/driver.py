@@ -255,7 +255,7 @@ def get_rapideye_footprints_from_state(state_name):
     '''
     engine = create_engine('postgresql://postgres:postgres.@reddbase.conabio.gob.mx:5432/madmex_database')
     session = sessionmaker(engine)()
-    query = 'select distinct rapideye.code from vectordata.rapideye_footprints_mexico as rapideye, vectordata.country_mexico_2012 as estados where ST_Intersects(estados.geom,rapideye.the_geom) and estados.nom_ent=\'%s\';' % state_name
+    query = 'select distinct rapideye.code, ST_AsGeoJSON(rapideye.the_geom) from vectordata.rapideye_footprints_mexico as rapideye, vectordata.country_mexico_2012 as estados where ST_Intersects(estados.geom,rapideye.the_geom) and estados.nom_ent=\'%s\';' % state_name
     try:
         result = session.execute(query)
     except Exception:

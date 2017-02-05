@@ -20,8 +20,8 @@ from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands.indexes import open_handle
 from madmex.mapper.data._gdal import create_empty_raster_from_reference, \
     create_raster_from_reference
+from madmex.persistence.driver import get_rapideye_footprints_from_state
 from madmex.util import get_base_name, create_file_name, get_parent
-
 
 
 def dictionary_from_list(key_list, value_list):
@@ -122,9 +122,40 @@ class Command(BaseCommand):
         path = options['path'][0]
         
         
-        self.method_by_block(path, output)
+        #self.method_by_block(path, output)
+        # set up the shapefile driver
+        driver = ogr.GetDriverByName(str("ESRI Shapefile"))
+
+        # create the data source
+        data_source = driver.CreateDataSource(str(output))
+
+        # create the spatial reference, WGS84
+        srs = osr.SpatialReference()
+        srs.ImportFromEPSG(4326)
+
+        # create the layer
+        layer = data_source.CreateLayer(str("volcanoes"), srs, geom_type=ogr.wkbPolygon)
+        layer.CreateField(ogr.FieldDefn(str("code"), ogr.OFTInteger))
+        geom_type=ogr.wkbPolygon
         
+        
+        for state in get_rapideye_footprints_from_state('Chiapas'):
+        
+        
+            feature = ogr.Feature(layer.GetLayerDefn())
+            feature.SetField(str("code"), int(state[0]))
+            b = bytes(state[1])
+            print state[1]
+            point = ogr.CreateGeometryFromJson(str(state[1]))
+
+            # Set the feature geometry using the point
+            feature.SetGeometry(point)
+            layer.CreateFeature(feature)
+            # Dereference the feature
+            feature = None
+            print state
         print output
+        data_source = None
         #start_time = time.time()
         #self.method_four(options)
         #print("--- %s seconds ---" % (time.time() - start_time))

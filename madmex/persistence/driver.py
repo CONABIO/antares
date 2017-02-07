@@ -19,6 +19,7 @@ from madmex.persistence.database.connection import SESSION_MAKER, \
 import madmex.persistence.database.operations as database
 import madmex.persistence.filesystem.operations as filesystem
 from madmex.util import create_directory_path
+from madmex.mapper.data.vector import create_shape_from_json
 
 
 LOGGER = logging.getLogger(__name__)
@@ -264,6 +265,27 @@ def get_rapideye_footprints_from_state(state_name):
     finally:
         session.close()
     return result
+
+def get_shape_rapideye_footprints_from_state(state_name, output):
+    '''
+    This method will query the database to intersect the footprints that match the given
+    state name. It will perform a geographic query so the necessary extension must be
+    installed.
+    '''
+    engine = create_engine('postgresql://postgres:postgres.@reddbase.conabio.gob.mx:5432/madmex_database')
+    session = sessionmaker(engine)()
+    query = 'select distinct rapideye.code, ST_AsGeoJSON(rapideye.the_geom) from vectordata.rapideye_footprints_mexico as rapideye, vectordata.country_mexico_2012 as estados where ST_Intersects(estados.geom,rapideye.the_geom) and estados.nom_ent=\'%s\';' % state_name
+    try:
+        result = session.execute(query)
+    except Exception:
+        LOGGER.error('Not expected error in host insertion.')
+        raise
+    finally:
+        session.close()
+    shapes = []
+    for state in result:
+        shapes.append(create_shape_from_json(state[0], state[1], output))
+    return shapes
     
 if __name__ == '__main__':
     #images_paths = acquisitions_by_mapgrid_and_date('2013-12-31', 15462121, 100)

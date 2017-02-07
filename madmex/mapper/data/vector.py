@@ -34,6 +34,27 @@ def create_empty_layer(filename, layer_name, projection_reference = None, geom_t
     data_layer = data_source.CreateLayer(layer_name, spatial_reference,  geom_type)
     return (data_layer, data_source) #we have to return the data source for avoiding segmentation fault in the calling function
 
+def create_shape_from_json(id, json, output_directory):
+    '''
+    Given a json string containing coordinates, this method creates a shape file.
+    '''
+    create_directory_path(output_directory)
+    filename = create_file_name(output_directory, '%s.shp' % id)
+    shape = Data(filename)
+    if is_file(filename):
+        shape.driver.DeleteDataSource(filename)
+    data_source = shape.driver.CreateDataSource(filename)
+    spatial_reference = osr.SpatialReference()
+    spatial_reference.ImportFromEPSG(4326)    
+    layer = data_source.CreateLayer(str('layer'), spatial_reference, geom_type=ogr.wkbPolygon)
+    layer.CreateField(ogr.FieldDefn(str('id'), ogr.OFTString))
+    feature = ogr.Feature(layer.GetLayerDefn())
+    feature.SetField(str('id'), str(id))
+    geometry = ogr.CreateGeometryFromJson(str(json))
+    feature.SetGeometry(geometry)
+    layer.CreateFeature(feature)
+    shape.close()
+    return shape
 class Data(BaseData):
     '''
     This class represents a vector type file.

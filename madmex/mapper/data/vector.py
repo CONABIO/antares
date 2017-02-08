@@ -10,10 +10,11 @@ import logging
 import gdal
 import ogr
 import osr
+import pandas
 
 from madmex.mapper.base import BaseData
 from madmex.util import create_file_name, is_directory, create_directory_path, \
-    is_file
+    is_file, get_base_name
 
 
 gdal.AllRegister()
@@ -169,8 +170,73 @@ class Data(BaseData):
             in_feature = layer.GetNextFeature()
         self.close()
         return [Data(filename) for filename in shape_files]
+    def to_dataframe(self):
+        layer = self.get_layer()
+        layer_definition = layer.GetLayerDefn()
+        dataframe = {}
+        in_feature = layer.GetNextFeature()
+        for i in range(0, layer_definition.GetFieldCount()):
+            field_definition = layer_definition.GetFieldDefn(i)
+            column_name = field_definition.GetName()
+            dataframe[column_name] = []
+        
+        while in_feature:
+            for i in range(0, layer_definition.GetFieldCount()):
+                field_definition = layer_definition.GetFieldDefn(i)
+                column_name = field_definition.GetName()
+                dataframe[column_name].append(in_feature.GetField(i))
+            in_feature = layer.GetNextFeature()
+        return pandas.DataFrame(dataframe)
+        
 
-
+    def intersect(self, output_directory, geometry):
+        layer = self.get_layer()
+        layer_name = layer.GetName()
+        spatial_reference = layer.GetSpatialRef()
+        
+        inSpatialRef = osr.SpatialReference()
+        inSpatialRef.ImportFromEPSG(4326)
+        
+        
+        coordTransform = osr.CoordinateTransformation(inSpatialRef, spatial_reference)
+    
+        geometry.Transform(coordTransform)
+                
+        in_feature = layer.GetNextFeature()
+        layer_definition = layer.GetLayerDefn()
+        field_definition = layer_definition.GetFieldDefn(0)
+        column_name = field_definition.GetName() 
+        shape_files = []
+        create_directory_path(output_directory)
+        in_layer_definition = layer.GetLayerDefn()
+        output_name = output_directory       
+        print output_name
+        if is_file(output_name):
+            self.driver.DeleteDataSource(output_name)
+        data_source = self.driver.CreateDataSource(output_name)
+        out_layer = data_source.CreateLayer(layer_name, spatial_reference, geom_type=ogr.wkbPolygon)
+        for i in range(0, in_layer_definition.GetFieldCount()):
+            fieldDefn = in_layer_definition.GetFieldDefn(i)
+            out_layer.CreateField(fieldDefn)
+        while in_feature:            
+            outLayerDefn = out_layer.GetLayerDefn()
+            feature_geometry = in_feature.GetGeometryRef()
+            out_feature = ogr.Feature(outLayerDefn)            
+            
+            print geometry.ExportToWkt()
+            print feature_geometry.ExportToWkt()
+            if geometry.Intersect(feature_geometry):
+                print 'It intersects!!!!'
+                intersection = geometry.Intersection(feature_geometry)
+                out_feature.SetGeometry(intersection)
+                for i in range(0, outLayerDefn.GetFieldCount()):
+                    out_feature.SetField(outLayerDefn.GetFieldDefn(i).GetNameRef(), in_feature.GetField(i))
+                out_layer.CreateFeature(out_feature)
+            out_feature = None
+            in_feature = None
+            in_feature = layer.GetNextFeature()
+        self.close()
+        return Data(output_name)
 
 if __name__ == '__main__':
     image = '/Users/erickpalacios/Documents/CONABIO/MADMEXdata/eodata/footprints/country_mexico/country_mexico_2012.shp'

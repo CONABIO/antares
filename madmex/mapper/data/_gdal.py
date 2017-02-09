@@ -104,7 +104,7 @@ def _get_projection(dataset):
     Helper function to get the projection from an already open dataset.
     '''
     projection = osr.SpatialReference()
-    projection.ImportFromWkt(dataset.GetProjectionRef())
+    projection.ImportFromWkt(str(dataset.GetProjectionRef()))
     return projection
 def get_geotransform(image_path):
     '''

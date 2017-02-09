@@ -199,8 +199,8 @@ def harmonize_images(images):#, projection, shape):
     the images is not in the specified projection, it will be ignored.
     '''
     import raster
-    projection = images[0].get_attribute(raster.PROJECTION)
-    shape = images[0].get_attribute(raster.DATA_SHAPE)
+    projection = images[0].get_projection()
+    shape = images[0].get_data_shape()
     if not projection or not shape:
         LOGGER.error('Projection and shape should not be null.')
         raise Exception('Projection and shape should not be null.')

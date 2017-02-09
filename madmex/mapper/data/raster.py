@@ -31,6 +31,7 @@ STACK_OFFSET = ['stack_offset']
 DATASET = ['dataset']
 GDAL_TIFF = 'GTiff'
 MEMORY = 'MEM'
+NO_DATA = -9999
 
 def default_options_for_create_raster_from_reference(reference_metadata):
     '''
@@ -284,9 +285,10 @@ class Data(BaseData):
         '''
         if self.data_file == None:
             self.data_file = self._open_file()
-        wkt = self.data_file.GetProjection()
-        spatial_reference = osr.SpatialReference()
-        return spatial_reference.ImportFromWkt(wkt)
+        projection = self.data_file.GetProjection()
+        LOGGER.info("The well known text: %s" % projection)
+        spatial_reference = osr.SpatialReference(wkt=projection)
+        return spatial_reference
     def get_geotransform(self):
         '''
         Returns the geotransform data array from the current image.
@@ -310,4 +312,24 @@ class Data(BaseData):
         Returns the attribute that is found in the given path.
         '''
         return _get_attribute(path_to_attribute, self.metadata)
-    
+    def reproject(self, output, epgs, threshold = 0.125, resampling = gdal.GRA_NearestNeighbour):
+        '''
+        Creates and returns a copy of this raster in the given spatial reference.
+        '''
+        if self.data_file == None:
+            self.data_file = self._open_file()        
+        spatial_reference = osr.SpatialReference()
+        spatial_reference.ImportFromEPSG(epgs)
+        well_know_text = spatial_reference.ExportToWkt()
+        tmp_ds = gdal.AutoCreateWarpedVRT(self.data_file,
+                                          None, # src_wkt : left to default value --> will use the one from source
+                                          well_know_text,
+                                          resampling,
+                                          threshold)
+        dst_ds = gdal.GetDriverByName(str('GTiff')).CreateCopy(output, tmp_ds)
+        dst_ds = None
+        
+        return Data(output)
+        
+        
+        

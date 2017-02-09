@@ -4,11 +4,14 @@ Created on 10/06/2015
 @author: erickpalacios
 '''
 from __future__ import unicode_literals
+
 import logging
+
 import gdal, gdalconst
 import ogr, osr
+
 from madmex.mapper.base import BaseData, _get_attribute, put_in_dictionary
-from madmex.util import check_if_file_exists
+
 
 gdal.AllRegister()
 gdal.UseExceptions()
@@ -330,6 +333,6 @@ class Data(BaseData):
         dst_ds = None
         
         return Data(output)
-        
+
         
         

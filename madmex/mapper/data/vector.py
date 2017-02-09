@@ -196,8 +196,6 @@ class Data(BaseData):
                 dataframe[column_name].append(in_feature.GetField(i))
             in_feature = layer.GetNextFeature()
         return pandas.DataFrame(dataframe)
-        
-
     def intersect(self, output_directory, geometry):
         layer = self.get_layer()
         layer_name = layer.GetName()

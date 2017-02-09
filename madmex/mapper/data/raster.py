@@ -4,11 +4,14 @@ Created on 10/06/2015
 @author: erickpalacios
 '''
 from __future__ import unicode_literals
+
 import logging
+
 import gdal, gdalconst
 import ogr, osr
+
 from madmex.mapper.base import BaseData, _get_attribute, put_in_dictionary
-from madmex.util import check_if_file_exists
+
 
 gdal.AllRegister()
 gdal.UseExceptions()
@@ -31,6 +34,7 @@ STACK_OFFSET = ['stack_offset']
 DATASET = ['dataset']
 GDAL_TIFF = 'GTiff'
 MEMORY = 'MEM'
+NO_DATA = -9999
 
 def default_options_for_create_raster_from_reference(reference_metadata):
     '''
@@ -136,7 +140,7 @@ class Data(BaseData):
     inheritance from this class to represent each type of image file, right now
     it is only a helper class to open raster files.
     '''
-    def __init__(self, image_path, gdal_format):
+    def __init__(self, image_path, gdal_format='GTiff'):
         '''
         Constructor
         '''
@@ -186,6 +190,8 @@ class Data(BaseData):
         put_in_dictionary(self.metadata, DATA_SHAPE, (self.data_file.RasterXSize, self.data_file.RasterYSize, self.data_file.RasterCount))
         put_in_dictionary(self.metadata, FOOTPRINT, self._get_footprint())
         put_in_dictionary(self.metadata, GEOTRANSFORM_FROM_GCPS, self.gcps_to_geotransform())
+    def get_projection(self):
+        return self.data_file.GetProjection()
     def _extract_hdf_raster_properties(self, sr_band):
         '''
         Extract some raster info from the hdf raster image file using gdal functions.
@@ -198,14 +204,16 @@ class Data(BaseData):
         self.data_file = self._open_hdf_file_subdataset(subdataset[0][0])
         self._extract_raster_properties()
         #self.data_file = data_file_dummy
+    def get_data_shape(self):
+        return (self.data_file.RasterXSize, self.data_file.RasterYSize, self.data_file.RasterCount)
     def _get_footprint(self):
         '''
         Returns the extent of the raster image.
         '''
         try:
             ring = ogr.Geometry(ogr.wkbLinearRing)
-            geotransform = self.get_attribute(GEOTRANSFORM)
-            data_shape = self.get_attribute(DATA_SHAPE)
+            geotransform = self.get_geotransform()
+            data_shape = self.get_data_shape(self)
             ring.AddPoint_2D(geotransform[0], geotransform[3])
             ring.AddPoint_2D(geotransform[0] + geotransform[1] * data_shape[0], geotransform[3])
             ring.AddPoint_2D(
@@ -241,6 +249,8 @@ class Data(BaseData):
                 self.data_array = self.data_file.ReadAsArray()
                 #self.close()
         return self.data_array
+    def read(self, x_offset, y_offset, x_size, y_size):
+        return self.data_file.ReadAsArray(x_offset, y_offset, x_size, y_size)
     def read_hdf_data_file_as_array(self, tuple_of_files):
         '''
         Read image data from hdf file of already opened image.
@@ -268,15 +278,20 @@ class Data(BaseData):
         '''
         Get ground control points from image.
         '''
-        if self.data_file != None:
-            gcps = self.data_file.GetGCPs()
-            #self.close()
-            return gcps
-        else:
+        if self.data_file == None:
             self.data_file = self._open_file()
-            gcps = self.data_file.GetGCPs()
-            #self.close()
-            return gcps
+        gcps = self.data_file.GetGCPs()    
+        return gcps
+    def get_spatial_reference(self):
+        '''
+        This method gets the spatial reference representation from the image.
+        '''
+        if self.data_file == None:
+            self.data_file = self._open_file()
+        projection = self.data_file.GetProjection()
+        LOGGER.info("The well known text: %s" % projection)
+        spatial_reference = osr.SpatialReference(wkt=projection)
+        return spatial_reference
     def get_geotransform(self):
         '''
         Returns the geotransform data array from the current image.
@@ -300,4 +315,24 @@ class Data(BaseData):
         Returns the attribute that is found in the given path.
         '''
         return _get_attribute(path_to_attribute, self.metadata)
-    
+    def reproject(self, output, epgs, threshold = 0.125, resampling = gdal.GRA_NearestNeighbour):
+        '''
+        Creates and returns a copy of this raster in the given spatial reference.
+        '''
+        if self.data_file == None:
+            self.data_file = self._open_file()        
+        spatial_reference = osr.SpatialReference()
+        spatial_reference.ImportFromEPSG(epgs)
+        well_know_text = spatial_reference.ExportToWkt()
+        tmp_ds = gdal.AutoCreateWarpedVRT(self.data_file,
+                                          None, # src_wkt : left to default value --> will use the one from source
+                                          well_know_text,
+                                          resampling,
+                                          threshold)
+        dst_ds = gdal.GetDriverByName(str('GTiff')).CreateCopy(output, tmp_ds)
+        dst_ds = None
+        
+        return Data(output)
+
+        
+        

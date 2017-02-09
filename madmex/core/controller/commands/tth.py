@@ -66,9 +66,10 @@ def tth(year_ini, year_fin, class_area_ini, class_area_fin):
     if class_area_ini == 0 or class_area_fin == 0:
         return 0
     period = int(year_fin) - int(year_ini)
-    coef = Decimal(1.0 / period)
-    surface_class = Decimal((class_area_ini -class_area_fin) /  class_area_ini)
-    tth_class = 1- ((1 - surface_class)**(coef))
+    #coef = Decimal(1.0 / period)
+    #surface_class = Decimal((class_area_ini -class_area_fin) /  class_area_ini)
+    #tth_class = 1- ((1 - surface_class)**(coef))
+    tth_class = 1 - ( 1 - (class_area_ini - class_area_fin ) * 1.0 / class_area_ini )**(1.0/ period)
     return tth_class 
 
 class Command(BaseCommand):
@@ -130,9 +131,9 @@ class Command(BaseCommand):
                 class_area_fin = area_arr_fin[index_arr_class_fin]
                 clss_area_ini_arr.append(class_area_ini)
                 clss_area_fin_arr.append(class_area_fin)
-                tth = tth(int(yearIni), int(yearFin), class_area_ini, class_area_fin)
-                tth_arr.append( tth * 100 )
-                print 'Class ID: ', matching_class[i], '\t', 'S1 [ha]:  ',class_area_ini, '\t', 'S2 [ha]:  ', class_area_fin, '\t', 'TTH: ', tth * 100, '\t', '%'              
+                tthv = tth(int(yearIni), int(yearFin), class_area_ini, class_area_fin)
+                tth_arr.append( tthv * 100 )
+                print 'Class ID: ', matching_class[i], '\t', 'S1 [ha]:  ',class_area_ini, '\t', 'S2 [ha]:  ', class_area_fin, '\t', 'TTH: ', tthv * 100, '\t', '%'              
         
         if orphan_class:
             LOGGER.info('There are %s classes with no match'  % (len(orphan_class)) )
@@ -143,7 +144,22 @@ class Command(BaseCommand):
         '''
         '''
         titles = ['Class ID','S1 [ha]','S2 [ha]', 'tth [%]'] 
-        rows = zip(match_class,area_ini,area_fin,tth)
+        keys = { 
+        0: "No Data",
+        1 : "Bosques Templado", 
+        2 : "Selva Perennifolia, Subperennifolia, Caducifolia y Subcaducifolia", 
+        3 : "Matorral", 
+        4 : "Vegetacion Menor y Pastizales", 
+        5 : "Tierras Agricolas", 
+        6 : "Urbano y Contruido", 
+        7 : "Suelo Desnudo",
+        8 : "Agua",
+        9 : "Nubes"} 
+  
+        key_names = []
+        for id_class in match_class:
+            key_names.append(keys[id_class])
+        rows = zip(key_names,area_ini,area_fin,tth)
         
         csv_file = file_name + '_' + year1 + '_' + year2 + '.csv'
         file_path = dir_path + csv_file

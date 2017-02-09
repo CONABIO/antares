@@ -129,6 +129,15 @@ class Data(BaseData):
         This method returns the layer for this shape file.
         '''
         return self.open().GetLayer()
+    def get_spatial_reference(self):
+        '''
+        This method returns the spatial referecne of this shape.
+        '''
+        layer = self.get_layer()
+        spatial_reference = layer.GetSpatialRef()
+        print spatial_reference
+        return spatial_reference
+    
     def split(self, output_directory, column=0):
         '''
         This method will take a input shape and iterate over its features, creating

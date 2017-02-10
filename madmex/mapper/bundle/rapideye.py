@@ -366,27 +366,39 @@ class Bundle(BaseBundle):
         sx = sobel(blurred, axis=0, mode=mode_type)
         sy = sobel(blurred, axis=1, mode=mode_type)
         return numpy.hypot(sx, sy)
-        
+    def get_feature_array(self, outputfile):
+        '''
+        This method creates an array of features from the bands
+        of this raster.
+        '''
+        image_array = self.get_raster().read_data_file_as_array()
+        ndvi_array = self.get_NDVI()
+        ndvi_array[ndvi_array<=-1] = -1
+        ndvi_array[ndvi_array>=1] = 1
 
-if __name__ == '__main__':
-    #path = '/Users/amaury/Documents/rapideye/df/1447813/2012/2012-03-14/l3a'
-    #bundle = Bundle(path)
-    #print bundle.get_files()
-    #print bundle.can_identify()
-    
-    
-    image = "/Users/agutierrez/Documents/rapideye/df/1447813/2012/2012-03-14/l3a/2012-03-14T182106_RE2_3A-NAC_11040070_149070.tif"
-    gdal_format = "GTiff"
-    data_class = raster.Data(image, gdal_format)
-    array = data_class.read_data_file_as_array()
-    width, height, bands = data_class.get_attribute(raster.DATA_SHAPE)
-    feature_bands = numpy.zeros([2, width, height])
-    from madmex.processing.raster import calculate_ndvi
-    feature_bands[0, :, :] = calculate_ndvi(array[4, :, :], array[2, :, :])
-    feature_bands[1, :, :] = calculate_ndvi(array[3, :, :], array[2, :, :])
-    
-    out1 = get_parent(image) + 'result_ndvi_1.tif'
-    out2 = get_parent(image) + 'result_ndvi_2.tif'
-    create_raster_from_reference(out1, feature_bands[0, :, :], image)
-    create_raster_from_reference(out2, feature_bands[1, :, :], image)
-    print 'Done'
+        red_edge_ndvi_array = self.get_red_edge_NDVI()
+        red_edge_ndvi_array[red_edge_ndvi_array<=-1] = -1
+        red_edge_ndvi_array[red_edge_ndvi_array>=1] = 1
+
+        gndvi_array = self.get_gndvi()
+        gndvi_array[gndvi_array<=-1] = -1
+        gndvi_array[gndvi_array>=1] = 1
+         
+        ndre_array = self.get_ndre()
+        ndre_array[ndre_array<=-1] = -1
+        ndre_array[ndre_array>=1] = 1
+         
+        sobel_filter_array = self.get_sobel_filter(sigma=2)
+
+        all_features = numpy.array([image_array[0],
+                                            image_array[1],
+                                            image_array[2],
+                                            image_array[3],
+                                            image_array[4],
+                                            ndvi_array,
+                                            red_edge_ndvi_array,
+                                            gndvi_array,
+                                            ndre_array,
+                                            sobel_filter_array])
+        create_raster_from_reference(outputfile, all_features, self.get_raster_file(), creating_options=['BIGTIFF=YES'])
+        return raster.Data(outputfile)

@@ -2,6 +2,7 @@
 madmex.data
 '''
 import gdal
+import numpy
 
 from madmex.mapper.data import raster
 
@@ -24,4 +25,4 @@ def vector_to_raster(vector, output_path, pixel_size):
     target_ds.SetGeoTransform((x_min, pixel_size, 0, y_max, 0, -pixel_size))
     gdal.RasterizeLayer(target_ds, [1], source_layer, options = ["ATTRIBUTE=OBJECTID"])
     target_ds.FlushCache()
-    return raster.Data(output_path)    
+    return raster.Data(output_path)

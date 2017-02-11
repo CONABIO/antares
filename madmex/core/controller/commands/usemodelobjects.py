@@ -17,10 +17,13 @@ import ogr
 from sklearn.externals import joblib
 
 from madmex import _
+from madmex.configuration import SETTINGS
 from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands.createmodel import load_model
 from madmex.core.controller.commands.indexes import open_handle
 from madmex.core.controller.commands.ingest import _get_bundle_from_path
+from madmex.mapper.bundle import rapideye
+from madmex.mapper.data import raster
 from madmex.mapper.data._gdal import create_raster_from_reference
 from madmex.model.unsupervised import pca
 from madmex.remote.dispatcher import LocalProcessLauncher
@@ -125,10 +128,18 @@ class Command(BaseCommand):
         for path in options['path']:
             print path
             
-            filename = get_base_name(path)
-            directory = get_parent(path)
+            scene_bundle = rapideye.Bundle(path)
+            directory = getattr(SETTINGS, 'TEMPORARY')
             directory_helper = create_file_name(directory, 'helper')
             create_directory_path(directory_helper)
+            
+            basename = get_base_name(scene_bundle.get_raster_file())
+            all_file = create_file_name(directory_helper, '%s_all_features.tif' % basename)
+            scene_bundle.get_feature_array(all_file).read_data_file_as_array()
+            
+            filename = get_base_name(all_file)
+            
+            
             
             if not is_file(create_file_name(directory_helper, '%s.shp' % filename)):
                 shell_string = 'docker run --rm -v %s:/data madmex/segment gdal-segment %s.tif -out helper/%s.shp -algo SLIC -region %s' % (directory, filename, filename, region)

@@ -124,6 +124,7 @@ class Command(BaseCommand):
         added up and the result is printed in the screen.
         '''
         import time
+        target_tag = 'level_3'
         start_time_all = time.time()
         shape_name = options['shape'][0]
         raster_paths = options['path']
@@ -158,9 +159,14 @@ class Command(BaseCommand):
         
         
         training_set = dataframe_features.set_index(0).join(training_dataframe.set_index('OBJECTID'))   
-        training_set['target'] = pandas.Categorical.from_array(training_set['level_2']).labels
         
-        print training_set
+        
+        
+        training_set['target'] = pandas.Categorical.from_array(training_set[target_tag]).labels
+        print training_set[training_set['target']==None]
+        print training_set[training_set['target']==-1]
+        print training_set[training_set['target']==0]
+        training_set = training_set[training_set['target'] != -1]
         
         #features_size includes 0 that is the index of the feature
         training_set_array = numpy.transpose(numpy.transpose(training_set.as_matrix([range(1, features_size)])))
@@ -168,6 +174,8 @@ class Command(BaseCommand):
         
         print training_set_array.shape
         print target_set_array.shape
+        
+        
         
         
         X_train, X_test, y_train, y_test = train_test_split(training_set_array, target_set_array, train_size=0.8, test_size=0.2)

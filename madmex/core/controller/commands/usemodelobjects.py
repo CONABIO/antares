@@ -28,7 +28,7 @@ from madmex.mapper.data._gdal import create_raster_from_reference
 from madmex.model.unsupervised import pca
 from madmex.remote.dispatcher import LocalProcessLauncher
 from madmex.util import create_file_name, get_base_name, create_directory_path, \
-    get_parent, is_file, create_filename_from_string
+    get_parent, is_file, create_filename_from_string, json_from_file
 
 
 LOGGER = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ def read_data_table(shape_path):
     result = numpy.array(table)    
     return result
 
-def write_results(shape_path, output_name, classification):
+def write_results(shape_path, output_name, classification, classification_dict):
     driver = ogr.GetDriverByName(str('ESRI Shapefile'))
     shape = driver.Open(shape_path, 0)
     layer = shape.GetLayer()
@@ -66,7 +66,7 @@ def write_results(shape_path, output_name, classification):
     datasource = driver.CreateDataSource(output_name)
     outLayer = datasource.CreateLayer(str('classification'), spatial_reference, geom_type=ogr.wkbPolygon)        
     for model_name, data in classification.iteritems():
-        idField = ogr.FieldDefn(str(model_name), ogr.OFTInteger)
+        idField = ogr.FieldDefn(str(model_name), ogr.OFTString)
         outLayer.CreateField(idField)
     while in_feature:
         
@@ -77,7 +77,7 @@ def write_results(shape_path, output_name, classification):
         out_feature.SetGeometry(geometry)
     
         for model_name, data in classification.iteritems():
-            out_feature.SetField(str(model_name), int(data[counter]))
+            out_feature.SetField(str(model_name), str(classification_dict[data[counter]]))
   
         outLayer.CreateFeature(out_feature)
         out_feature.Destroy()
@@ -132,7 +132,29 @@ class Command(BaseCommand):
             directory = getattr(SETTINGS, 'TEMPORARY')
             directory_helper = create_file_name(directory, 'helper')
             create_directory_path(directory_helper)
-            
+            categories_file = create_file_name(directory, 'categories.json')
+            categories_dictionaty = {
+                    0: "ACUICOLA", 
+                    1: "AGRICULTURA DE HUMEDAD", 
+                    2: "AGRICULTURA DE RIEGO", 
+                    3: "AGRICULTURA DE TEMPORAL", 
+                    4: "AGUA", 
+                    5: "ASENTAMIENTOS HUMANOS", 
+                    6: "BOSQUE CULTIVADO", 
+                    7: "BOSQUE DE CEDRO", 
+                    8: "BOSQUE DE ENCINO", 
+                    9: "BOSQUE DE OYAMEL", 
+                    10: "BOSQUE DE PINO", 
+                    11: "BOSQUE INDUCIDO", 
+                    12: "DESPROVISTO DE VEGETACION", 
+                    13: "NUBES", 
+                    14: "PASTIZAL CULTIVADO", 
+                    15: "PASTIZAL INDUCIDO", 
+                    16: "PRADERA DE ALTA MONTANA", 
+                    17: "SIN VEGETACION APARENTE", 
+                    18: "VEGETACION HALOFILA HIDROFILA", 
+                    19: "ZONA URBANA"
+                }
             basename = get_base_name(scene_bundle.get_raster_file())
             all_file = create_file_name(directory_helper, '%s_all_features.tif' % basename)
             scene_bundle.get_feature_array(all_file).read_data_file_as_array()
@@ -161,7 +183,7 @@ class Command(BaseCommand):
                 results[model_name] = prediction
             print results
             create_directory_path(output)
-            write_results(create_file_name(directory_helper, '%s.shp' % filename), create_file_name(output, '%s_classification.shp' % filename[0:32]), results)
+            write_results(create_file_name(directory_helper, '%s.shp' % filename), create_file_name(output, '%s_classification.shp' % filename[0:32]), results, categories_dictionaty)
                 
         LOGGER.info("--- %s seconds ---" % (time.time() - start_time))   
             

@@ -8,6 +8,7 @@ This package contains several useful classes and methods.
 
 from __future__ import unicode_literals
 
+import json
 import os
 from os.path import isdir
 from shutil import rmtree
@@ -175,6 +176,19 @@ def adapt_numpy_float(numpy_float):
 
 def check_if_file_exists(filename):
     return os.path.isfile(filename)
+
+def json_to_file(filename, json_dict):
+    '''
+    This method dumps the given json into a file.
+    '''
+    with open(filename, 'w') as f:
+        f.write(json.dumps(json_dict, indent=4))
+def json_from_file(filename):
+    '''
+    This method loads a json object from a file.
+    '''
+    print filename
+    return json.loads(filename)
 
 if __name__ == '__main__':
     print get_base_name('/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/myawesomefile.ext.json')

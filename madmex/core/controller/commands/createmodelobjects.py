@@ -27,7 +27,7 @@ from madmex.mapper.bundle import rapideye
 from madmex.mapper.data import vector, raster, vector_to_raster
 from madmex.mapper.data.harmonized import harmonize_images
 from madmex.util import create_file_name, \
-    create_directory_path, get_base_name
+    create_directory_path, get_base_name, json_to_file
 
 
 LOGGER = logging.getLogger(__name__)
@@ -96,7 +96,12 @@ def get_dataframe_from_raster(features_raster, training_raster_warped):
         array_aux.append(std_array)
     features_final = numpy.concatenate([array_aux], axis=0)        
     return DataFrame(features_final.transpose())
-        
+def create_categories_file(filename, categories_array):
+    dictionary = {}
+    for i in range(len(categories_array)):
+        dictionary[i] = categories_array[i]
+    json_to_file(filename, dictionary)
+    
 class Command(BaseCommand):
     '''
     classdocs
@@ -136,6 +141,7 @@ class Command(BaseCommand):
         training_shape = vector.Data(shape_name)
         training_dataframe = training_shape.to_dataframe()
         training_path = create_file_name(temporary_directory, 'training_raster.tif')
+        categories_file = create_file_name(temporary_directory, 'categories.json')
         training_warped_path = create_file_name(temporary_directory, 'training_warped_raster.tif')
         pixel_size = 5
         training_raster = vector_to_raster(training_shape, training_path, pixel_size)
@@ -163,11 +169,9 @@ class Command(BaseCommand):
         
         
         training_set['target'] = pandas.Categorical.from_array(training_set[target_tag]).labels
-        print training_set[training_set['target']==None]
-        print training_set[training_set['target']==-1]
-        print training_set[training_set['target']==0]
+        categories_array = pandas.Categorical.from_array(training_set[target_tag]).categories
+        create_categories_file(categories_file, categories_array)
         training_set = training_set[training_set['target'] != -1]
-        
         #features_size includes 0 that is the index of the feature
         training_set_array = numpy.transpose(numpy.transpose(training_set.as_matrix([range(1, features_size)])))
         target_set_array = training_set.pop('target')

@@ -10,7 +10,7 @@ from madmex.mapper.data import raster
 def raster_to_vector():
     pass
 
-def vector_to_raster(vector, output_path, pixel_size):
+def vector_to_raster(vector, output_path, pixel_size, options):
     '''
     This method creates a raster object by burning the values of this
     shape file into a raster with the given resolution.
@@ -23,6 +23,6 @@ def vector_to_raster(vector, output_path, pixel_size):
     spatial_reference = vector.get_spatial_reference()         
     target_ds.SetProjection(spatial_reference.ExportToWkt())
     target_ds.SetGeoTransform((x_min, pixel_size, 0, y_max, 0, -pixel_size))
-    gdal.RasterizeLayer(target_ds, [1], source_layer, options = ["ATTRIBUTE=OBJECTID"])
+    gdal.RasterizeLayer(target_ds, [1], source_layer, options=options)
     target_ds.FlushCache()
     return raster.Data(output_path)

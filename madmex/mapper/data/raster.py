@@ -329,9 +329,7 @@ class Data(BaseData):
                                           well_know_text,
                                           resampling,
                                           threshold)
-        dst_ds = gdal.GetDriverByName(str('GTiff')).CreateCopy(output, tmp_ds)
-        dst_ds = None
-        
+        gdal.GetDriverByName(str('GTiff')).CreateCopy(output, tmp_ds)        
         return Data(output)
 
         

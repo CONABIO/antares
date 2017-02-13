@@ -144,7 +144,7 @@ class Command(BaseCommand):
         categories_file = create_file_name(temporary_directory, 'categories.json')
         training_warped_path = create_file_name(temporary_directory, 'training_warped_raster.tif')
         pixel_size = 5
-        training_raster = vector_to_raster(training_shape, training_path, pixel_size)
+        training_raster = vector_to_raster(training_shape, training_path, pixel_size, ["ATTRIBUTE=OBJECTID"])
         training_raster_warped = training_raster.reproject(training_warped_path, epgs=32614)
         
          

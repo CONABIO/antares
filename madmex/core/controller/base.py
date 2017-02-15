@@ -9,6 +9,7 @@ from argparse import ArgumentParser
 import logging
 import os
 import sys
+import time
 import traceback
 
 from madmex import setup
@@ -189,8 +190,9 @@ class BaseCommand(object):
         This method will implement necessary system checks in case they are needed.
         '''
         try:
+            start_time = time.time()
             self.handle(**options)
-            LOGGER.info('Command execution is done.')
+            LOGGER.info('Command execution is done in %s seconds.' % (time.time() - start_time))
         except Exception:
             traceback.print_exc()
             LOGGER.error('Error in command execution.')

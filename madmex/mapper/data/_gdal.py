@@ -156,6 +156,7 @@ def create_empty_raster_from_reference(image_path, reference_path, data_type=gda
     return new_dataset
 def create_raster_from_reference(image_path,
                                  array, reference_path,
+                                 driver_type=None,
                                  data_type=gdal.GDT_Float32,
                                  creating_options=['COMPRESS=LZW']):
     '''

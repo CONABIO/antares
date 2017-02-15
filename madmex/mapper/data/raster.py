@@ -169,6 +169,11 @@ class Data(BaseData):
         else:
             LOGGER.info("Image %s does not provide metadata_file" % self.data_file)
         self.data_array = None
+    def get_file(self):
+        '''
+        This method returns the file that this raster represents.
+        '''
+        return self.image_path
     def _open_file(self, mode=gdalconst.GA_ReadOnly):
         '''
         Open the raster image file with gdal.

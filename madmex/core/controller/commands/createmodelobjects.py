@@ -24,10 +24,12 @@ from madmex.configuration import SETTINGS
 from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands.createmodel import SUPERVISED_PACKAGE
 from madmex.mapper.bundle import rapideye
-from madmex.mapper.data import vector, raster, vector_to_raster
+from madmex.mapper.data import vector, raster, vector_to_raster,\
+    raster_to_vector_mask
 from madmex.mapper.data.harmonized import harmonize_images
 from madmex.util import create_file_name, \
     create_directory_path, get_base_name, json_to_file
+from madmex.mapper.data._gdal import create_raster_from_reference
 
 
 LOGGER = logging.getLogger(__name__)
@@ -78,6 +80,9 @@ def world_to_pixel(geotransform, x, y):
     return (pixel, line)
 def get_dataframe_from_raster(features_raster, training_raster_warped):
     harmonize = harmonize_images([training_raster_warped, features_raster])
+    
+    if harmonize['x_range'] < 0 or harmonize['y_range'] < 0:
+        return None
     LOGGER.info(harmonize)        
     training_array = training_raster_warped.read(int(harmonize['x_offset'][0]), int(harmonize['y_offset'][0]), int(harmonize['x_range']), int(harmonize['y_range']))
     features_array = features_raster.read(int(harmonize['x_offset'][1]), int(harmonize['y_offset'][1]), int(harmonize['x_range']), int(harmonize['y_range']))
@@ -133,6 +138,7 @@ class Command(BaseCommand):
         start_time_all = time.time()
         shape_name = options['shape'][0]
         raster_paths = options['path']
+        destination = options['dest']
         models = options['model']
         dataframe_features = None
         temporary_directory = getattr(SETTINGS, 'TEMPORARY')
@@ -144,21 +150,49 @@ class Command(BaseCommand):
         categories_file = create_file_name(temporary_directory, 'categories.json')
         training_warped_path = create_file_name(temporary_directory, 'training_warped_raster.tif')
         pixel_size = 5
-        training_raster = vector_to_raster(training_shape, training_path, pixel_size)
-        training_raster_warped = training_raster.reproject(training_warped_path, epgs=32614)
+        #training_raster = vector_to_raster(training_shape, training_path, pixel_size)
+        #training_raster_warped = training_raster.reproject(training_warped_path, epgs=32613)
         
+        
+        dem_file = getattr(SETTINGS, 'DEM')
+        
+        dem_raster = raster.Data(dem_file)
+        print dem_raster.get_spatial_reference()
+        print 'reproyecting raster'
+        #dem_raster_warped = dem_raster.reproject(training_warped_path, epgs=32614)
+        
+        training_raster_warped = raster.Data(training_path)
+        
+        aspect_file = getattr(SETTINGS, 'ASPECT')
+        slope_file = getattr(SETTINGS, 'SLOPE')
+        
+        
+        
+        
+        print dem_file, aspect_file, slope_file
          
         
         for raster_path in raster_paths:
             scene_bundle = rapideye.Bundle(raster_path)
+            
+            raster_mask = scene_bundle.get_raster()
+
+            #example_path = create_file_name(temporary_directory, 'mask')
+            #create_directory_path(example_path)
+            #raster_to_vector_mask(raster_mask, example_path)
+            
+            
+            
+            
             basename = get_base_name(scene_bundle.get_raster_file())
             all_file = create_file_name(temporary_directory, '%s_all_features.tif' % basename)
             features_raster = scene_bundle.get_feature_array(all_file)
-        
-            if dataframe_features is not None:
-                dataframe_features = pandas.concat([dataframe_features, get_dataframe_from_raster(features_raster, training_raster_warped)])
-            else:
-                dataframe_features = get_dataframe_from_raster(features_raster, training_raster_warped)
+            new_df = get_dataframe_from_raster(features_raster, training_raster_warped)
+            if new_df is not None:
+                if dataframe_features is not None:                               
+                    dataframe_features = pandas.concat([dataframe_features, get_dataframe_from_raster(features_raster, training_raster_warped)])
+                else:
+                    dataframe_features = get_dataframe_from_raster(features_raster, training_raster_warped)
         
         features_size = len(list(dataframe_features))
         

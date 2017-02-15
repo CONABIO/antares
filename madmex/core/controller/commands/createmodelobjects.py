@@ -165,8 +165,7 @@ class Command(BaseCommand):
         
         aspect_file = getattr(SETTINGS, 'ASPECT')
         slope_file = getattr(SETTINGS, 'SLOPE')
-        
-        
+
         
         
         print dem_file, aspect_file, slope_file

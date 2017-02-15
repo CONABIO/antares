@@ -135,7 +135,6 @@ class Data(BaseData):
         '''
         layer = self.get_layer()
         spatial_reference = layer.GetSpatialRef()
-        print spatial_reference
         return spatial_reference
     
     def split(self, output_directory, column=0):

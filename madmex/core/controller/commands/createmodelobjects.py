@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 import json
 import logging
 import os
+import time
 import traceback
 
 import gdal
@@ -24,12 +25,12 @@ from madmex.configuration import SETTINGS
 from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands.createmodel import SUPERVISED_PACKAGE
 from madmex.mapper.bundle import rapideye
-from madmex.mapper.data import vector, raster, vector_to_raster,\
+from madmex.mapper.data import vector, raster, vector_to_raster, \
     raster_to_vector_mask
+from madmex.mapper.data._gdal import create_raster_from_reference
 from madmex.mapper.data.harmonized import harmonize_images
 from madmex.util import create_file_name, \
-    create_directory_path, get_base_name, json_to_file
-from madmex.mapper.data._gdal import create_raster_from_reference
+    create_directory_path, get_base_name, json_to_file, is_file
 
 
 LOGGER = logging.getLogger(__name__)
@@ -133,7 +134,6 @@ class Command(BaseCommand):
         In this example command, the values that come from the user input are
         added up and the result is printed in the screen.
         '''
-        import time
         target_tag = 'level_3'
         start_time_all = time.time()
         shape_name = options['shape'][0]
@@ -150,9 +150,12 @@ class Command(BaseCommand):
         categories_file = create_file_name(temporary_directory, 'categories.json')
         training_warped_path = create_file_name(temporary_directory, 'training_warped_raster.tif')
         pixel_size = 5
-        #training_raster = vector_to_raster(training_shape, training_path, pixel_size)
-        #training_raster_warped = training_raster.reproject(training_warped_path, epgs=32613)
         
+        if not is_file(training_warped_path):
+            training_raster = vector_to_raster(training_shape, training_path, pixel_size, ['ATTRIBUTE=OBJECTID','COMPRESS=LZW'])
+            training_raster_warped = training_raster.reproject(training_warped_path, epgs=32613)
+        else:
+            training_raster_warped = raster.Data(training_warped_path)
         
         dem_file = getattr(SETTINGS, 'DEM')
         
@@ -161,7 +164,7 @@ class Command(BaseCommand):
         print 'reproyecting raster'
         #dem_raster_warped = dem_raster.reproject(training_warped_path, epgs=32614)
         
-        training_raster_warped = raster.Data(training_path)
+        #training_raster_warped = raster.Data(training_path)
         
         aspect_file = getattr(SETTINGS, 'ASPECT')
         slope_file = getattr(SETTINGS, 'SLOPE')
@@ -185,7 +188,11 @@ class Command(BaseCommand):
             
             basename = get_base_name(scene_bundle.get_raster_file())
             all_file = create_file_name(temporary_directory, '%s_all_features.tif' % basename)
-            features_raster = scene_bundle.get_feature_array(all_file)
+            # Do not recalculate if the file is already there.
+            if is_file(all_file):
+                features_raster =raster.Data(all_file)
+            else:
+                features_raster = scene_bundle.get_feature_array(all_file)
             new_df = get_dataframe_from_raster(features_raster, training_raster_warped)
             if new_df is not None:
                 if dataframe_features is not None:                               
@@ -224,5 +231,3 @@ class Command(BaseCommand):
             print numpy.unique(y_train)
             train_model(X_train, X_test, y_train, y_test, models_directory, model_name)
             print "--- %s seconds training %s model---" % ((time.time() - start_time), model_name)
-
-        print("--- %s seconds ---" % (time.time() - start_time_all))

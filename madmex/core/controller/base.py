@@ -190,8 +190,9 @@ class BaseCommand(object):
         This method will implement necessary system checks in case they are needed.
         '''
         try:
+            LOGGER.debug('Command line arguments.', options)
             start_time = time.time()
-            self.handle(**options)
+            self.handle(options)
             LOGGER.info('Command execution is done in %s seconds.' % (time.time() - start_time))
         except Exception:
             traceback.print_exc()

@@ -134,30 +134,38 @@ class Command(BaseCommand):
             create_directory_path(directory_helper)
             categories_file = create_file_name(directory, 'categories.json')
             categories_dictionaty = {
-                    0: "ACUICOLA", 
-                    1: "AGRICULTURA DE HUMEDAD", 
-                    2: "AGRICULTURA DE RIEGO", 
-                    3: "AGRICULTURA DE TEMPORAL", 
-                    4: "AGUA", 
-                    5: "ASENTAMIENTOS HUMANOS", 
-                    6: "BOSQUE CULTIVADO", 
-                    7: "BOSQUE DE CEDRO", 
-                    8: "BOSQUE DE ENCINO", 
-                    9: "BOSQUE DE OYAMEL", 
-                    10: "BOSQUE DE PINO", 
-                    11: "BOSQUE INDUCIDO", 
-                    12: "DESPROVISTO DE VEGETACION", 
-                    13: "NUBES", 
-                    14: "PASTIZAL CULTIVADO", 
-                    15: "PASTIZAL INDUCIDO", 
-                    16: "PRADERA DE ALTA MONTANA", 
-                    17: "SIN VEGETACION APARENTE", 
-                    18: "VEGETACION HALOFILA HIDROFILA", 
-                    19: "ZONA URBANA"
+                    0: 'AGRICULTURA DE RIEGO',
+                    1: 'AGRICULTURA DE TEMPORAL',
+                    2: 'AGUA',
+                    3: 'AREAS QUEMADAS',
+                    4: 'ASENTAMIENTOS HUMANOS',
+                    5: 'BOSQUE CULTIVADO',
+                    6: 'BOSQUE DE ENCINO',
+                    7: 'BOSQUE DE ENCINO-PINO',
+                    8: 'BOSQUE DE GALERIA',
+                    9: 'BOSQUE DE OYAMEL',
+                    10: 'BOSQUE DE PINO',
+                    11: 'BOSQUE DE PINO-ENCINO',
+                    12: 'BOSQUE INDUCIDO',
+                    13: 'BOSQUE MESOFILO DE MONTANA',
+                    14: 'DESPROVISTO DE VEGETACION',
+                    15: 'INDEFINIDO',
+                    16: 'PASTIZAL CULTIVADO',
+                    17: 'PASTIZAL HALOFILO',
+                    18: 'PASTIZAL INDUCIDO',
+                    19: 'PRADERA DE ALTA MONTANA',
+                    20: 'SELVA BAJA CADUCIFOLIA',
+                    21: 'SELVA BAJA ESPINOSA CADUCIFOLIA',
+                    22: 'SELVA DE GALERIA',
+                    23: 'SIN VEGETACION APARENTE',
+                    24: 'SOMBRAS',
+                    25: 'ZONA URBANA'
                 }
             basename = get_base_name(scene_bundle.get_raster_file())
             all_file = create_file_name(directory_helper, '%s_all_features.tif' % basename)
-            scene_bundle.get_feature_array(all_file).read_data_file_as_array()
+            
+            if not is_file(all_file):
+                scene_bundle.get_feature_array(all_file)
             
             filename = get_base_name(all_file)
             

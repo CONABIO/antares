@@ -170,7 +170,6 @@ class Command(BaseCommand):
         slope_file = getattr(SETTINGS, 'SLOPE')
 
         
-        
         print dem_file, aspect_file, slope_file
          
         
@@ -184,7 +183,7 @@ class Command(BaseCommand):
             #raster_to_vector_mask(raster_mask, example_path)
             
             
-            
+            print scene_bundle.get_raster_file()
             
             basename = get_base_name(scene_bundle.get_raster_file())
             all_file = create_file_name(temporary_directory, '%s_all_features.tif' % basename)

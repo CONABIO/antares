@@ -66,7 +66,9 @@ def write_results(shape_path, output_name, classification, classification_dict):
     datasource = driver.CreateDataSource(output_name)
     outLayer = datasource.CreateLayer(str('classification'), spatial_reference, geom_type=ogr.wkbPolygon)        
     for model_name, data in classification.iteritems():
-        idField = ogr.FieldDefn(str(model_name), ogr.OFTString)
+        idField = ogr.FieldDefn(str(model_name.upper()), ogr.OFTString)
+        outLayer.CreateField(idField)
+        idField = ogr.FieldDefn(str('%sLABEL', model_name.upper), ogr.OFTInteger)
         outLayer.CreateField(idField)
     while in_feature:
         
@@ -77,7 +79,8 @@ def write_results(shape_path, output_name, classification, classification_dict):
         out_feature.SetGeometry(geometry)
     
         for model_name, data in classification.iteritems():
-            out_feature.SetField(str(model_name), str(classification_dict[data[counter]]))
+            out_feature.SetField(str(model_name.upper()), str(classification_dict[data[counter]]))
+            out_feature.SetField(str('%sLABEL', model_name.upper), data[counter])
   
         outLayer.CreateFeature(out_feature)
         out_feature.Destroy()

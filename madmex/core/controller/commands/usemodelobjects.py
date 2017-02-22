@@ -52,11 +52,13 @@ def read_data_table(shape_path):
     result = numpy.array(table)    
     return result
 
-def write_results(shape_path, output_name, classification, classification_dict):
+def write_results(shape_path, output_name, classification, classification_dict, epsg=32613):
     driver = ogr.GetDriverByName(str('ESRI Shapefile'))
     shape = driver.Open(shape_path, 0)
     layer = shape.GetLayer()
-    spatial_reference = layer.GetSpatialRef()
+    #spatial_reference = layer.GetSpatialRef()
+    spatial_reference = ogr.osr.SpatialReference()
+    spatial_reference.ImportFromEPSG(epsg)
     in_feature = layer.GetNextFeature()
 
     counter=0
@@ -68,7 +70,7 @@ def write_results(shape_path, output_name, classification, classification_dict):
     for model_name, data in classification.iteritems():
         idField = ogr.FieldDefn(str(model_name.upper()), ogr.OFTString)
         outLayer.CreateField(idField)
-        idField = ogr.FieldDefn(str('%sLABEL', model_name.upper), ogr.OFTInteger)
+        idField = ogr.FieldDefn(str('%sLABEL' % model_name.upper()), ogr.OFTInteger)
         outLayer.CreateField(idField)
     while in_feature:
         
@@ -80,7 +82,7 @@ def write_results(shape_path, output_name, classification, classification_dict):
     
         for model_name, data in classification.iteritems():
             out_feature.SetField(str(model_name.upper()), str(classification_dict[data[counter]]))
-            out_feature.SetField(str('%sLABEL', model_name.upper), data[counter])
+            out_feature.SetField(str('%sLABEL' % model_name.upper()), int(data[counter]))
   
         outLayer.CreateFeature(out_feature)
         out_feature.Destroy()

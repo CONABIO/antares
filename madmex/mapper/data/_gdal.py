@@ -10,7 +10,7 @@ import logging
 from subprocess import call
 
 import gdal
-from osgeo._gdalconst import *
+from gdalconst import *
 import osr
 
 from madmex.remote.dispatcher import LocalProcessLauncher

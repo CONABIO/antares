@@ -16,6 +16,8 @@ from madmex.mapper.data._gdal import create_raster_from_reference
 from madmex.util import check_if_file_exists, remove_file
 
 
+#THIS IS A TEST
+
 class Command(BaseCommand):
     '''
     classdocs

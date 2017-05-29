@@ -1,6 +1,8 @@
 '''
 madmex.data
 '''
+import logging
+
 import gdal
 import numpy
 import ogr
@@ -10,22 +12,25 @@ from madmex.mapper.data._gdal import create_raster_from_reference
 from madmex.util import create_file_name
 
 
+LOGGER = logging.getLogger(__name__)
+
 def raster_to_vector():
     pass
 
-def vector_to_raster(vector, output_path, pixel_size, options):
+def vector_to_raster(vector, output_path, x_size, y_size, options, data_type=gdal.GDT_Int32):
     '''
     This method creates a raster object by burning the values of this
     shape file into a raster with the given resolution.
     '''
     source_layer = vector.get_layer()
     x_min, x_max, y_min, y_max = source_layer.GetExtent()
-    x_resolution = int((x_max - x_min) / pixel_size)
-    y_resolution = int((y_max - y_min) / pixel_size)        
-    target_ds = gdal.GetDriverByName(str('GTiff')).Create(output_path, x_resolution, y_resolution, 1, gdal.GDT_Int32)
+    x_resolution = int((x_max - x_min) / x_size)
+    y_resolution = int((y_max - y_min) / -y_size)  
+    LOGGER.debug(x_min, x_max, y_min, y_max)
+    target_ds = gdal.GetDriverByName(str('GTiff')).Create(output_path, x_resolution, y_resolution, 1, data_type)
     spatial_reference = vector.get_spatial_reference()         
     target_ds.SetProjection(spatial_reference.ExportToWkt())
-    target_ds.SetGeoTransform((x_min, pixel_size, 0, y_max, 0, -pixel_size))
+    target_ds.SetGeoTransform((x_min, x_size, 0, y_max, 0, -y_size))
     gdal.RasterizeLayer(target_ds, [1], source_layer, options=options)
     target_ds.FlushCache()
     return raster.Data(output_path)

@@ -178,6 +178,67 @@ class Data(BaseData):
             in_feature = layer.GetNextFeature()
         self.close()
         return [Data(filename) for filename in shape_files]
+    def copy_with_dictionary(self, output_directory, dictionary):
+        '''
+        This method will take a input shape and iterate over its features, creating
+        a new shape file with each one of them. It copies all the fields and the
+        same spatial reference from the original file. The created files are saved
+        in the destination directory using the number of the field given. 
+        '''
+        layer = self.get_layer()
+        layer_name = layer.GetName()
+        spatial_reference = layer.GetSpatialRef()
+        in_feature = layer.GetNextFeature()
+        layer_definition = layer.GetLayerDefn()
+        field_definition = layer_definition.GetFieldDefn(0)
+        column_name = field_definition.GetName() 
+        shape_files = []
+        
+        name = get_base_name(self.image_path)
+        
+        
+        create_directory_path(output_directory)
+        
+        output_name = create_file_name(output_directory, '%s_mapped.shp' % name)
+        
+        
+        in_layer_definition = layer.GetLayerDefn()
+        
+        data_source = self.driver.CreateDataSource(output_name)
+        out_layer = data_source.CreateLayer(layer_name, spatial_reference, geom_type=ogr.wkbPolygon)
+            
+        
+        while in_feature:            
+            in_feature_name = in_feature.GetField(column_name)
+            
+            shape_files.append(output_name)
+            if is_file(output_name):
+                self.driver.DeleteDataSource(output_name)
+            for i in range(0, in_layer_definition.GetFieldCount()):
+                fieldDefn = in_layer_definition.GetFieldDefn(i)
+                out_layer.CreateField(fieldDefn)
+            for i in range(0, in_layer_definition.GetFieldCount()):
+                fieldDefn = in_layer_definition.GetFieldDefn(i)
+                idField = ogr.FieldDefn(str("%sINTEGER" % fieldDefn.GetNameRef()), ogr.OFTInteger)
+                out_layer.CreateField(idField)
+
+                
+            outLayerDefn = out_layer.GetLayerDefn()
+            geometry = in_feature.GetGeometryRef()
+            out_feature = ogr.Feature(outLayerDefn)
+            out_feature.SetGeometry(geometry)
+            for i in range(0, in_layer_definition.GetFieldCount()):
+                out_feature.SetField(outLayerDefn.GetFieldDefn(i).GetNameRef(), in_feature.GetField(i))
+            for i in range(0, in_layer_definition.GetFieldCount()):
+                
+                out_feature.SetField(str("%sINTEGER" % in_layer_definition.GetFieldDefn(i).GetNameRef()), str(dictionary[in_feature.GetField(i)]))
+            out_layer.CreateFeature(out_feature)
+            
+            out_feature = None
+            in_feature = None
+            in_feature = layer.GetNextFeature()
+        self.close()
+        return [Data(filename) for filename in shape_files]
     def to_dataframe(self):
         layer = self.get_layer()
         layer_definition = layer.GetLayerDefn()

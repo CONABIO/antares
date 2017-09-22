@@ -11,5 +11,6 @@ from madmex.core.controller import execute
 __version__ = "2.1"
 
 if __name__ == '__main__':
+    print 'hello'
     execute()
     

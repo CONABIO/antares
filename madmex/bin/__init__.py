@@ -1,4 +1,0 @@
-'''
-madmex.bin
-Bin package.
-'''

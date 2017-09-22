@@ -118,7 +118,8 @@ def density_contour(xdata, ydata, nbins_x, nbins_y, labeltext=None, ax=None, pdf
     if labeltext != None:
         ax.set_title(labeltext)
     if len(levels) > 0:
-        contour_f = ax.contourf(X, Y, Z, colors=("#BCBCBC"), levels=levels, origin="lower", **contour_kwargs)
+        #contour_f = ax.contourf(X, Y, Z, colors=("#BCBCBC"), levels=levels, origin="lower", **contour_kwargs)
+        levels = levels.sort()
         contour = ax.contour(X, Y, Z, levels=levels, origin="lower", **contour_kwargs)   
         return contour
     else:

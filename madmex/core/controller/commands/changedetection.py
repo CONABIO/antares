@@ -80,11 +80,17 @@ class Command(BaseCommand):
             imad_class = imad.Transformation([image_a_data_array, image_b_data_array])
             imad_class.execute()
             
+            mad_result = imad_class.output
+            LOGGER.debug('mad_result.shape: %s', mad_result.shape)
+            mad_output_file = create_file_name(getattr(SETTINGS, 'TEST_FOLDER'), 'mad.tif')
+            create_raster_from_reference(mad_output_file, mad_result,image_a)
+           
+           
             maf_class = maf.Transformation(imad_class.output)
             
             maf_class.execute()
             
-            mad_result = imad_class.output
+            
             
             maf_result = maf_class.output
             
@@ -95,16 +101,15 @@ class Command(BaseCommand):
             class_result = recode_classes_grid(maf_result, thresholds)
             
 
-            LOGGER.debug('mad_result.shape: %s', mad_result.shape)
+           
             LOGGER.debug('maf_result.shape: %s', maf_result.shape)
             LOGGER.debug('class_result.shape: %s', class_result.shape)
 
-            mad_output_file = create_file_name(getattr(SETTINGS, 'TEST_FOLDER'), 'mad.tif')
             maf_outputfile = create_file_name(getattr(SETTINGS, 'TEST_FOLDER'), 'maf.tif')
             class_outputfile = create_file_name(getattr(SETTINGS, 'TEST_FOLDER'), 'class.tif') 
 
             
-            create_raster_from_reference(mad_output_file, mad_result,image_a)
+            
             create_raster_from_reference(maf_outputfile, maf_result, image_a)
             create_raster_from_reference(class_outputfile, class_result, image_a)
             

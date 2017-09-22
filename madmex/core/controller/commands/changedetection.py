@@ -14,7 +14,7 @@ from madmex.configuration import SETTINGS
 from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands import get_bundle_from_path
 from madmex.mapper.data import raster, harmonized
-from madmex.mapper.data._gdal import create_raster
+from madmex.mapper.data._gdal import create_raster, create_raster_from_reference
 from madmex.transformation import imad, maf
 from madmex.transformation.mafclassification import calc_threshold_grid, \
     recode_classes_grid
@@ -67,10 +67,10 @@ class Command(BaseCommand):
         # TODO : remove references to class harmonized
         harmonized_class = harmonized.Data(image_a_data_class, image_b_data_class)
         if harmonized_class:
-            data_shape_harmonized = harmonized_class.get_attribute(harmonized.DATA_SHAPE)
-            width, height, bands = data_shape_harmonized
-            geotransform_harmonized = harmonized_class.get_attribute(harmonized.GEOTRANSFORM)
-            projection_harmonized = harmonized_class.get_attribute(harmonized.PROJECTION)    
+            #data_shape_harmonized = harmonized_class.get_attribute(harmonized.DATA_SHAPE)
+            #width, height, bands = data_shape_harmonized
+            #geotransform_harmonized = harmonized_class.get_attribute(raster.GEOTRANSFORM)
+            #projection_harmonized = harmonized_class.get_attribute(harmonized.PROJECTION)    
             image_a_data_array, image_b_data_array = harmonized_class.harmonized_arrays(image_a_data_class, image_b_data_class)            
             
             
@@ -101,9 +101,9 @@ class Command(BaseCommand):
             class_outputfile = create_file_name(getattr(SETTINGS, 'TEST_FOLDER'), 'class.tif') 
 
             
-            create_raster(mad_output_file, mad_result, geotransform_harmonized, projection_harmonized)
-            create_raster(maf_outputfile, maf_result, geotransform_harmonized, projection_harmonized)
-            create_raster(class_outputfile, class_result, geotransform_harmonized, projection_harmonized)
+            create_raster_from_reference(mad_output_file, mad_result,image_a)
+            create_raster_from_reference(maf_outputfile, maf_result, image_a)
+            create_raster_from_reference(class_outputfile, class_result, image_a)
             
             
             

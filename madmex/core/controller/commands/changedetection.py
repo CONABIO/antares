@@ -9,6 +9,8 @@ from __future__ import unicode_literals
 import logging
 import os
 
+import numpy as np
+
 from madmex import _
 from madmex.configuration import SETTINGS
 from madmex.core.controller.base import BaseCommand
@@ -60,20 +62,29 @@ class Command(BaseCommand):
 
         LOGGER.info('Image %s will be compared against image %s. Output will be available' \
               ' at %s.', image_a, image_b, output_image)
+        
         gdal_format = "GTiff"
+         
         image_a_data_class = raster.Data(image_a, gdal_format)
         image_b_data_class = raster.Data(image_b, gdal_format)
 
         # TODO : remove references to class harmonized
         harmonized_class = harmonized.Data(image_a_data_class, image_b_data_class)
+        
+        #band1 = image_a_data_class.GetRasterBand(1)
+        #band1 = band1.ReadAsArray(0, 0,image_a_data_class.RasterXSize,image_a_data_class.RasterYSize).astype(float)
+        
+        #print(band1)
+ 
+        
         if harmonized_class:
             #data_shape_harmonized = harmonized_class.get_attribute(harmonized.DATA_SHAPE)
             #width, height, bands = data_shape_harmonized
             #geotransform_harmonized = harmonized_class.get_attribute(raster.GEOTRANSFORM)
             #projection_harmonized = harmonized_class.get_attribute(harmonized.PROJECTION)    
+            
             image_a_data_array, image_b_data_array = harmonized_class.harmonized_arrays(image_a_data_class, image_b_data_class)            
-            
-            
+               
             imad_class = imad.Transformation([image_a_data_array, image_b_data_array])
             imad_class.execute()
             

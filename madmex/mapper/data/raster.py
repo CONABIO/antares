@@ -148,6 +148,7 @@ class Data(BaseData):
         self.image_path = image_path
         self.metadata = {}
         self.gdal_format = gdal_format
+
         try:
             LOGGER.info("Extracting metadata of driver %s" % gdal_format)
             self.driver = gdal.GetDriverByName(str(gdal_format))

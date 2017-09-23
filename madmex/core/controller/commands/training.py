@@ -35,30 +35,30 @@ class Command(BaseCommand):
         
         print output
         arrays = {}
-        
-        import time
 
-        for path in paths:
-            start_time = time.time()
-            arrays[path] = open_handle(path)
-            print 'Opened %s' % path
-            print("--- %s seconds ---" % (time.time() - start_time))
-            
-        size = arrays[paths[0]].shape
+        image1 = open_handle(paths[0])
         
+        #import time
 
-        start_time = time.time()
-        result = numpy.full(size, NO_DATA)       
-        mask = numpy.equal(arrays[paths[0]],arrays[paths[1]])
+        #for path in paths:
+        #    start_time = time.time()
+        #    arrays[path] = open_handle(path)
+        #    print 'Opened %s' % path
+        #    print("--- %s seconds ---" % (time.time() - start_time))
+
+        size = image1.shape
+        
+        #start_time = time.time()     
         for p in range(2, len(paths)):
-            print 'Image %s ' % p
-            mask = numpy.logical_and(mask, numpy.equal(arrays[paths[0]],arrays[paths[p]]))
-        result[mask] = numpy.array(arrays[paths[0]])[mask]
-                    
-        for path in paths:
-            del arrays[path]
-        print("--- %s seconds ---" % (time.time() - start_time))
+            #print 'Image %s ' % p
+            image2 = open_handle(paths[p])
+            mask = numpy.logical_and(numpy.equal(image1,open_handle(paths[1])), numpy.equal(image1,image2))
+        image1[~mask]=NO_DATA
+
+        #for path in paths:
+            #del arrays[path]
+        #print("--- %s seconds ---" % (time.time() - start_time))
         
-        start_time = time.time()
-        create_raster_from_reference(output, result, paths[0], data_type=gdal.GDT_Byte)
-        print("--- %s seconds ---" % (time.time() - start_time))            
+        #start_time = time.time()
+        create_raster_from_reference(output, image1y, paths[0], data_type=gdal.GDT_Byte)
+        #print("--- %s seconds ---" % (time.time() - start_time))            

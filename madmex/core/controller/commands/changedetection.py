@@ -55,10 +55,7 @@ class Command(BaseCommand):
         correlation factor on them and work with the resulting bands.
         '''
         image_a = options['ima'][0]
-        print image_a
-        
         image_b = options['imb'][0]
-        print image_b
         output_image = options['output'][0]
 
         LOGGER.info('Image %s will be compared against image %s. Output will be available' \

@@ -7,6 +7,7 @@ Created on 21/08/2015
 from __future__ import unicode_literals
 
 import logging
+import traceback
 
 import numpy
 
@@ -279,9 +280,11 @@ class Data(BaseData):
         y_range = self.get_attribute(YRANGE)
         try:
             image1_data_array = image1_data_class.read_data_file_as_array()[:, int(yoffset[0]):int(yoffset[0] + y_range), int(xoffset[0]):int(xoffset[0] + x_range)]
-            image2_data_array = image2_data_class.read_data_file_as_array()[:, int(yoffset[1]):int(yoffset[1] + y_range), int(xoffset[1]):int(xoffset[1] + x_range)]
+            image2_data_array = image2_data_class.read_data_file_as_array()
+            image2_data_array = image2_data_array[:, int(yoffset[1]):int(yoffset[1] + y_range), int(xoffset[1]):int(xoffset[1] + x_range)]
             return (image1_data_array, image2_data_array) 
         except Exception:
+            traceback.print_exc()
             LOGGER.error('Process of harmonize arrays failed, one image is %s', image1_data_class.image_path)
             print('Process of harmonize arrays failed, one image is %s', image1_data_class.image_path)
     def get_attribute(self, path_to_attribute):

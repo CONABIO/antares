@@ -33,6 +33,7 @@ def set_settings_from_environment(settings, variables):
     '''
     for variable in variables:
         setattr(settings, variable.upper(), os.environ.get(variable.upper()))
+
 class Settings(object):
     '''
     An instance of this class will read a configuration file and will create
@@ -62,7 +63,7 @@ class Settings(object):
         parser.read(settings_files)
 
         set_settings_from_configuration(self, parser)
-        
+
         dotenv_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)),
             '.env')
@@ -72,6 +73,7 @@ class Settings(object):
             set_settings_from_environment(self, getattr(self, 'ENVIRON').split(','))
         else:
             LOGGER.warning('There is no .env file in the configuration folder.')
+
     def reload(self):
         '''
         This public method will call the load method when a new file has been

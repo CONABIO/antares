@@ -9,8 +9,6 @@ from __future__ import unicode_literals
 import logging
 import os
 
-import numpy as np
-
 from madmex import _
 from madmex.configuration import SETTINGS
 from madmex.core.controller.base import BaseCommand
@@ -20,7 +18,8 @@ from madmex.mapper.data._gdal import create_raster, create_raster_from_reference
 from madmex.transformation import imad, maf
 from madmex.transformation.mafclassification import calc_threshold_grid, \
     recode_classes_grid
-from madmex.util import create_file_name
+from madmex.util import create_file_name, create_directory_path
+import numpy as np
 
 
 LOGGER = logging.getLogger(__name__)
@@ -90,6 +89,9 @@ class Command(BaseCommand):
             
             mad_result = imad_class.output
             LOGGER.debug('mad_result.shape: %s', mad_result.shape)
+            
+            create_directory_path(getattr(SETTINGS, 'TEST_FOLDER'))
+            
             mad_output_file = create_file_name(getattr(SETTINGS, 'TEST_FOLDER'), 'mad.tif')
             create_raster_from_reference(mad_output_file, mad_result,image_a)
            

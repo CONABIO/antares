@@ -8,9 +8,15 @@ from __future__ import unicode_literals
 from ConfigParser import MissingSectionHeaderError
 import ConfigParser
 import importlib
+import logging
 import os
+from os.path import join, dirname
+
+from dotenv.main import load_dotenv
+
 
 ENVIRONMENT_VARIABLE = "MADMEX_SETTINGS_MODULE"
+LOGGER = logging.getLogger(__name__)
 
 def set_settings_from_configuration(settings, parser):
     '''
@@ -20,7 +26,13 @@ def set_settings_from_configuration(settings, parser):
     for section in parser.sections():
         for option in parser.options(section):
             setattr(settings, option.upper(), parser.get(section, option))
-
+def set_settings_from_environment(settings, variables):
+    '''
+    Reads sensitive information from the environment so passwords are not uploaded into
+    the repository.
+    '''
+    for variable in variables:
+        setattr(settings, variable.upper(), os.environ.get(variable.upper()))
 class Settings(object):
     '''
     An instance of this class will read a configuration file and will create
@@ -50,6 +62,16 @@ class Settings(object):
         parser.read(settings_files)
 
         set_settings_from_configuration(self, parser)
+        
+        dotenv_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            '.env')
+
+        if os.path.isfile(dotenv_path):
+            load_dotenv(dotenv_path)
+            set_settings_from_environment(self, getattr(self, 'ENVIRON').split(','))
+        else:
+            LOGGER.warning('There is no .env file in the configuration folder.')
     def reload(self):
         '''
         This public method will call the load method when a new file has been

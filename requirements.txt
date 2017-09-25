@@ -6,6 +6,7 @@ requests==2.7.0
 scipy==0.16.0
 SQLAlchemy==1.0.4
 pyephem==3.7.5.3
+python-dotenv==0.7.1
 paramiko==1.15.2
 scikit-image==0.11.3
 numexpr==2.5.2

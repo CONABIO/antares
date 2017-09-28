@@ -488,19 +488,32 @@ class RapidEyeFootPrintsMexicoOld(BASE):
     code = __table__.c.code
     mapgrid = __table__.c.mapgrid
     mapgrid2 = __table__.c.mapgrid2
-
-
-
+    
+class Catalog(BASE):
+    'Quick and dirty table to ingest catalog information.'
+    __tablename__ = 'catalog'
+    pk_id = Column(Integer, primary_key=True)
+    scene_id = Column(String)
+    landsat_product_id = Column(String)
+    sensor = Column(String)
+    acquisition_date = Column(DateTime())
+    path = Column(Integer)
+    row = Column(Integer)
+    cloud_full = Column(Float)
+    day_night = Column(String)
+    image_quality = Column(Integer)
+    ground_control_points_model = Column(String)
+    
 def create_database():
     '''
     #This method creates the database model in the database engine.
     '''
-    #BASE.metadata.create_all(ENGINE)
+    BASE.metadata.create_all(ENGINE)
 def delete_database():
     '''
     #This method deletes the database model in the database engine.
     '''
-    #BASE.metadata.drop_all(ENGINE)
+    BASE.metadata.drop_all(ENGINE)
 
 # a => \u00E1
 # e => \u00E9
@@ -519,12 +532,13 @@ def delete_database():
 
 
 if __name__ == '__main__':
-    CREATE = 0
+    CREATE = 1
+    print getattr(SETTINGS, 'ANTARES_DATABASE')
     if CREATE:
         # path_query = getattr(SETTINGS, 'RAPIDEYE_FOOTPRINTS_MEXICO_OLD')
         # create_vector_tables(path_query)
         delete_database()
-        print 'database deleted'
+        #print 'database deleted'
         print 'vector tables created'
         create_database()
         print 'database created'

@@ -79,6 +79,13 @@ def persist_bundle(bundle, keep=False):
         raise
     finally:
         session.close()
+def persist_catalog(scene):
+    session = SESSION_MAKER()
+    action = database.InsertAction(
+                        scene,
+                        session)
+    action.act()
+    
 def persist_host(host):
     session = SESSION_MAKER()
     try:

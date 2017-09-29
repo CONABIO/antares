@@ -503,6 +503,7 @@ class Catalog(BASE):
     day_night = Column(String)
     image_quality = Column(Integer)
     ground_control_points_model = Column(String)
+    browse_url = Column(String)
     
 def create_database():
     '''

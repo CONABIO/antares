@@ -53,6 +53,26 @@ LS8 = {'browse_url':1,
 
 INDEXES = {'TM':TM,'ETM':ETM,'LS8':LS8}
 
+def populate_catalog(collection, satellite):
+    index = INDEXES[satellite]        
+        
+    with open(collection, 'rb') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            if '%s,%s' % (row[7], row[8]) in SCENES:
+                scene = Catalog(scene_id = row[index['scene_id']],
+                                landsat_product_id = row[index['landsat_product_id']],
+                                sensor = row[index['sensor']],
+                                acquisition_date = row[index['acquisition_date']],
+                                path = int(row[index['path']]),
+                                row = int(row[index['row']]),
+                                cloud_full = float(row[index['cloud_full']]),
+                                day_night = row[index['day_night']],
+                                image_quality = int(row[index['image_quality']]),
+                                ground_control_points_model = row[index['ground_control_points_model']],
+                                browse_url = row[index['browse_url']])
+                persist_catalog(scene)
+
 class Command(BaseCommand):
     '''
     classdocs
@@ -69,32 +89,9 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         '''
-        This comand is used to query the catalog database.
+        This command is used to query the catalog database.
         '''
         collection = options['file'][0]
         satellite = options['satellite'][0]
-        index = INDEXES[satellite]        
-        
-        with open(collection, 'rb') as f:
-            reader = csv.reader(f)
-            mexico = 0
-            rest = 0
-            for row in reader:
-                if '%s,%s' % (row[7], row[8]) in SCENES:
-                    #print row
-                    scene = Catalog(scene_id = row[index['scene_id']],
-                                    landsat_product_id = row[index['landsat_product_id']],
-                                    sensor = row[index['sensor']],
-                                    acquisition_date = row[index['acquisition_date']],
-                                    path = int(row[index['path']]),
-                                    row = int(row[index['row']]),
-                                    cloud_full = float(row[index['cloud_full']]),
-                                    day_night = row[index['day_night']],
-                                    image_quality = int(row[index['image_quality']]),
-                                    ground_control_points_model = row[index['ground_control_points_model']],
-                                    browse_url = row[index['browse_url']])
-                    persist_catalog(scene)
-                    mexico += 1
-                else:
-                    rest += 1
-        print mexico, rest
+
+        print collection, satellite

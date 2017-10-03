@@ -1,13 +1,24 @@
+#! /usr/bin/env python
+# -*- coding: iso-8859-1 -*-
 '''
 Created on Sep 28, 2017
 
 @author: agutierrez
 '''
-from __future__ import unicode_literals
 
 import csv
 import logging
+import math
+import os
+import re
+import ssl
+import sys
+import time
+import urllib
+from urllib2 import HTTPError, URLError
+import urllib2
 
+from madmex.configuration import SETTINGS
 from madmex.core.controller.base import BaseCommand
 from madmex.persistence.database.connection import Catalog
 from madmex.persistence.driver import persist_catalog
@@ -73,6 +84,33 @@ def populate_catalog(collection, satellite):
                                 browse_url = row[index['browse_url']])
                 persist_catalog(scene)
 
+def sizeof_fmt(num):
+    for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+        if num < 1024.0:
+            return "%3.1f %s" % (num, x)
+        num /= 1024.0
+
+def downloadChunks(url,rep,nom_fic):
+    req = urllib2.urlopen(url)
+    downloaded = 0
+    CHUNK = 1024 * 1024 *8
+    total_size = int(req.info().getheader('Content-Length').strip())
+    total_size_fmt = sizeof_fmt(total_size)
+    with open(rep+'/'+nom_fic, 'wb') as fp:
+        start = time.clock()
+        print('url  : ', url)
+        print('file : ', nom_fic)
+
+        print('Downloading {0} ({1}):'.format(nom_fic, total_size_fmt))
+        while True:
+            chunk = req.read(CHUNK)
+            downloaded += len(chunk)
+            done = int(50 * downloaded / total_size)
+            sys.stdout.write('\r[{1}{2}]{0:3.0f}% {3}ps'.format(math.floor((float(downloaded)/ total_size) * 100),'=' * done,' ' * (50 - done),sizeof_fmt((downloaded // (time.clock() - start)) / 8)))
+            sys.stdout.flush()
+            if not chunk: break
+            fp.write(chunk)
+
 class Command(BaseCommand):
     '''
     classdocs
@@ -94,4 +132,41 @@ class Command(BaseCommand):
         collection = options['file'][0]
         satellite = options['satellite'][0]
 
+        
+        cookies = urllib2.HTTPCookieProcessor()
+        opener = urllib2.build_opener(cookies)
+        urllib2.install_opener(opener)
+        data=urllib2.urlopen("https://ers.cr.usgs.gov").read()
+        
+        
+        
+        m = re.search(r'<input .*?name="csrf_token".*?value="(.*?)"', data)
+        if m:
+            token = m.group(1)
+        else:
+            print "Error : CSRF_Token not found"
+            sys.exit(-3)
+        print token
+        
+        print getattr(SETTINGS, 'USGS_USER')
+        print getattr(SETTINGS, 'USGS_PASSWORD')
+        
+        usgs = {'account':getattr(SETTINGS, 'USGS_USER'), 'passwd':getattr(SETTINGS, 'USGS_PASSWORD')}
+        params = urllib.urlencode(dict(username=usgs['account'], password=usgs['passwd'], csrf_token=token))
+        request = urllib2.Request("https://ers.cr.usgs.gov/login", params, headers={'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'})
+        print request
+        f = urllib2.urlopen(request)
+
+        data = f.read()
+        
+        print data
+        f.close()
+        
+        url = 'https://earthexplorer.usgs.gov/download/12864/LC81552262017271LGN00/STANDARD/EE'
+        #dlfile(my_url)
+        
+        
+        downloadChunks(url, '/code','LC81552262017271LGN00.tgz')
+        
+        
         print collection, satellite

@@ -9,13 +9,22 @@ This package contains several useful classes and methods.
 from __future__ import unicode_literals
 
 import json
+import math
 import os
 from os.path import isdir
+import re
 from shutil import rmtree
 import shutil
+import sys
+import time
 import unicodedata
+import urllib
+import urllib2
 
 from psycopg2._psycopg import AsIs
+
+from madmex import LOGGER
+from madmex.configuration import SETTINGS
 
 
 def get_last_package_from_name(package):
@@ -189,6 +198,63 @@ def json_from_file(filename):
     '''
     print filename
     return json.loads(filename)
+
+def size_of_fmt(num):
+    '''
+    Lookup table that is used as helper for download chunks.
+    '''
+    for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+        if num < 1024.0:
+            return "%3.1f %s" % (num, x)
+        num /= 1024.0
+def download_chunks(url, rep, nom_fic):
+    '''
+    This method downloads a file in chunks.
+    '''
+    req = urllib2.urlopen(url)
+    downloaded = 0
+    CHUNK = 1024 * 1024 *8
+    total_size = int(req.info().getheader('Content-Length').strip())
+    total_size_fmt = size_of_fmt(total_size)
+    with open(rep+'/'+nom_fic, 'wb') as fp:
+        start = time.clock()
+        LOGGER.info('Downloading %s %s:' % (nom_fic, total_size_fmt))
+        while True:
+            chunk = req.read(CHUNK)
+            downloaded += len(chunk)
+            done = int(50 * downloaded / total_size)
+            sys.stdout.write('\r[{1}{2}]{0:3.0f}% {3}ps'.format(math.floor((float(downloaded)/ total_size) * 100),'=' * done,' ' * (50 - done),size_of_fmt((downloaded // (time.clock() - start)) / 8)))
+            sys.stdout.flush()
+            if not chunk: break
+            fp.write(chunk)
+
+def download_landsat_scene(url, directory, filename):
+    '''
+    This method downloads a scene directly from usgs. In order to do so, it
+    pretends to be a browser to build a request that is accepted by the server.
+    We added the headers so we don't get banned when the server detects that we
+    are doing lots of requests. This idea is based on the landsat downloader:
+    https://github.com/olivierhagolle/LANDSAT-Download
+    '''
+    cookies = urllib2.HTTPCookieProcessor()
+    opener = urllib2.build_opener(cookies)
+    urllib2.install_opener(opener)
+    data=urllib2.urlopen("https://ers.cr.usgs.gov").read()
+    token_group = re.search(r'<input .*?name="csrf_token".*?value="(.*?)"', data)
+    if token_group:
+        token = token_group.group(1)
+    else:
+        LOGGER.error('The cross site request forgery token was not found.')
+        sys.exit(1)
+    usgs = {'account':getattr(SETTINGS, 'USGS_USER'), 'passwd':getattr(SETTINGS, 'USGS_PASSWORD')}
+    params = urllib.urlencode(dict(username=usgs['account'], password=usgs['passwd'], csrf_token=token))
+    request = urllib2.Request("https://ers.cr.usgs.gov/login", params, headers={'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'})
+    f = urllib2.urlopen(request)
+    data = f.read()
+    f.close()    
+    download_chunks(url, directory, filename)
+
+
 
 if __name__ == '__main__':
     print get_base_name('/LUSTRE/MADMEX/eodata/rapideye/1447720/2013/2013-02-11/l3a/myawesomefile.ext.json')

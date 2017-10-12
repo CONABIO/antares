@@ -48,5 +48,6 @@ class Command(BaseCommand):
             output_file = output_dir + image
             create_raster_tiff_from_reference(extents_dictionary, output_file, data_array_resized, options_to_create)   
             subset_counter+=1
+
         #test()
 

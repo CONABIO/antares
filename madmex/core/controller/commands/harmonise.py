@@ -45,7 +45,7 @@ class Command(BaseCommand):
             options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.DATA_SHAPE, (int(extents_dictionary['x_range']), int(extents_dictionary['y_range']), 1), {})
             options_to_create = new_options_for_create_raster_from_reference(extents_dictionary, raster.GDAL_CREATE_OPTIONS, ['COMPRESS=LZW'], {})            
             data_array_resized = get_image_subset(yoffset, xoffset, y_range, x_range, image_class.read_data_file_as_array())
-            output_file = output_dir + image
+            output_file = output_dir + image + 'harmonise.tif'
             create_raster_tiff_from_reference(extents_dictionary, output_file, data_array_resized, options_to_create)   
             subset_counter+=1
 

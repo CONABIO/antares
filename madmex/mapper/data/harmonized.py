@@ -166,7 +166,7 @@ def get_image_subset(x, y, width, height, data):
     '''
     if len(data.shape) != 2:
         raise ValueError('Invalid data dimension, data should be 2 dimensional.')
-    subset = data[x:x + width, y:y + height]
+    subset = data[int(x):int(x + width), int(y):int(y + height)]
     return subset
 def get_multiband_image_subset(x, y, width, height, data):
     '''
@@ -219,6 +219,7 @@ def harmonize_images(images):#, projection, shape):
             accepted_images.append(image)
         else:
             LOGGER.warn('Image not in the specified projection, will be ignored.')
+            LOGGER.warn('Image %s projection: %s' % (image.image_path,image.get_attribute(raster.PROJECTION)))
     if accepted_images:
         LOGGER.info('Number of accepted images: %d' % len(accepted_images))
         put_in_dictionary(extents, raster.PROJECTION, projection)

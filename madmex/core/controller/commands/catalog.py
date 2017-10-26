@@ -10,9 +10,12 @@ from __future__ import unicode_literals
 import csv
 import logging
 
+from madmex.configuration import SETTINGS
 from madmex.core.controller.base import BaseCommand
 from madmex.persistence.database.connection import Catalog
 from madmex.persistence.driver import persist_catalog
+from madmex.processing.raster import vectorize_raster
+from madmex.util import get_base_name
 
 
 LOGGER = logging.getLogger(__name__)
@@ -98,6 +101,16 @@ class Command(BaseCommand):
         '''
         This command is used to query the catalog database.
         '''
+        #images = ["/Users/agutierrez/Downloads/ChisAOI_Pedro/2012-02-27T174651_RE2_3A-NAC_11045275_149076_recorte_bien.tif_50_07_03.tif" , "2012-04-07T174236_RE4_3A-NAC_11043988_149076_recorte_bien.tif_50_07_03.tif",  "2012-12-19T175610_RE2_3A-NAC_12448165_160401_recorte_bien.tif_50_07_03.tif",  "2012-12-23T174028_RE2_3A-NAC_12448111_160401_recorte_bien.tif_50_07_03.tif"]
+        
+        
+        #print getattr(SETTINGS, 'MY_SECRET')
+        
+        #name = images[3]
+        #basename = get_base_name(name)
+        
+        #vectorize_raster("/Users/agutierrez/Downloads/ChisAOI_Pedro/%s" % name , 1, str("/Users/agutierrez/Downloads/ChisAOI_Pedro/%s.shp" % basename) , str('objects'), str('id'))
+        
         collection = options['file'][0]
         satellite = options['satellite'][0]
         

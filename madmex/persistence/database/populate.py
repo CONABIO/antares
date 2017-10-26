@@ -1779,7 +1779,7 @@ if __name__ == '__main__':
         if path_query == 'False':
             pass
         else:
-            create_vector_tables(path_query)
+            #create_vector_tables(path_query)
             print 'vector tables created'
         create_database()
         print 'database created'

@@ -8,7 +8,6 @@ from __future__ import unicode_literals
 import datetime
 import logging
 
-import dateutil
 import numpy
 import osgeo
 from osgeo.gdal_array import NumericTypeCodeToGDALTypeCode

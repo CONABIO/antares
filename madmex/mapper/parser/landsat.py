@@ -83,7 +83,7 @@ class Parser(BaseParser):
         stack = []
         LOGGER.debug('File: %s will be parsed as Landsat metadata file.', self.filepath)
         for line in metadata.readlines():
-            if "=" in line:
+            if '=' in line:
                 key, value = line.split('=')
                 if key.lower().strip() == 'group':
                     stack.append(value.strip())

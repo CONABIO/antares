@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 from scipy import ndimage
 from scipy import signal
 from scipy import stats
-import matplotlib.pylab as pylab
+#import matplotlib.pylab as pylab
 from skimage import color
 from madmex import LOGGER
 import numpy
@@ -69,7 +69,11 @@ def base_masking_rapideye(top_of_atmosphere_data, basename, solar_zenith, solar_
     shadow_mask = calculate_cloud_shadow(clouds, shadows, solar_zenith, solar_azimuth, resolution) * FMASK_CLOUD_SHADOW
     water_mask = convert_water_to_fmask(calculate_water(top_of_atmosphere_data))
     return combine_mask(cloud_mask, shadow_mask, water_mask)
+
 def extract_extremes(data, image_file, make_plot, steps=1000):
+
+    pass
+'''
     # TODO: the two for and the last one takes too long to finish
     CENTER = 50
     xtiles = 5000 / steps
@@ -140,6 +144,7 @@ def extract_extremes(data, image_file, make_plot, steps=1000):
                 subset_result[1, :, :] = numpy.where(col_space1[ :, :, 0] > value, subset_result[1, :, :] + diff, subset_result[1, :, :])
                 subset_result[2, :, :] = numpy.where(col_space1[ :, :, 2] > value, subset_result[2, :, :] + 1, subset_result[2, :, :])
     return subset_result
+'''
 def calculate_water(data):
     z, y, x = data.shape
     pot_water = numpy.zeros((y, x))

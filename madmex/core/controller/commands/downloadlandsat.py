@@ -15,24 +15,19 @@ class Command(BaseCommand):
     '''
     classdocs
     '''
-    def add_arguments(self, parser):
-        '''
-        Adds the sum argument for this command, of course this will change in
-        the final implementation.
-        '''
-        parser.add_argument('--url', nargs='*', help='This argument represents'
-            ' the first image to be processed.')
-        parser.add_argument('--name', nargs='*', help='This argument represents'
-            ' the first image to be processed.')
-        parser.add_argument('--directory', nargs='*', help='This argument represents'
-            ' the first image to be processed.')
+
 
     def handle(self, **options):
         '''
         This command is used to query the catalog database.
         '''
-        url = options['url'][0]
-        name = options['name'][0]
-        directory = options['directory'][0]
         
-        download_landsat_scene(url, directory, name)
+        TM = 12266
+        ETM = 12267
+        OLI = 12864
+        
+        url = 'https://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE' % (TM, 'LT50270481995194AAA04')
+        
+    
+        
+        download_landsat_scene(url, '/Users/agutierrez/Documents/test', 'LT50270481995194AAA04.tgz')

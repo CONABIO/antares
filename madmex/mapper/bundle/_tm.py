@@ -16,7 +16,7 @@ from madmex.util import get_parent, create_directory_path, create_file_name
 
 
 #_BASE = r'L%s[0-9]?[0-9]{3}[0-9]{3}_[0-9]{3}[0-9]{4}[0-9]{2}[0-9]{2}_%s'
-_BASE = r'L%s?%s.*_%s'
+_BASE = r'L%s?0%s.*_%s'
 _BASE_SR = r'lndsr.L%s?%s.*%s'
 
 class LandsatBaseBundle(BaseBundle):
@@ -40,16 +40,14 @@ class LandsatBaseBundle(BaseBundle):
         letter = self.get_letter()
         if not self.file_dictionary:
             band_1 = _BASE % (letter, mission, 'B1.TIF')
-            band_2 = _BASE % (letter, mission, 'B2[0-9]?.TIF')
-            band_3 = _BASE % (letter, mission, 'B3[0-9]?.TIF')
-            band_4 = _BASE % (letter, mission, 'B4[0-9]?.TIF')
-            band_5 = _BASE % (letter, mission, 'B5[0-9]?.TIF')
-            band_6 = _BASE % (letter, mission, 'B6[0-9]?.TIF')
-            band_61 = _BASE % (letter, mission, 'B61.TIF')
-            band_62 = _BASE % (letter, mission, 'B62.TIF')
-            band_7 = _BASE % (letter, mission, 'B7[0-9]?.TIF')
-            band_8 = _BASE % (letter, mission, 'B8[0-9]?.TIF')
-            band_9 = _BASE % (letter, mission, 'B9[0-9]?.TIF')
+            band_2 = _BASE % (letter, mission, 'B2.TIF')
+            band_3 = _BASE % (letter, mission, 'B3.TIF')
+            band_4 = _BASE % (letter, mission, 'B4.TIF')
+            band_5 = _BASE % (letter, mission, 'B5.TIF')
+            band_6 = _BASE % (letter, mission, 'B6.TIF')
+            band_7 = _BASE % (letter, mission, 'B7.TIF')
+            band_8 = _BASE % (letter, mission, 'B8.TIF')
+            band_9 = _BASE % (letter, mission, 'B9.TIF')
             band_10 =  _BASE % (letter, mission, 'B10.TIF')
             band_11 = _BASE % (letter, mission , 'B11.TIF')
             band_BQA = _BASE % (letter, mission, 'BQA.TIF')
@@ -88,8 +86,6 @@ class LandsatBaseBundle(BaseBundle):
                                         band_3:None,
                                         band_4:None,
                                         band_5:None,
-                                        band_61:None,
-                                        band_62:None,
                                         band_7:None,
                                         band_8:None,
                                         gcp:None,

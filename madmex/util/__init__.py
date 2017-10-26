@@ -207,18 +207,19 @@ def size_of_fmt(num):
         if num < 1024.0:
             return "%3.1f %s" % (num, x)
         num /= 1024.0
-def download_chunks(url, rep, nom_fic):
+def download_chunks(scene_url, directory, filename):
     '''
     This method downloads a file in chunks.
     '''
-    req = urllib2.urlopen(url)
+    req = urllib2.urlopen(scene_url)
     downloaded = 0
     CHUNK = 1024 * 1024 *8
     total_size = int(req.info().getheader('Content-Length').strip())
     total_size_fmt = size_of_fmt(total_size)
-    with open(rep+'/'+nom_fic, 'wb') as fp:
+    filepath = create_file_name(directory, filename)
+    with open(filepath, 'wb') as fp:
         start = time.clock()
-        LOGGER.info('Downloading %s %s:' % (nom_fic, total_size_fmt))
+        LOGGER.info('Downloading %s %s:' % (filename, total_size_fmt))
         while True:
             chunk = req.read(CHUNK)
             downloaded += len(chunk)

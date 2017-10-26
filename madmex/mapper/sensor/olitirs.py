@@ -5,57 +5,70 @@ Created on 03/08/2016
 '''
 
 from __future__ import unicode_literals
+
 from datetime import datetime
+import json
+
 from madmex.mapper.base import BaseSensor
 import madmex.mapper.parser.landsat as landsat
 
-SENSOR_NAME = ['sensor_name']
+
+SENSOR_NAME = [
+          'L1_METADATA_FILE',
+           'PRODUCT_METADATA',
+            'SPACECRAFT_ID'
+            ]
 SENSOR = [
-          'searchResponse',
-           'metaData',
-            'sensor'
+          'L1_METADATA_FILE',
+           'PRODUCT_METADATA',
+            'SENSOR_ID'
             ]
 METADATA_EXT = 'txt'
 SCENE_ID = [
-            'searchResponse',
-             'metaData',
-              'sceneID'
+            'L1_METADATA_FILE',
+             'METADATA_FILE_INFO',
+              'LANDSAT_SCENE_ID'
               ]
-ACQUISITION_DATE = [
-                    'searchResponse',
-                     'metaData',
-                      'acquisitionDate'
-                      ]
-PATH = [
-        'searchResponse',
-         'metaData',
-          'path'
-          ]
-ROW = [
-       'searchResponse',
-        'metaData',
-         'row'
-         ]
-CLOUD_COVER = [
-               'searchResponse',
-                'metaData',
-                 'cloudCover'
-                 ]
+
+
 SUN_ELEVATION = [
-                 'searchResponse',
-                  'metaData',
-                   'sunElevation'
+                 'L1_METADATA_FILE',
+                  'IMAGE_ATTRIBUTES',
+                   'SUN_ELEVATION'
                    ]
 SUN_AZIMUTH = [
-               'searchResponse', 
-               'metaData',
-                'sunAzimuth'
+               'L1_METADATA_FILE', 
+               'IMAGE_ATTRIBUTES',
+                'SUN_AZIMUTH'
                 ]
+
+PATH = [
+        'L1_METADATA_FILE',
+         'PRODUCT_METADATA',
+          'WRS_PATH'
+          ]
+ROW = [
+        'L1_METADATA_FILE',
+         'PRODUCT_METADATA',
+          'WRS_ROW'
+          ]
+CLOUD_COVER = [
+        'L1_METADATA_FILE',
+         'IMAGE_ATTRIBUTES',
+          'CLOUD_COVER'
+          ]
+ACQUISITION_DATE = [
+        'L1_METADATA_FILE',
+         'PRODUCT_METADATA',
+        'DATE_ACQUIRED'
+    ]
+
 DATA_TYPE = [
-             'searchResponse',
-              'metaData',
-               'DATA_TYPE_L1'
+             'L1_METADATA_FILE',
+              'PRODUCT_METADATA',
+               'DATA_TYPE'
                ]
+
 
 class Sensor(BaseSensor):
     '''
@@ -68,6 +81,7 @@ class Sensor(BaseSensor):
         super(Sensor, self).__init__()
         self.parser = landsat.Parser(metadata_path)
         self.parser.parse()
+        print json.dumps(self.parser.metadata, indent=4, sort_keys=True)
         self.parser.set_attribute(SENSOR_NAME, 'oli_tirs')
         self.parser.apply_format(SENSOR,  lambda x:  x.lower())
         self.parser.apply_format(DATA_TYPE, lambda x: x.lower())
@@ -77,4 +91,4 @@ class Sensor(BaseSensor):
             )
         self.parser.apply_format(ROW, lambda x: '0' + str(x) if len(str(x)) is 2 else str(x))
         self.parser.apply_format(PATH, lambda x: str(x))        
-    
+        

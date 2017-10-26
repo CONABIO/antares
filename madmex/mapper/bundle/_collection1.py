@@ -39,12 +39,15 @@ class LandsatBaseBundle(BaseBundle):
         processing_level = self.get_processing_level()
         letter = self.get_letter()
         if not self.file_dictionary:
+            ang = _BASE % (letter, mission, 'ANG.txt')
             band_1 = _BASE % (letter, mission, 'B1.TIF')
             band_2 = _BASE % (letter, mission, 'B2.TIF')
             band_3 = _BASE % (letter, mission, 'B3.TIF')
             band_4 = _BASE % (letter, mission, 'B4.TIF')
             band_5 = _BASE % (letter, mission, 'B5.TIF')
             band_6 = _BASE % (letter, mission, 'B6.TIF')
+            band_61 = _BASE % (letter, mission, 'B6_VCID_1.TIF')
+            band_62 = _BASE % (letter, mission, 'B6_VCID_2.TIF')
             band_7 = _BASE % (letter, mission, 'B7.TIF')
             band_8 = _BASE % (letter, mission, 'B8.TIF')
             band_9 = _BASE % (letter, mission, 'B9.TIF')
@@ -81,13 +84,17 @@ class LandsatBaseBundle(BaseBundle):
                                         }
             if mission == '7':
                 self.file_dictionary = {
-                                        band_10:None,
+                                        ang:None,
+                                        band_1:None,
                                         band_2:None,
                                         band_3:None,
                                         band_4:None,
                                         band_5:None,
+                                        band_61:None,
+                                        band_62:None,
                                         band_7:None,
                                         band_8:None,
+                                        band_BQA:None,
                                         gcp:None,
                                         metadata:None
                                         }

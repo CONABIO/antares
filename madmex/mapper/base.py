@@ -206,6 +206,7 @@ class BaseBundle(object):
         If all of the regular expressions got a matching file, then the directory
         can be identified as a bundle.
         '''
+        print len(self.get_files()), len(self.file_dictionary)
         return len(self.get_files()) == len(self.file_dictionary)
 
     def get_files(self):

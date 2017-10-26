@@ -118,12 +118,16 @@ class Parser(BaseParser):
             'PRODUCT_METADATA',
             'DATE_ACQUIRED']
             )
-        request = _get_usgs_metadata(path, row, sensor, acquisition_date)
-        document = dom.parseString(request.text)
-        stack = []
         self.usgs_metadata = {}
-        _xml_to_json(document.documentElement, stack, self.usgs_metadata)
-        LOGGER.debug('USGS metadata has been parsed.')
+        try:
+            request = _get_usgs_metadata(path, row, sensor, acquisition_date)
+            document = dom.parseString(request.text)
+            stack = []
+            _xml_to_json(document.documentElement, stack, self.usgs_metadata)
+            LOGGER.debug('USGS metadata has been parsed.')
+        except:
+            LOGGER.error('USGS metadata was not received.')
+        
     def get_attribute(self, path_to_metadata):
         '''
         Method that overrides the usual behavior of getting an attribute, this

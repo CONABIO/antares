@@ -23,11 +23,9 @@ class AntaresBaseCommand(BaseCommand):
         Just wrapping a timer around regular execution.
         '''
         LOGGER.debug('Command line arguments: %s' % options)
-        print 'Command line arguments: %s' % options
         start_time = time.time()
         output = BaseCommand.execute(self, *args, **options)
         LOGGER.info('Command execution is done in %s seconds.' % (time.time() - start_time))
-        print 'Command execution is done in %s seconds.' % (time.time() - start_time)
         return output
 
     

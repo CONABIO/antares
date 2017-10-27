@@ -4,11 +4,14 @@ Created on Oct 27, 2017
 @author: agutierrez
 '''
 import csv
+import logging
 
 from madmex.management.base import AntaresBaseCommand
 from madmex.models import LandsatCatalog
 from madmex.util import create_file_name, INDEXES, SCENES
 
+
+LOGGER = logging.getLogger(__name__)
 
 FILES = {'ETM':'LANDSAT_ETM_C1.csv',
          'TM':'LANDSAT_TM_C1.csv',
@@ -49,6 +52,8 @@ class Command(AntaresBaseCommand):
         parser.add_argument('--directory', nargs=1)
 
     def handle(self, *args, **options):
+        
+        LOGGER.info('Hello World!')
         directory = options['directory'][0]
     
         for satellite, filename in FILES.iteritems():

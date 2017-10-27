@@ -30,10 +30,10 @@ class Command(BaseCommand):
         
         url_etm = 'https://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE' % (ETM, 'LE70350432017270ASN00')
         
-        url_oli = 'https://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE' % (OLI, 'LC80270482017270LGN00')
+        url_oli = 'https://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE' % (OLI, 'LC80250492016366LGN01')
         
     
         
-        download_landsat_scene(url_tm, '/Users/agutierrez/Documents/test', 'LT50270481995194AAA04.tgz')
-        download_landsat_scene(url_etm, '/Users/agutierrez/Documents/test', 'LE70350432017270ASN00.tgz')
-        download_landsat_scene(url_oli, '/Users/agutierrez/Documents/test', 'LC80270482017270LGN00.tgz')
+        #download_landsat_scene(url_tm, '/Users/agutierrez/Documents/test', 'LT50270481995194AAA04.tgz')
+        #download_landsat_scene(url_etm, '/Users/agutierrez/Documents/test', 'LE70350432017270ASN00.tgz')
+        download_landsat_scene(url_oli, '/Users/agutierrez/Documents/test', 'LC80250492016366LGN01.tgz')

@@ -5,8 +5,8 @@ from django.db import models
 
 # Create your models here.
 class LandsatCatalog(models.Model):
-    scene_id = models.CharField(max_length=50)
-    landsat_product_id = models.CharField(max_length=50,default=-1)
+    scene_id = models.CharField(max_length=50, unique=True)
+    landsat_product_id = models.CharField(max_length=50,default=None, unique=True)
     sensor = models.CharField(max_length=50,default=None)
     acquisition_date = models.DateTimeField(default=None)
     path = models.IntegerField(default=-1)

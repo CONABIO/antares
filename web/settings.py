@@ -147,6 +147,10 @@ USE_L10N = True
 
 USE_TZ = True
 
+USGS_USER = os.environ.get('USGS_USER')
+
+USGS_PASSWORD = os.environ.get('USGS_PASSWORD')
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/

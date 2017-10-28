@@ -3,6 +3,7 @@ Created on Oct 27, 2017
 
 @author: agutierrez
 '''
+import json
 import logging
 
 from madmex.management.base import AntaresBaseCommand
@@ -23,4 +24,12 @@ class Command(AntaresBaseCommand):
         order_id = options['order'][0]
         
         api = UsgsApi()
-        api.list_order(order_id)
+        
+        api.get_functions()
+        
+        data = api.get_resampling_methods()
+        #api.list_order(order_id)
+        
+        
+        print json.dumps(data, indent=4)
+        

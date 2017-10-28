@@ -28,6 +28,8 @@ def maybe_download_and_extract(target_directory, scene_url):
         filepath, _ = urllib.request.urlretrieve(scene_url,
                                              filepath,
                                              _progress)
+        sys.stdout.write('')
+        sys.stdout.flush()
         statinfo = os.stat(filepath)
         logger.info('Successfully downloaded: %s %s bytes' % (filename, statinfo.st_size))
 
@@ -41,15 +43,38 @@ class UsgsApi():
         else:
             logger.error('Please add the usgs credentials to the .env file.')
             sys.exit(-1)
-            
-    def get_functions(self):
+        
+    def _consume_api(self, endpoint, arg=None):
         raw = "%s:%s" % (USGS_USER, USGS_PASSWORD)
         authorization = 'Basic %s' % base64.b64encode(raw).strip()
-        request = urllib.request.Request(self.host + '/api/v1')
+        url = self.host + '/api' + endpoint
+        request = urllib.request.Request(url)
+        logger.info(url)
         request.add_header('Authorization', authorization)
         response = urllib.request.urlopen(request)
         data = json.load(response.fp)
-        print json.dumps(data, indent=4, sort_keys=True)
+        return data
+    def get_functions(self):
+        data = self._consume_api('/v1')
+        for key, value in data['operations'].iteritems():
+            print key
+        
+    def get_projections(self):
+        return self._consume_api('/v1/projections')
+    
+    def get_available_products(self):
+        return self._consume_api('/v1/available-products')
+    
+    def get_formats(self):
+        return self._consume_api('/v1/formats')
+    
+    def get_orders(self):
+        return self._consume_api('/v1/order')
+    
+    def get_list_orders(self):
+        return self._consume_api('/v1/list-orders')
+    def get_resampling_methods(self):
+        return self._consume_api('/v1/resampling-methods')
         
     def list_order(self, order_id):
         raw = "%s:%s" % (USGS_USER, USGS_PASSWORD)

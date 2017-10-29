@@ -98,7 +98,7 @@ class UsgsApi():
         '''
         return self._consume_api('/v1/formats')
     
-    def order(self, inputs, products):
+    def order(self, collection, inputs, products):
         '''
         This is the only method implementing a post request. Data about which
         scenes are requested and which products are needed is required on 
@@ -107,7 +107,7 @@ class UsgsApi():
         '''
         request_json = {'format':'gtiff',
                         'note':'testing',
-                        'olitirs8_collection':{
+                        collection:{
                                 'inputs':inputs,
                                 'products':products
                             }

@@ -3,7 +3,7 @@ Created on Oct 27, 2017
 
 @author: agutierrez
 '''
-import json
+
 import logging
 
 from madmex.management.base import AntaresBaseCommand
@@ -25,9 +25,6 @@ class Command(AntaresBaseCommand):
         directory = options['directory'][0]
         api = UsgsApi()
         data = api.get_list_order(order_id)
-        print json.dumps(data, indent=4)
         for scene in data[order_id]:
             if scene['status'] == 'complete':
                 maybe_download_and_extract(directory, scene['product_dload_url'])
-        
-        

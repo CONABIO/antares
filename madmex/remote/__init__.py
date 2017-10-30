@@ -36,6 +36,8 @@ def maybe_download_and_extract(target_directory, scene_url):
         sys.stdout.flush()
         statinfo = os.stat(filepath)
         logger.info('Successfully downloaded: %s %s bytes' % (filename, statinfo.st_size))
+    else:
+        logger.info('%s was already downloaded at %s' % (filename, target_directory))
 
 class UsgsApi():
     def __init__(self):

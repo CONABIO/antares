@@ -7,12 +7,16 @@ import logging
 import os
 import sys
 
+import requests
+
 from madmex.util import create_file_name, is_file
 from six.moves import urllib
 from web.settings import USGS_USER, USGS_PASSWORD
 
 
 logger = logging.getLogger(__name__)
+
+version = 'v0'
 
 def maybe_download_and_extract(target_directory, scene_url):
     '''
@@ -53,7 +57,7 @@ class UsgsApi():
             logger.error('Please add the usgs credentials to the .env file.')
             sys.exit(-1)
 
-    def _consume_api(self, endpoint, data=None):
+    def _consume_api_urllib(self, endpoint, data=None):
         '''
         This method hides the complexity of making a request to usgs,
         depending on whether data parameter is given or not, it makes
@@ -74,31 +78,48 @@ class UsgsApi():
         response = urllib.request.urlopen(request)
         data = json.load(response.fp)
         return data
+    
+    def _consume_api_requests(self, endpoint, data=None):
+        '''
+        This method hides the complexity of making a request to usgs,
+        depending on whether data parameter is given or not, it makes
+        a GET or a POST request. It requires an endpoint to query the
+        api if an invalid request is given, then the aip will answer
+        with a 404 error message.
+        '''
+        url = self.host + '/api' + endpoint
+        logger.info(url)
+        if not data:
+            response = requests.get(url, auth=(USGS_USER,USGS_PASSWORD))
+        else: # a POST request
+            response = requests.post(url, data = {'key':'value'}, auth=(USGS_USER,USGS_PASSWORD))
+        data = response.json()
+        return data
 
     def get_functions(self):
         '''
         Will query the api for the valid functions that it exposes.
         '''
-        return self._consume_api('/v1')
+        return self._consume_api_requests('/%s' % version)
 
     def get_projections(self):
         '''
         Returns the available projections that the api supports.
         '''
-        return self._consume_api('/v1/projections')
+        return self._consume_api_requests('/%s/projections' % version)
 
     def get_available_products(self, scene_id):
         '''
         Given a scene id, this method returns the available products
         that can be requested in an order.
         '''
-        return self._consume_api('/v1/available-products/%s' % scene_id)
+        return self._consume_api_requests('/%s/available-products/%s' % (version, scene_id))
     
     def get_formats(self):
         '''
         Returns the available formats in which the data can be requested.
         '''
-        return self._consume_api('/v1/formats')
+        return self._consume_api_requests('/%s/formats' % version)
     
     def order(self, collection, inputs, products):
         '''
@@ -115,13 +136,13 @@ class UsgsApi():
                             }
                         } 
         payload = json.dumps(request_json).encode('utf8')
-        return self._consume_api('/v1/order', payload)
+        return self._consume_api_requests('/%s/order' % version, payload)
     
     def get_list_orders(self):
         '''
         This methos returns the status of the orders that have been posted.
         '''
-        return self._consume_api('/v1/list-orders')
+        return self._consume_api_requests('/%s/list-orders' % version)
 
     def get_resampling_methods(self):
         '''
@@ -129,18 +150,18 @@ class UsgsApi():
         requested in a different resolution that the standard one. Default
         value will be nearest neighbors.
         '''
-        return self._consume_api('/v1/resampling-methods')
+        return self._consume_api_requests('/%s/resampling-methods' % version)
 
     def get_user_info(self):
         '''
         Returns information about the user that the credentials that this
         object holds.
         '''
-        return self._consume_api('/v1/user')
+        return self._consume_api_requests('/%s/user' % version)
 
     def get_list_order(self, order_id):
         '''
         Returns the status of the given order.
         '''
-        url = '/v1/item-status/%s' % order_id
-        return self._consume_api(url)
+        url = '/%s/item-status/%s' % (version, order_id)
+        return self._consume_api_requests(url)

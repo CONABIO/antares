@@ -16,7 +16,7 @@ from web.settings import USGS_USER, USGS_PASSWORD
 
 logger = logging.getLogger(__name__)
 
-version = 'v0'
+version = 'v1'
 
 def maybe_download_and_extract(target_directory, scene_url):
     '''

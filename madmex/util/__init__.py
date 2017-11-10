@@ -27,7 +27,6 @@ from psycopg2._psycopg import AsIs
 from madmex import LOGGER
 from madmex.configuration import SETTINGS
 
-
 def get_last_package_from_name(package):
     '''
     Returns the string after the last instance of a '.'.

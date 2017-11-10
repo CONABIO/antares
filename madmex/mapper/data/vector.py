@@ -13,8 +13,8 @@ import osr
 import pandas
 
 from madmex.mapper.base import BaseData
-from madmex.util import create_file_name, is_directory, create_directory_path, \
-    is_file, get_base_name
+from madmex.util import create_filename, is_directory, create_directory_path, \
+    is_file, get_basename
 
 
 gdal.AllRegister()
@@ -40,7 +40,7 @@ def create_shape_from_json(id, json, output_directory):
     Given a json string containing coordinates, this method creates a shape file.
     '''
     create_directory_path(output_directory)
-    filename = create_file_name(output_directory, '%s.shp' % id)
+    filename = create_filename(output_directory, '%s.shp' % id)
     shape = Data(filename)
     if is_file(filename):
         shape.driver.DeleteDataSource(filename)
@@ -156,7 +156,7 @@ class Data(BaseData):
         in_layer_definition = layer.GetLayerDefn()
         while in_feature:            
             in_feature_name = in_feature.GetField(column_name)
-            output_name = create_file_name(output_directory, '%s.shp' % in_feature_name)
+            output_name = create_filename(output_directory, '%s.shp' % in_feature_name)
             shape_files.append(output_name)
             if is_file(output_name):
                 self.driver.DeleteDataSource(output_name)
@@ -194,12 +194,12 @@ class Data(BaseData):
         column_name = field_definition.GetName() 
         shape_files = []
         
-        name = get_base_name(self.image_path)
+        name = get_basename(self.image_path)
         
         
         create_directory_path(output_directory)
         
-        output_name = create_file_name(output_directory, '%s_mapped.shp' % name)
+        output_name = create_filename(output_directory, '%s_mapped.shp' % name)
         
         
         in_layer_definition = layer.GetLayerDefn()

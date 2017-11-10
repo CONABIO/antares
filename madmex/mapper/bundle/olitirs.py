@@ -10,7 +10,7 @@ from madmex.mapper.data import raster
 from madmex.mapper.sensor import olitirs
 from madmex.persistence import driver
 from madmex.persistence.database.connection import Information
-from madmex.util import get_basename_of_file, create_file_name
+from madmex.util import get_basename_of_file, create_filename
 
 
 FORMAT = 'GTiff'
@@ -97,7 +97,7 @@ class Bundle(LandsatBaseBundle):
         path = self.get_sensor().get_attribute(olitirs.PATH)
         basename_metadata = get_basename_of_file(self.file_dictionary[_BASE % (self.get_letter(), self.get_mission(), 'MTL.txt')])
         information = Information(
-                    metadata_path = create_file_name(self.get_output_directory(),basename_metadata),
+                    metadata_path = create_filename(self.get_output_directory(),basename_metadata),
                     grid_id = unicode(path + row),
                     projection = self.get_raster().get_attribute(raster.PROJECTION),
                     cloud_percentage = self.get_sensor().get_attribute(olitirs.CLOUD_COVER),

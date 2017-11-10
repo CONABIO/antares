@@ -16,3 +16,17 @@ class LandsatCatalog(models.Model):
     image_quality = models.IntegerField(default=-1)
     ground_control_points_model = models.CharField(max_length=50, default=None)
     browse_url = models.CharField(max_length=200, default=None)
+    
+class LansatAWS(models.Model):
+    product_id = models.CharField(max_length=100, unique=True)
+    entity_id = models.CharField(max_length=100)
+    acquisitionDate = models.DateTimeField(default=None)
+    cloudCover = models.FloatField(default=-1.0)
+    processingLevel = models.CharField(max_length=10)
+    path = models.IntegerField(default=-1)
+    row = models.IntegerField(default=-1)
+    min_lat = models.FloatField(default=-1)
+    min_lon = models.FloatField(default=-1)
+    max_lat = models.FloatField(default=-1)
+    max_lon = models.FloatField(default=-1)
+    download_url = models.CharField(max_length=200)

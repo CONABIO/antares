@@ -24,7 +24,7 @@ from madmex.persistence.driver import find_datasets, \
     acquisitions_by_mapgrid_and_date, get_pair_quality, persist_quality
 from madmex.processing.raster import phi, rho
 from madmex.remote.dispatcher import LocalProcessLauncher
-from madmex.util import create_file_name, is_file, adapt_numpy_float
+from madmex.util import create_filename, is_file, adapt_numpy_float
 
 
 LOGGER = logging.getLogger(__name__)
@@ -170,9 +170,9 @@ class Command(BaseCommand):
 
         in1 = reference_bundle.get_raster_file()
         in2 = image_bundle.get_raster_file()
-        in_invar = create_file_name(output, 'invariantPixelMask.tif')
-        result = create_file_name(output, 'crosscorrelation_next.tif')
-        to_polar = create_file_name(output, 'crosscorrelation_polar.tif')
+        in_invar = create_filename(output, 'invariantPixelMask.tif')
+        result = create_filename(output, 'crosscorrelation_next.tif')
+        to_polar = create_filename(output, 'crosscorrelation_polar.tif')
         create_raster_from_reference(in_invar, invariant_array, image_bundle.get_raster_file(), gdal.GDT_Byte)    
 
         
@@ -243,7 +243,7 @@ class Command(BaseCommand):
         y_offset = extents['y_offset'][1]
         x_tile_size = extents['x_range']
         y_tile_size = extents['y_range']
-        aux_name = create_file_name(output, 'auxiliar.tif')
+        aux_name = create_filename(output, 'auxiliar.tif')
         tile_map(reference_bundle.get_raster_file(), aux_name, x_tile_size, y_tile_size, x_offset, y_offset)
         aux_array = raster.Data(aux_name, 'GTiff').read_data_file_as_array()
         crosscorrelation_polar_array = crosscorrelation_polar.read_data_file_as_array()

@@ -13,7 +13,7 @@ import logging
 from madmex.core.controller.base import BaseCommand
 from madmex.persistence.database.connection import Catalog
 from madmex.persistence.driver import persist_catalog
-from madmex.util import  INDEXES, SCENES
+from madmex.util import  INDEXES, SCENES_MEXICO
 
 
 LOGGER = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ def populate_catalog(collection, satellite):
     with open(collection, 'rb') as f:
         reader = csv.reader(f)
         for row in reader:
-            if '%s,%s' % (row[7], row[8]) in SCENES:
+            if '%s,%s' % (row[7], row[8]) in SCENES_MEXICO:
                 scene = Catalog(scene_id = row[index['scene_id']],
                                 landsat_product_id = row[index['landsat_product_id']],
                                 sensor = row[index['sensor']],

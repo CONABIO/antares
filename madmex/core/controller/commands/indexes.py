@@ -17,7 +17,7 @@ from madmex.core.controller.base import BaseCommand
 from madmex.mapper.data import raster
 from madmex.mapper.data._gdal import GTIFF, create_raster_from_reference
 from madmex.processing.raster import calculate_index
-from madmex.util import create_file_name, create_directory_path
+from madmex.util import create_filename, create_directory_path
 
 
 LOGGER = logging.getLogger(__name__)
@@ -104,7 +104,7 @@ class Command(BaseCommand):
         
         final_path = options['output'][0]
         create_directory_path(final_path)
-        cloud_file = create_file_name(path, cloud_file_name)
+        cloud_file = create_filename(path, cloud_file_name)
         cloud_array = open_handle(cloud_file)
         cloud_mask = (cloud_array == 4)
 
@@ -112,18 +112,18 @@ class Command(BaseCommand):
 
         if 'L8' in path:
             LOGGER.debug('Landsat 8 scene was detected.')
-            blue_file = create_file_name(path, band_name % BLUE_L8)
-            green_file = create_file_name(path, band_name % GREEN_L8)
-            red_file = create_file_name(path, band_name % RED_L8)
-            nir_file = create_file_name(path, band_name % NIR_L8)
-            swir_file = create_file_name(path, band_name % SWIR_L8)        
+            blue_file = create_filename(path, band_name % BLUE_L8)
+            green_file = create_filename(path, band_name % GREEN_L8)
+            red_file = create_filename(path, band_name % RED_L8)
+            nir_file = create_filename(path, band_name % NIR_L8)
+            swir_file = create_filename(path, band_name % SWIR_L8)        
         else:
             LOGGER.debug('Landsat 4, 5 or scene was detected.')
-            blue_file = create_file_name(path, band_name % BLUE)
-            green_file = create_file_name(path, band_name % GREEN)
-            red_file = create_file_name(path, band_name % RED)
-            nir_file = create_file_name(path, band_name % NIR)
-            swir_file = create_file_name(path, band_name % SWIR)
+            blue_file = create_filename(path, band_name % BLUE)
+            green_file = create_filename(path, band_name % GREEN)
+            red_file = create_filename(path, band_name % RED)
+            nir_file = create_filename(path, band_name % NIR)
+            swir_file = create_filename(path, band_name % SWIR)
             
         LOGGER.debug('Loading bands of interest.')
 
@@ -148,20 +148,20 @@ class Command(BaseCommand):
 
         LOGGER.debug('Creating files for indexes.')
 
-        ndvi_final_file = create_file_name(final_path, basename + '_ndvi.tif')
-        mndwi_final_file = create_file_name(final_path, basename + '_mndwi.tif')
-        ndwig_final_file = create_file_name(final_path, basename + '_ndwig.tif')
-        ndwim_final_file = create_file_name(final_path, basename + '_ndwim.tif')
+        ndvi_final_file = create_filename(final_path, basename + '_ndvi.tif')
+        mndwi_final_file = create_filename(final_path, basename + '_mndwi.tif')
+        ndwig_final_file = create_filename(final_path, basename + '_ndwig.tif')
+        ndwim_final_file = create_filename(final_path, basename + '_ndwim.tif')
             
-        ndvi_clipped_file = create_file_name(final_path, basename + '_ndvi_clipped.tif')
-        mndwi_clipped_file = create_file_name(final_path, basename + '_mndwi_clipped.tif')
-        ndwig_clipped_file = create_file_name(final_path, basename + '_ndwig_clipped.tif')
-        ndwim_clipped_file = create_file_name(final_path, basename + '_ndwim_clipped.tif')
+        ndvi_clipped_file = create_filename(final_path, basename + '_ndvi_clipped.tif')
+        mndwi_clipped_file = create_filename(final_path, basename + '_mndwi_clipped.tif')
+        ndwig_clipped_file = create_filename(final_path, basename + '_ndwig_clipped.tif')
+        ndwim_clipped_file = create_filename(final_path, basename + '_ndwim_clipped.tif')
             
-        ndvi_file = create_file_name(final_path, basename + '_ndvi_pre.tif')
-        mndwi_file = create_file_name(final_path, basename + '_mndwi_pre.tif')
-        ndwig_file = create_file_name(final_path, basename + '_ndwig_pre.tif')
-        ndwim_file = create_file_name(final_path, basename + '_ndwim_pre.tif')
+        ndvi_file = create_filename(final_path, basename + '_ndvi_pre.tif')
+        mndwi_file = create_filename(final_path, basename + '_mndwi_pre.tif')
+        ndwig_file = create_filename(final_path, basename + '_ndwig_pre.tif')
+        ndwim_file = create_filename(final_path, basename + '_ndwim_pre.tif')
             
         files = [ndvi_file, mndwi_file, ndwig_file, ndwim_file]
         clipped_files = [ndvi_clipped_file, mndwi_clipped_file, ndwig_clipped_file, ndwim_clipped_file]
@@ -184,7 +184,7 @@ class Command(BaseCommand):
 
         LOGGER.debug('Reference rgb file creation.')
 
-        rgb_file = create_file_name(final_path, basename + '_rgb.tif')
+        rgb_file = create_filename(final_path, basename + '_rgb.tif')
         merge_command = ['/Library/Frameworks/GDAL.framework/Programs/gdalbuildvrt', '-separate', '-o', rgb_file, red_file, green_file, blue_file]
         call(merge_command)
         shape = options['shape'][0]

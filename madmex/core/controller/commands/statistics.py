@@ -18,7 +18,7 @@ from scipy.constants.constants import hectare
 from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands import get_bundle_from_path
 from madmex.core.controller.commands.aggregate import INITIAL_ARRAY
-from madmex.util import get_base_name, get_parent, create_file_name
+from madmex.util import get_basename, get_parent, create_filename
 
 LOGGER = logging.getLogger(__name__)
 BUNDLE_PACKAGE = 'madmex.mapper.bundle'
@@ -96,8 +96,8 @@ class Command(BaseCommand):
                 flat = numpy.ravel(array)
                 length = len(flat)
                 parent = get_parent(image_path)
-                basename = '%s.txt' % get_base_name(image_path)
-                target = create_file_name(parent, basename)
+                basename = '%s.txt' % get_basename(image_path)
+                target = create_filename(parent, basename)
                 count = 1                
                 values = {}
                 progress = 0

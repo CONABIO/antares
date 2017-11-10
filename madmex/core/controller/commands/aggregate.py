@@ -24,7 +24,7 @@ from madmex.mapper.data._gdal import create_empty_raster_from_reference, \
     create_raster_from_reference
 from madmex.persistence.driver import get_rapideye_footprints_from_state, \
     get_states_names
-from madmex.util import get_base_name, create_file_name, get_parent
+from madmex.util import get_basename, create_filename, get_parent
 
 
 #from build.lib.madmex.core.controller.commands.aggregate import INITIAL_ARRAY
@@ -272,9 +272,9 @@ class Command(BaseCommand):
         
         for image_path in options['path']:
             print image_path
-            basename = '%s_ipcc.tif' % get_base_name(image_path)
+            basename = '%s_ipcc.tif' % get_basename(image_path)
             LOGGER.info(basename)
-            target = create_file_name(output, basename)
+            target = create_filename(output, basename)
             #print target
             start_time = time.time()
             

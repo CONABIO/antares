@@ -12,7 +12,7 @@ import pandas
 
 from madmex.model.base import BaseModel
 from madmex.remote.dispatcher import LocalProcessLauncher
-from madmex.util import create_file_name
+from madmex.util import create_filename
 
 
 LOGGER = logging.getLogger(__name__)
@@ -61,8 +61,8 @@ class Model(BaseModel):
         c5.0 executable. It creates only the names and data files.
         '''
         train_data = numpy.column_stack((X, y))
-        save_to_file(train_data, create_file_name(self.path, '%s.data' % self.model_name))
-        create_names_file(numpy.unique(y), X.shape[1],create_file_name(self.path, '%s.names' % self.model_name))
+        save_to_file(train_data, create_filename(self.path, '%s.data' % self.model_name))
+        create_names_file(numpy.unique(y), X.shape[1],create_filename(self.path, '%s.names' % self.model_name))
         launcher = LocalProcessLauncher()
         shell_string = 'docker run --rm -v %s:/results madmex/c5_execution c5.0 -f /results/%s' % (self.path, self.model_name)
         LOGGER.debug('Docker command: %s', shell_string)
@@ -73,7 +73,7 @@ class Model(BaseModel):
         The c5 model creates a file with the tree extension and it
         will be loaded by the predict executable.
         '''
-        save_to_file_cases(X, create_file_name(self.path, '%s.cases' % self.model_name))
+        save_to_file_cases(X, create_filename(self.path, '%s.cases' % self.model_name))
         local = LocalProcessLauncher()
         shell_string = 'docker run --rm -v %s:/results madmex/c5_execution predict -f /results/%s' % (self.path, self.model_name)
         LOGGER.debug('Docker command: %s', shell_string)     

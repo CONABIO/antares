@@ -21,7 +21,7 @@ from madmex import load_class
 from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands.indexes import open_handle
 from madmex.model.unsupervised import pca
-from madmex.util import create_file_name, create_directory_path
+from madmex.util import create_filename, create_directory_path
 
 
 SUPERVISED_PACKAGE = 'madmex.model.supervised'
@@ -44,13 +44,13 @@ def load_model(name):
         
 def train_model(X_train, X_test, y_train, y_test, output, model_name):
     model = load_model(model_name)
-    persistence_directory = create_file_name(output, model_name)
+    persistence_directory = create_filename(output, model_name)
     create_directory_path(persistence_directory)
     model_instance = model.Model(persistence_directory)
     model_instance.fit(X_train, y_train)
     model_instance.save(persistence_directory)
     predicted = model_instance.predict(X_test)
-    model_instance.create_report(y_test, predicted, create_file_name(persistence_directory, 'report.txt'))
+    model_instance.create_report(y_test, predicted, create_filename(persistence_directory, 'report.txt'))
 
 class Command(BaseCommand):
     '''
@@ -196,7 +196,7 @@ class Command(BaseCommand):
         X_test = unsupervised.transform(X_test) 
         '''
         
-        pca_path = create_file_name(output, 'pca')
+        pca_path = create_filename(output, 'pca')
         create_directory_path(pca_path)
         unsupervised.save(pca_path)
 

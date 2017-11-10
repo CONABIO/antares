@@ -14,7 +14,7 @@ from madmex.core import controller
 from madmex.mapper.base import _get_attribute
 from madmex.mapper.data._gdal import create_raster
 from madmex.util import get_last_package_from_name, create_directory_path, \
-    get_parent, create_file_name
+    get_parent, create_filename
 
 
 class Test(unittest.TestCase):

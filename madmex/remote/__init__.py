@@ -9,7 +9,7 @@ import sys
 
 import requests
 
-from madmex.util import create_file_name, is_file
+from madmex.util import create_filename, is_file
 from six.moves import urllib
 from web.settings import USGS_USER, USGS_PASSWORD
 
@@ -25,7 +25,7 @@ def maybe_download_and_extract(target_directory, scene_url):
     will not proceed.
     '''
     filename = scene_url.split('/')[-1]
-    filepath = create_file_name(target_directory, filename)
+    filepath = create_filename(target_directory, filename)
     if not is_file(filepath):
         def _progress(count, block_size, total_size):
             sys.stdout.write('\rDownloading %s %.1f%%' %

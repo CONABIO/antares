@@ -26,8 +26,8 @@ from madmex.preprocessing import maskingwithreference
 from madmex.preprocessing.topofatmosphere import calculate_distance_sun_earth, \
     calculate_toa_rapideye, calculate_rad_rapideye
 from madmex.processing.raster import calculate_index
-from madmex.util import get_path_from_list, create_file_name, \
-    create_directory_path, get_base_name, get_parent
+from madmex.util import get_path_from_list, create_filename, \
+    create_directory_path, get_basename, get_parent
 
 
 FORMAT = 'GTiff'
@@ -176,11 +176,11 @@ class Bundle(BaseBundle):
         Creates a thumbnail for the scene in true color.
         '''
         from subprocess import call
-        thumnail_directory = create_file_name(thumbnail_path, 'thumbnail')
+        thumnail_directory = create_filename(thumbnail_path, 'thumbnail')
         create_directory_path(thumnail_directory)
         filename = self.file_dictionary[_BROWSE]
         
-        thumbnail = create_file_name(thumnail_directory, '%s.jpg' % get_base_name(filename))
+        thumbnail = create_filename(thumnail_directory, '%s.jpg' % get_basename(filename))
         
         resize_command = ['/Library/Frameworks/GDAL.framework/Programs/gdal_translate', filename, '-of', 'JPEG', thumbnail]
         call(resize_command)
@@ -293,10 +293,10 @@ class Bundle(BaseBundle):
 
         sun_earth_distance = calculate_distance_sun_earth(data_acquisition_date)
         top_of_atmosphere_data = calculate_toa_rapideye(calculate_rad_rapideye(data), sun_earth_distance, solar_zenith)
-        top_of_atmosphere_directory = create_file_name(get_parent(self.path), 'TOA')
+        top_of_atmosphere_directory = create_filename(get_parent(self.path), 'TOA')
 
         create_directory_path(top_of_atmosphere_directory)
-        output_file = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[2]) + '_toa.tif')  # TODO: change [2] in self.get_files()[2] 
+        output_file = create_filename(top_of_atmosphere_directory, get_basename(self.get_files()[2]) + '_toa.tif')  # TODO: change [2] in self.get_files()[2] 
 
         create_raster_from_reference(output_file,
                                      top_of_atmosphere_data,
@@ -304,7 +304,7 @@ class Bundle(BaseBundle):
                                      data_type=NumericTypeCodeToGDALTypeCode(numpy.float32)
                                      )
         LOGGER.debug('Top of atmosphere file was created.')
-        cloud_output_file = create_file_name(top_of_atmosphere_directory, get_base_name(self.get_files()[2]) + '_cloud.tif')
+        cloud_output_file = create_filename(top_of_atmosphere_directory, get_basename(self.get_files()[2]) + '_cloud.tif')
 
         if self.algorithm == ANOMALY_DETECTION:            
             LOGGER.debug('Cloud mask by anomaly detection process.')

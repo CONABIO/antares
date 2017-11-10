@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler
 
 from sklearn.externals import joblib
 from madmex.model.base import BaseModel
-from madmex.util import create_file_name
+from madmex.util import create_filename
 
 
 
@@ -51,16 +51,16 @@ class Model(BaseModel):
         '''
         Persists the trained model to a file.
         '''
-        joblib.dump(self.model, create_file_name(filepath,'%s.pkl' % self.model_name)) 
-        joblib.dump(self.scaler, create_file_name(filepath,'%s.pkl' % self.scaler_svm)) 
+        joblib.dump(self.model, create_filename(filepath,'%s.pkl' % self.model_name)) 
+        joblib.dump(self.scaler, create_filename(filepath,'%s.pkl' % self.scaler_svm)) 
 
 
     def load(self, filepath):
         '''
         Loads an already train model from a file to perform predictions.
         '''
-        self.model = joblib.load(create_file_name(filepath,'%s.pkl' % self.model_name))
-        self.scaler = joblib.load(create_file_name(filepath,'%s.pkl' % self.scaler_svm))
+        self.model = joblib.load(create_filename(filepath,'%s.pkl' % self.model_name))
+        self.scaler = joblib.load(create_filename(filepath,'%s.pkl' % self.scaler_svm))
 
 
     def score(self, X, y):

@@ -19,7 +19,7 @@ from madmex.core.controller.commands.indexes import open_handle
 from madmex.core.controller.commands.ingest import _get_bundle_from_path
 from madmex.mapper.data._gdal import create_raster_from_reference
 from madmex.model.unsupervised import pca
-from madmex.util import create_file_name, get_base_name, create_directory_path
+from madmex.util import create_filename, get_basename, create_directory_path
 
 
 class Command(BaseCommand):
@@ -54,10 +54,10 @@ class Command(BaseCommand):
         model_directory = options['modeldir'][0]
         
         pca_model = pca.Model(5)
-        pca_model.load(create_file_name(model_directory, 'pca'))
+        pca_model.load(create_filename(model_directory, 'pca'))
         
         for model_name in models:
-            persistence_directory = create_file_name(model_directory, model_name)
+            persistence_directory = create_filename(model_directory, model_name)
             model = load_model(model_name)
             model_instance = model.Model(persistence_directory)
             model_instance.load(persistence_directory)
@@ -66,7 +66,7 @@ class Command(BaseCommand):
                 image_array = open_handle(path)
                 y_size = image_array.shape[1]
                 x_size = image_array.shape[2]
-                basename = get_base_name(path)[:7]
+                basename = get_basename(path)[:7]
                 warnings.filterwarnings('ignore')
                 final = numpy.zeros((x_size,y_size))
                 import time
@@ -87,5 +87,5 @@ class Command(BaseCommand):
                         final[i:i+rows,j:j+cols] = prediction.reshape((rows,cols))
                 print("--- %s seconds ---" % (time.time() - start_time))
                 create_directory_path(output)
-                classification = create_file_name(output, '%s-%s.tif' % (basename, model_name))
+                classification = create_filename(output, '%s-%s.tif' % (basename, model_name))
                 create_raster_from_reference(classification, final.reshape(x_size, y_size), path, data_type=gdal.GDT_Byte, creating_options=['COMPRESS=LZW'])

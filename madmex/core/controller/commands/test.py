@@ -13,7 +13,7 @@ from madmex import _
 from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands.ingest import _get_bundle_from_path
 from madmex.mapper.data._gdal import create_raster_from_reference
-from madmex.util import create_file_name, get_base_name
+from madmex.util import create_filename, get_basename
 
 
 class Command(BaseCommand):
@@ -40,15 +40,15 @@ class Command(BaseCommand):
         output = options['output'][0]
         for path in options['path']:
             bundle = _get_bundle_from_path(path)
-            basename = get_base_name(bundle.get_raster_file())
+            basename = get_basename(bundle.get_raster_file())
             bundle.get_NDVI()
-            ndvi_file = create_file_name(output, 'ndvi.tif')
-            red_edge_ndvi_file = create_file_name(output, 'red_edge_ndvi.tif')
-            gndvi_file = create_file_name(output, 'gndvi.tif')
-            ndre_file = create_file_name(output, 'ndre.tif')
-            sovel_file = create_file_name(output, 'sovel2.tif')
+            ndvi_file = create_filename(output, 'ndvi.tif')
+            red_edge_ndvi_file = create_filename(output, 'red_edge_ndvi.tif')
+            gndvi_file = create_filename(output, 'gndvi.tif')
+            ndre_file = create_filename(output, 'ndre.tif')
+            sovel_file = create_filename(output, 'sovel2.tif')
             
-            all_file = create_file_name(output, '%s_all_features.tif' % basename)
+            all_file = create_filename(output, '%s_all_features.tif' % basename)
             
             print all_file
             

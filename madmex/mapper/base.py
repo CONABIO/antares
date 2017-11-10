@@ -25,7 +25,7 @@ try:
 except:
     pass 
 
-from madmex.util import get_files_from_folder, create_file_name
+from madmex.util import get_files_from_folder, create_filename
 import xml.dom.minidom as dom
 import gdal
 
@@ -153,7 +153,7 @@ class BaseBundle(object):
         for key in self.file_dictionary.iterkeys():
             for name in get_files_from_folder(self.path):
                 if re.match(key, name):
-                    self.file_dictionary[key] = create_file_name(self.path, name)
+                    self.file_dictionary[key] = create_filename(self.path, name)
     def get_database_object(self):
         '''
         Creates the database object that will be ingested for this bundle.

@@ -27,7 +27,7 @@ from madmex.mapper.data import raster
 from madmex.mapper.data._gdal import create_raster_from_reference
 from madmex.model.unsupervised import pca
 from madmex.remote.dispatcher import LocalProcessLauncher
-from madmex.util import create_file_name, get_base_name, create_directory_path, \
+from madmex.util import create_filename, get_basename, create_directory_path, \
     get_parent, is_file, create_filename_from_string, json_from_file
 
 
@@ -135,9 +135,9 @@ class Command(BaseCommand):
             
             scene_bundle = rapideye.Bundle(path)
             directory = getattr(SETTINGS, 'TEMPORARY')
-            directory_helper = create_file_name(directory, 'helper')
+            directory_helper = create_filename(directory, 'helper')
             create_directory_path(directory_helper)
-            categories_file = create_file_name(directory, 'categories.json')
+            categories_file = create_filename(directory, 'categories.json')
             categories_dictionaty = {
                     0: "AGRICULTURA DE RIEGO", 
                     1: "AGRICULTURA DE TEMPORAL", 
@@ -183,28 +183,28 @@ class Command(BaseCommand):
                     41: "VEGETACION HALOFILA HIDROFILA", 
                     42: "ZONA URBANA"
                 }
-            basename = get_base_name(scene_bundle.get_raster_file())
-            all_file = create_file_name(directory_helper, '%s_all_features.tif' % basename)
+            basename = get_basename(scene_bundle.get_raster_file())
+            all_file = create_filename(directory_helper, '%s_all_features.tif' % basename)
             
             if not is_file(all_file):
                 scene_bundle.get_feature_array(all_file)
             
-            filename = get_base_name(all_file)
+            filename = get_basename(all_file)
             
             
             
-            if not is_file(create_file_name(directory_helper, '%s.shp' % filename)):
+            if not is_file(create_filename(directory_helper, '%s.shp' % filename)):
                 shell_string = 'docker run --rm -v %s:/data madmex/segment gdal-segment %s.tif -out helper/%s.shp -algo SLIC -region %s' % (directory, filename, filename, region)
                 launcher = LocalProcessLauncher()
                 LOGGER.debug('Docker command: %s', shell_string)
                 launcher.execute(shell_string)
             
-            data = read_data_table(create_file_name(directory_helper, '%s.shp' % filename))
+            data = read_data_table(create_filename(directory_helper, '%s.shp' % filename))
             
             results = {}
             
             for model_name in models:
-                persistence_directory = create_file_name(model_directory, model_name)
+                persistence_directory = create_filename(model_directory, model_name)
                 print model_name
                 model = load_model(model_name)
                 model_instance = model.Model(persistence_directory)
@@ -213,7 +213,7 @@ class Command(BaseCommand):
                 results[model_name] = prediction
             print results
             create_directory_path(output)
-            write_results(create_file_name(directory_helper, '%s.shp' % filename), create_file_name(output, '%s_classification.shp' % filename[0:32]), results, categories_dictionaty)
+            write_results(create_filename(directory_helper, '%s.shp' % filename), create_filename(output, '%s_classification.shp' % filename[0:32]), results, categories_dictionaty)
                 
         LOGGER.info("--- %s seconds ---" % (time.time() - start_time))   
             

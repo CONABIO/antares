@@ -12,7 +12,7 @@ from madmex.mapper.base import BaseBundle
 from madmex.mapper.data import raster
 from madmex.mapper.data._gdal import create_raster, JPEG
 from madmex.mapper.data.raster import GDAL_TIFF
-from madmex.util import get_parent, create_directory_path, create_file_name
+from madmex.util import get_parent, create_directory_path, create_filename
 
 
 #_BASE = r'L%s[0-9]?[0-9]{3}[0-9]{3}_[0-9]{3}[0-9]{4}[0-9]{2}[0-9]{2}_%s'
@@ -186,12 +186,12 @@ class LandsatBaseBundle(BaseBundle):
         file_2 = self.file_dictionary[_BASE % (self.get_mission(), 'B2[0-9].TIF')]
         file_3 = self.file_dictionary[_BASE % (self.get_mission(), 'B3[0-9].TIF')]
         parent_directory = get_parent(self.path)
-        thumnail_directory = create_file_name(parent_directory, 'thumbnail')
+        thumnail_directory = create_filename(parent_directory, 'thumbnail')
         create_directory_path(thumnail_directory)
         parent_directory
-        filename = create_file_name(thumnail_directory, 'vrt.tif')
+        filename = create_filename(thumnail_directory, 'vrt.tif')
         merge_command = ['/Library/Frameworks/GDAL.framework/Programs/gdalbuildvrt', '-separate', '-o', filename, file_3, file_2, file_1]
         call(merge_command)
-        thumbnail = create_file_name(thumnail_directory, 'thumbnail.jpg')
+        thumbnail = create_filename(thumnail_directory, 'thumbnail.jpg')
         resize_command = ['/Library/Frameworks/GDAL.framework/Programs/gdal_translate', filename, '-of', 'JPEG', '-outsize', '5%', '5%', thumbnail]
         call(resize_command)

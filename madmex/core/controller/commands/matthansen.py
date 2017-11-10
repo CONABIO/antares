@@ -17,8 +17,8 @@ from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands.indexes import open_handle
 from madmex.mapper.data._gdal import create_raster_from_reference
 from madmex.remote.dispatcher import LocalProcessLauncher
-from madmex.util import get_contents_from_folder, create_file_name, \
-    get_base_name, create_directory_path, remove_file, remove_directory
+from madmex.util import get_contents_from_folder, create_filename, \
+    get_basename, create_directory_path, remove_file, remove_directory
 
 
 def tile_map(image_path, output, x_tile_size, y_tile_size, x_offset, y_offset):
@@ -49,17 +49,17 @@ class Command(BaseCommand):
         '''
         output = options['output'][0]
         zip = options['path'][0]
-        basename = get_base_name(zip)
-        aux_name = create_file_name(output, 'aux_%s' % basename)
-        real_name = create_file_name(output, basename)
+        basename = get_basename(zip)
+        aux_name = create_filename(output, 'aux_%s' % basename)
+        real_name = create_filename(output, basename)
         with ZipFile(zip, 'r') as unzipped:   
-            unzipped.extractall(create_file_name(output, 'aux_%s' % basename))
-        path = create_file_name(aux_name, 'trend_tiles')
+            unzipped.extractall(create_filename(output, 'aux_%s' % basename))
+        path = create_filename(aux_name, 'trend_tiles')
         tifs =  get_contents_from_folder(path)
         create_directory_path(real_name)
         for tif in tifs:
-            source = create_file_name(path, tif)
-            target = create_file_name(real_name, tif)    
+            source = create_filename(path, tif)
+            target = create_filename(real_name, tif)    
             tile_map(source, target, 4000, 4000, 2, 2)
         remove_directory(aux_name)
         

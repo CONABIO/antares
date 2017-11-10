@@ -29,8 +29,8 @@ from madmex.mapper.data import vector, raster, vector_to_raster, \
     raster_to_vector_mask
 from madmex.mapper.data._gdal import create_raster_from_reference
 from madmex.mapper.data.harmonized import harmonize_images
-from madmex.util import create_file_name, \
-    create_directory_path, get_base_name, json_to_file, is_file
+from madmex.util import create_filename, \
+    create_directory_path, get_basename, json_to_file, is_file
 
 
 LOGGER = logging.getLogger(__name__)
@@ -56,13 +56,13 @@ def load_model(name):
         
 def train_model(X_train, X_test, y_train, y_test, output, model_name):
     model = load_model(model_name)
-    persistence_directory = create_file_name(output, model_name)
+    persistence_directory = create_filename(output, model_name)
     create_directory_path(persistence_directory)
     model_instance = model.Model(persistence_directory)
     model_instance.fit(X_train, y_train)
     model_instance.save(persistence_directory)
     predicted = model_instance.predict(X_test)
-    model_instance.create_report(y_test, predicted, create_file_name(persistence_directory, 'report.txt'))
+    model_instance.create_report(y_test, predicted, create_filename(persistence_directory, 'report.txt'))
 
 
 def world_to_pixel(geotransform, x, y):
@@ -146,9 +146,9 @@ class Command(BaseCommand):
         # I read the training data in shape form
         training_shape = vector.Data(shape_name)
         training_dataframe = training_shape.to_dataframe()
-        training_path = create_file_name(temporary_directory, 'training_raster.tif')
-        categories_file = create_file_name(temporary_directory, 'categories.json')
-        training_warped_path = create_file_name(temporary_directory, 'training_warped_raster.tif')
+        training_path = create_filename(temporary_directory, 'training_raster.tif')
+        categories_file = create_filename(temporary_directory, 'categories.json')
+        training_warped_path = create_filename(temporary_directory, 'training_warped_raster.tif')
         pixel_size = 5
         
         if not is_file(training_warped_path):
@@ -178,15 +178,15 @@ class Command(BaseCommand):
             
             raster_mask = scene_bundle.get_raster()
 
-            #example_path = create_file_name(temporary_directory, 'mask')
+            #example_path = create_filename(temporary_directory, 'mask')
             #create_directory_path(example_path)
             #raster_to_vector_mask(raster_mask, example_path)
             
             
             print scene_bundle.get_raster_file()
             
-            basename = get_base_name(scene_bundle.get_raster_file())
-            all_file = create_file_name(temporary_directory, '%s_all_features.tif' % basename)
+            basename = get_basename(scene_bundle.get_raster_file())
+            all_file = create_filename(temporary_directory, '%s_all_features.tif' % basename)
             # Do not recalculate if the file is already there.
             if is_file(all_file):
                 features_raster =raster.Data(all_file)
@@ -222,7 +222,7 @@ class Command(BaseCommand):
         
         
         X_train, X_test, y_train, y_test = train_test_split(training_set_array, target_set_array, train_size=0.8, test_size=0.2)
-        models_directory = create_file_name(temporary_directory, 'models')
+        models_directory = create_filename(temporary_directory, 'models')
         create_directory_path(models_directory)
         
         for model_name in models:

@@ -10,7 +10,7 @@ import unittest
 from madmex.configuration import SETTINGS
 from madmex.mapper.data._gdal import create_raster, get_width, get_height, \
     get_bands, create_raster_from_reference
-from madmex.util import create_file_name
+from madmex.util import create_filename
 
 
 class Test(unittest.TestCase):
@@ -29,8 +29,8 @@ class Test(unittest.TestCase):
         red = (1 - array) * 1000
         green = (1 - array) * 1000
         blue = array * 1000
-        create_raster(create_file_name(getattr(SETTINGS, 'TEST_FOLDER'), 'single.tif'), array)
-        create_raster(create_file_name(getattr(SETTINGS, 'TEST_FOLDER'), 'multi.tif'), numpy.array([red, green, blue]))
+        create_raster(create_filename(getattr(SETTINGS, 'TEST_FOLDER'), 'single.tif'), array)
+        create_raster(create_filename(getattr(SETTINGS, 'TEST_FOLDER'), 'multi.tif'), numpy.array([red, green, blue]))
     @unittest.skip("testing skipping")
     def test_creat_image(self):
         import numpy
@@ -61,7 +61,7 @@ class Test(unittest.TestCase):
                            numpy.reshape(ired,(width, height))])
         print final.shape
         print 'hello'
-        create_raster_from_reference(create_file_name(getattr(SETTINGS, 'TEST_FOLDER'), 'sieve.tif'), final, filename)
+        create_raster_from_reference(create_filename(getattr(SETTINGS, 'TEST_FOLDER'), 'sieve.tif'), final, filename)
         
 if __name__ == '__main__':
     #import sys;sys.argv = ['', 'Test.testName']

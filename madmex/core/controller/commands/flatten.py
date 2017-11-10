@@ -21,7 +21,7 @@ from madmex.core.controller.commands.indexes import open_handle
 from madmex.mapper.data._gdal import create_empty_raster_from_reference, \
     create_raster_from_reference
 from madmex.persistence.driver import get_rapideye_footprints_from_state
-from madmex.util import get_base_name, create_file_name, get_parent
+from madmex.util import get_basename, create_filename, get_parent
 
 
 def dictionary_from_list(key_list, value_list):

@@ -9,7 +9,7 @@ import ogr
 
 from madmex.mapper.data import raster
 from madmex.mapper.data._gdal import create_raster_from_reference
-from madmex.util import create_file_name
+from madmex.util import create_filename
 
 
 LOGGER = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ def raster_to_vector_mask(raster_object, output_path, no_data=[0]):
         
     raster_array[raster_array != 0] = 1
     
-    mask_file = create_file_name(output_path, 'mask.tif')
+    mask_file = create_filename(output_path, 'mask.tif')
     
     create_raster_from_reference(mask_file, raster_array, raster_object.get_file())
     

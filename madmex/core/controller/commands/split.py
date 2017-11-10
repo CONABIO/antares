@@ -22,8 +22,8 @@ from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands.indexes import open_handle
 from madmex.core.controller.commands.tth import area
 from madmex.remote.dispatcher import LocalProcessLauncher
-from madmex.util import create_filename_from_string, create_file_name, \
-    create_directory_path, get_base_name
+from madmex.util import create_filename_from_string, create_filename, \
+    create_directory_path, get_basename
 
 
 LOGGER = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ def split_shape_into_features(shape_name, destination_directory, column, name, s
 
         final_path = destination_directory + str(in_feature.GetField(0))
         create_directory_path(final_path)
-        output_name = create_file_name(final_path, '%s__%s.shp' % (in_feature_name, in_name))
+        output_name = create_filename(final_path, '%s__%s.shp' % (in_feature_name, in_name))
         shape_files.append(output_name)
 
         if os.path.exists(output_name):
@@ -94,8 +94,8 @@ def get_convex_hull(shape_name, destination_directory):
     layer = shape.GetLayer()
     layer_name = layer.GetName()
     spatial_reference = layer.GetSpatialRef()
-    prefix = get_base_name(shape_name)
-    output_name = create_file_name(destination_directory, '%s-hull.shp' % prefix)
+    prefix = get_basename(shape_name)
+    output_name = create_filename(destination_directory, '%s-hull.shp' % prefix)
     geometries = ogr.Geometry(ogr.wkbGeometryCollection)
     for feature in layer:
         geometries.AddGeometry(feature.GetGeometryRef())
@@ -174,12 +174,12 @@ class Command(BaseCommand):
         tth_array = []
         cover_file = 'cover-stats.json'
         tth_name = 'tth-stats.json'
-        json_directory = create_file_name(destination, 'cover_stats')
-        json_file = create_file_name(json_directory, cover_file.lower())
-        tth_file = create_file_name(json_directory, tth_name.lower())
+        json_directory = create_filename(destination, 'cover_stats')
+        json_file = create_filename(json_directory, cover_file.lower())
+        tth_file = create_filename(json_directory, tth_name.lower())
         
         for shape_file in shape_files:
-            shape_name = get_base_name(shape_file).split('__')
+            shape_name = get_basename(shape_file).split('__')
             anp_id = shape_name[0]
             anp_name = shape_name[1]
             basename = '%s.tif' % anp_name
@@ -194,9 +194,9 @@ class Command(BaseCommand):
                  
                 
                 year = self.get_year_from_path(path)
-                raster_dir = create_file_name(create_file_name(destination, 'raster'), year)
+                raster_dir = create_filename(create_filename(destination, 'raster'), year)
                 create_directory_path(raster_dir)
-                raster_file = create_file_name(raster_dir, basename)
+                raster_file = create_filename(raster_dir, basename)
                 
                 shell_command =  'gdalwarp -ot Byte -co COMPRESS=LZW -cutline %s -crop_to_cutline %s %s' % (shape_file, path, raster_file)
                 print shell_command
@@ -282,4 +282,4 @@ class Command(BaseCommand):
         
         
     def get_year_from_path(self, path):
-        return get_base_name(path)[19:23]
+        return get_basename(path)[19:23]

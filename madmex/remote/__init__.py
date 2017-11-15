@@ -92,7 +92,7 @@ class UsgsApi():
         if not data:
             response = requests.get(url, auth=(USGS_USER,USGS_PASSWORD))
         else: # a POST request
-            response = requests.post(url, data = {'key':'value'}, auth=(USGS_USER,USGS_PASSWORD))
+            response = requests.post(url, data = data, auth=(USGS_USER,USGS_PASSWORD))
         data = response.json()
         return data
 
@@ -136,6 +136,7 @@ class UsgsApi():
                             }
                         } 
         payload = json.dumps(request_json).encode('utf8')
+        print payload
         return self._consume_api_requests('/%s/order' % version, payload)
     
     def get_list_orders(self):

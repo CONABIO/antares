@@ -58,7 +58,7 @@ class Command(AntaresBaseCommand):
             
 
             
-            cloud_mask = numpy.bitwise_and(qa_array, CONFIDENCE_CLOUD) >> CONFIDENCE_CLOUD_SHIFT
+            cloud_mask = numpy.bitwise_and(qa_array, CLEAR) >> CLEAR_SHIFT
             
 
             

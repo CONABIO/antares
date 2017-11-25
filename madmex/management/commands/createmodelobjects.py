@@ -24,6 +24,7 @@ from madmex import load_class
 from madmex.configuration import SETTINGS
 from madmex.core.controller.base import BaseCommand
 from madmex.core.controller.commands.createmodel import SUPERVISED_PACKAGE
+from madmex.management.base import AntaresBaseCommand
 from madmex.mapper.bundle import rapideye
 from madmex.mapper.data import vector, raster, vector_to_raster, \
     raster_to_vector_mask
@@ -89,9 +90,10 @@ def get_dataframe_from_raster(features_raster, training_raster_warped):
     features_array = features_raster.read(int(harmonize['x_offset'][1]), int(harmonize['y_offset'][1]), int(harmonize['x_range']), int(harmonize['y_range']))
     
     labels = numpy.unique(training_array)
+    print 'labels:', labels    
     labels = labels[labels!=-9999]
     labels = labels[labels!=0]
-    
+    print 'labels:', labels    
     array_aux = []
     array_aux.append(labels)
     for i in range(features_array.shape[0]):
@@ -108,7 +110,7 @@ def create_categories_file(filename, categories_array):
         dictionary[i] = categories_array[i]
     json_to_file(filename, dictionary)
     
-class Command(BaseCommand):
+class Command(AntaresBaseCommand):
     '''
     classdocs
     '''
@@ -134,7 +136,7 @@ class Command(BaseCommand):
         In this example command, the values that come from the user input are
         added up and the result is printed in the screen.
         '''
-        target_tag = 'level_3'
+        target_tag = 'DN'
         start_time_all = time.time()
         shape_name = options['shape'][0]
         raster_paths = options['path']
@@ -149,11 +151,11 @@ class Command(BaseCommand):
         training_path = create_filename(temporary_directory, 'training_raster.tif')
         categories_file = create_filename(temporary_directory, 'categories.json')
         training_warped_path = create_filename(temporary_directory, 'training_warped_raster.tif')
-        pixel_size = 5
+        pixel_size = 0.000462175996292
         
         if not is_file(training_warped_path):
-            training_raster = vector_to_raster(training_shape, training_path, pixel_size, ['ATTRIBUTE=OBJECTID','COMPRESS=LZW'])
-            training_raster_warped = training_raster.reproject(training_warped_path, epgs=32613)
+            training_raster = vector_to_raster(training_shape, training_path, pixel_size, -pixel_size, ['ATTRIBUTE=OBJECTID','COMPRESS=LZW'])
+            training_raster_warped = training_raster.reproject(training_warped_path, epgs=32617)
         else:
             training_raster_warped = raster.Data(training_warped_path)
         
@@ -205,6 +207,7 @@ class Command(BaseCommand):
         
         training_set = dataframe_features.set_index(0).join(training_dataframe.set_index('OBJECTID'))   
         
+        print training_set
         
         
         training_set['target'] = pandas.Categorical.from_array(training_set[target_tag]).labels

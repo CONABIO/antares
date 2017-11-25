@@ -24,9 +24,11 @@ def vector_to_raster(vector, output_path, x_size, y_size, options, data_type=gda
     '''
     source_layer = vector.get_layer()
     x_min, x_max, y_min, y_max = source_layer.GetExtent()
+    print source_layer.GetExtent()
     x_resolution = int((x_max - x_min) / x_size)
     y_resolution = int((y_max - y_min) / -y_size)  
-    LOGGER.debug(x_min, x_max, y_min, y_max)
+    print x_resolution, y_resolution
+    LOGGER.info(x_min, x_max, y_min, y_max)
     target_ds = gdal.GetDriverByName(str('GTiff')).Create(output_path, x_resolution, y_resolution, 1, data_type)
     spatial_reference = vector.get_spatial_reference()         
     target_ds.SetProjection(spatial_reference.ExportToWkt())

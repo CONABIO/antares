@@ -3,31 +3,34 @@ Created on 17/11/2016
 
 @author: erickpalacios
 '''
-from madmex.core.controller.base import BaseCommand
 import logging
-from madmex.core.controller.commands import get_bundle_from_path
-from madmex.configuration import SETTINGS
 import shutil
-from madmex.util import get_basename_of_file, create_directory_path
-from madmex.persistence.driver import get_host_from_command
-from madmex.remote.dispatcher import RemoteProcessLauncher
-from madmex.mapper.data._gdal import \
-    get_array_resized_from_reference_dataset, warp_raster_from_reference
-from madmex.processing.raster import vectorize_raster, resample_numpy_array,\
-    calculate_zonal_histograms, \
-    get_objects_by_relative_proportion_from_raster_as_dataframe,\
-    calculate_zonal_statistics, append_labels_to_array,\
-    build_dataframe_from_array
-from madmex.mapper.data.raster import create_raster_tiff_from_reference,\
-    new_options_for_create_raster_from_reference
 import subprocess
-from madmex.mapper.data import raster, vector
+
 import numpy
 import pandas
-from madmex.mapper.data.dataframe import join_dataframes_by_column_name,\
-    reduce_dimensionality, create_names_of_dataframe_from_filename,\
-    outlier_elimination_for_dataframe, generate_namesfile,\
+
+from madmex.configuration import SETTINGS
+from madmex.core.controller.commands import get_bundle_from_path
+from madmex.management.base import AntaresBaseCommand
+from madmex.mapper.data import raster, vector
+from madmex.mapper.data._gdal import \
+    get_array_resized_from_reference_dataset, warp_raster_from_reference
+from madmex.mapper.data.dataframe import join_dataframes_by_column_name, \
+    reduce_dimensionality, create_names_of_dataframe_from_filename, \
+    outlier_elimination_for_dataframe, generate_namesfile, \
     write_C5_result_to_csv, join_C5_dataframe_and_shape
+from madmex.mapper.data.raster import create_raster_tiff_from_reference, \
+    new_options_for_create_raster_from_reference
+from madmex.persistence.driver import get_host_from_command
+from madmex.processing.raster import vectorize_raster, resample_numpy_array, \
+    calculate_zonal_histograms, \
+    get_objects_by_relative_proportion_from_raster_as_dataframe, \
+    calculate_zonal_statistics, append_labels_to_array, \
+    build_dataframe_from_array
+from madmex.remote.dispatcher import RemoteProcessLauncher
+from madmex.util import get_basename_of_file, create_directory_path
+
 
 LOGGER = logging.getLogger(__name__)
 BUNDLE_PACKAGE = 'madmex.mapper.bundle'
@@ -39,7 +42,7 @@ def _get_bundle_from_path(path):
     '''
     return get_bundle_from_path(path, '../../../mapper', BUNDLE_PACKAGE)
 
-class Command(BaseCommand):
+class Command(AntaresBaseCommand):
     '''
     classdocs
     '''

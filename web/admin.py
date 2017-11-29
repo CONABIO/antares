@@ -1,7 +1,8 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+'''
+Created on Nov 29, 2017
 
-
+@author: agutierrez
+'''
 from django.contrib.gis import admin
 
 from madmex.models import WorldBorder

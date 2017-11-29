@@ -78,6 +78,5 @@ class Command(AntaresBaseCommand):
                     **fiona_kwargs) as dst:
                 for item in shapes:
                     feature = {'geometry': item[0], 'properties': {'id': int(item[1])}}
-                    print dir(item)
-                    print item[0]
+                    
                     dst.write(feature)

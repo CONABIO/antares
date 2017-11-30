@@ -3,20 +3,32 @@ Created on Nov 29, 2017
 
 @author: agutierrez
 '''
+import json
 import logging
 from math import floor
 
+from django.contrib.gis import geos
+from django.contrib.gis.gdal.srs import SpatialReference, CoordTransform
+from django.contrib.gis.geos.geometry import GEOSGeometry
 import fiona
+import geojson
 from rasterio import features
 import rasterio
+from shapely.geometry import shape
 from skimage import segmentation
 
 from madmex.management.base import AntaresBaseCommand
+from madmex.models import Segment
 from madmex.util import get_basename_of_file, get_basename
 import numpy as np
 
 
 logger = logging.getLogger(__name__)
+
+worldborder_mapping = {
+            'fips' : 'FIPS',
+            'mpoly' : 'MULTIPOLYGON',
+            }
 
 class Command(AntaresBaseCommand):
     '''
@@ -38,7 +50,8 @@ class Command(AntaresBaseCommand):
         
         
 
-        output_vector_file = '/Users/agutierrez/Documents/jamaica/rapideye/%s.gpkg' % get_basename(stack)
+        output_vector_file = '/Users/agutierrez/Desktop/Caribe/%s.gpkg' % get_basename(stack)
+
 
         print output_vector_file
 
@@ -68,15 +81,41 @@ class Command(AntaresBaseCommand):
             
             
             
+
+            # Write to file
+            for item in shapes:
+                feature = {'geometry': item[0], 'properties': {'id': int(item[1])}}
+                    
+                #print json.dumps(item[0])
+                    
+                    
+                s = json.dumps(item[0])
+                g1 = geojson.loads(s)
+                g2 = shape(g1)
+                    
+                #epsg = meta['crs']['init'].split(':')[1]
+                #print epsg
+                myGeom = GEOSGeometry(g2.wkt)
+                    
+                #gcoord = SpatialReference(4326)
+                #mycoord = SpatialReference(int(epsg))
+                
+                #trans = CoordTransform(mycoord, gcoord)
+
+                    
+                seg = Segment(segment_id = int(item[1]),
+                                  mpoly = geos.MultiPolygon(myGeom))
+                seg.save()
+            '''
             # Prepare schema
             fiona_kwargs = {'crs': meta['crs'],
                     'driver': 'GPKG',
                     'schema': {'geometry': 'Polygon',
                     'properties': {'id': 'int'}}}
-            # Write to file
             with fiona.open(output_vector_file, 'w', layer='slic_%3f_%d' % (compactness, n_segments),
                     **fiona_kwargs) as dst:
                 for item in shapes:
                     feature = {'geometry': item[0], 'properties': {'id': int(item[1])}}
-                    
+                                        
                     dst.write(feature)
+            '''

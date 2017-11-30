@@ -3,6 +3,10 @@ from __future__ import unicode_literals
 
 from django.contrib.gis.db import models
 
+class Segment(models.Model):
+    segment_id = models.IntegerField('Region Code')
+    mpoly = models.MultiPolygonField()
+
 class WorldBorder(models.Model):
     # Regular Django fields corresponding to the attributes in the
     # world borders shapefile.

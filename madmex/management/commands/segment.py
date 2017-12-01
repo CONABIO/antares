@@ -52,7 +52,7 @@ def slic_segmentation(image_path, avg_segment_size_ha=5, compactness=0.01):
 
 
 
-insert_string = "('%d', STGeomFromText ( '%s' , 4326 )),"
+insert_string = "('%d', ST_GeomFromText ( '%s' , 4326 )),"
 
 def persist_database(shapes, meta):
     #with transaction.atomic():

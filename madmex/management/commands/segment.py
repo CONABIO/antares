@@ -6,10 +6,12 @@ Created on Nov 29, 2017
 import json
 import logging
 from math import floor
+import time
 
 from django.contrib.gis import geos
 from django.contrib.gis.gdal.srs import SpatialReference, CoordTransform
 from django.contrib.gis.geos.geometry import GEOSGeometry
+from django.db import transaction, connection
 import fiona
 import geojson
 from rasterio import features
@@ -48,15 +50,35 @@ def slic_segmentation(image_path, avg_segment_size_ha=5, compactness=0.01):
     
     return segments, transform, meta
 
-def persist_database(shapes):
-    for item in shapes:
-        s = json.dumps(item[0])
-        g1 = geojson.loads(s)
-        g2 = shape(g1)
-        myGeom = GEOSGeometry(g2.wkt)
-        seg = Segment(segment_id = int(item[1]),
-                      mpoly = geos.MultiPolygon(myGeom))
-        seg.save()
+
+
+insert_string = "('%d', STGeomFromText ( '%s' , 4326 )),"
+
+def persist_database(shapes, meta):
+    #with transaction.atomic():
+        # This code executes inside a transaction.
+        data = []
+        cursor = connection.cursor()
+        query = "INSERT INTO madmex_segment (segment_id, mpoly) VALUES "
+        for item in shapes:
+            s = json.dumps(item[0])
+            #print item[1]
+            g1 = geojson.loads(s)
+            g2 = shape(g1)
+            myGeom = GEOSGeometry(g2.wkt)
+            #print myGeom
+            
+            query = query + insert_string % (int(item[1]), myGeom)
+            
+            #data.append((int(item[1]),myGeom))
+            #seg = Segment(segment_id = int(item[1]),
+            #          mpoly = myGeom)
+            #seg.save()
+        query = query[:-1] +";"
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+        transaction.commit()   
+        
 
 def persist_file(shapes, output, meta):
     fiona_kwargs = {'crs': meta['crs'],
@@ -85,11 +107,15 @@ class Command(AntaresBaseCommand):
         added up and the result is printed in the screen.
         '''
         stack = options['path'][0]
-        output_vector_file = '/Users/agutierrez/Desktop/Caribe/%s.gpkg' % get_basename(stack)
+        output_vector_file = '/Users/agutierrez/%s.gpkg' % get_basename(stack)
         segments, transform, meta = slic_segmentation(stack)
             
         # Vectorize
         shapes = features.shapes(segments.astype(np.uint16), transform=transform)
             
-        #persist_database(shapes)
-        persist_file(shapes, output_vector_file, meta)
+        
+        start_time = time.time()
+        persist_database(shapes, meta)
+        
+        print time.time() - start_time
+        #persist_file(shapes, output_vector_file, meta)

@@ -50,36 +50,19 @@ def slic_segmentation(image_path, avg_segment_size_ha=5, compactness=0.01):
     
     return segments, transform, meta
 
-
-
-insert_string = "('%d', ST_GeomFromText ( '%s' , 4326 )),"
-
 def persist_database(shapes, meta):
-    #with transaction.atomic():
-        # This code executes inside a transaction.
-        data = []
-        cursor = connection.cursor()
-        query = "INSERT INTO madmex_segment (segment_id, mpoly) VALUES "
-        for item in shapes:
-            s = json.dumps(item[0])
-            #print item[1]
-            g1 = geojson.loads(s)
-            g2 = shape(g1)
-            myGeom = GEOSGeometry(g2.wkt)
-            #print myGeom
-            
-            query = query + insert_string % (int(item[1]), myGeom)
-            
-            #data.append((int(item[1]),myGeom))
-            #seg = Segment(segment_id = int(item[1]),
-            #          mpoly = myGeom)
-            #seg.save()
-        query = query[:-1] +";"
-        with connection.cursor() as cursor:
-            cursor.execute(query)
-        transaction.commit()   
-        
-
+    data = []
+    query = "INSERT INTO madmex_segment (segment_id, mpoly) VALUES "
+    insert_string = "('%d', ST_GeomFromText ( '%s' , 4326 ))"
+    for item in shapes:
+        s = json.dumps(item[0])
+        g1 = geojson.loads(s)
+        g2 = shape(g1)
+        myGeom = GEOSGeometry(g2.wkt)    
+        data.append(insert_string % (int(item[1]), myGeom))
+    query = query + ",".join(data) +";"    
+    return query
+    
 def persist_file(shapes, output, meta):
     fiona_kwargs = {'crs': meta['crs'],
                     'driver': 'GPKG',
@@ -115,7 +98,12 @@ class Command(AntaresBaseCommand):
             
         
         start_time = time.time()
-        persist_database(shapes, meta)
-        
+        query = persist_database(shapes, meta)
         print time.time() - start_time
+        start_time = time.time()
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+        transaction.commit()  
+        print time.time() - start_time
+        
         #persist_file(shapes, output_vector_file, meta)

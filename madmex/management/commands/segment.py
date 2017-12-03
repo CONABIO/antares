@@ -56,13 +56,13 @@ def slic_segmentation(image_path, avg_segment_size_ha=5, compactness=0.01):
 def persist_database(shapes, meta):
     data = []
     query = "INSERT INTO madmex_segment (segment_id, mpoly) VALUES "
-    insert_string = "('%d', ST_GeomFromText ( '%s' , 4326 ))"
+    insert_string = "('%d', ST_Transform(ST_GeomFromText ( '%s' , %d ), 4326))"
     for item in shapes:
         s = json.dumps(item[0])
         g1 = geojson.loads(s)
         g2 = shape(g1)
         myGeom = GEOSGeometry(g2.wkt)    
-        data.append(insert_string % (int(item[1]), myGeom))
+        data.append(insert_string % (int(item[1]), myGeom, int(meta['crs']['init'].split(':')[1])))
     query = query + ",".join(data) +";"    
     return query
     

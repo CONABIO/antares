@@ -8,15 +8,14 @@ from __future__ import unicode_literals
 from sklearn.decomposition.pca import PCA
 from sklearn.externals import joblib
 
+from madmex.model.base import BaseModel
 from madmex.util import create_filename
 
 
-class Model(object):
+class Model(BaseModel):
     '''
     classdocs
     '''
-
-
     def __init__(self, n_components):
         '''
         Constructor

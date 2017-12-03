@@ -20,6 +20,7 @@ from shapely.geometry import shape
 from skimage import segmentation
 
 from madmex.management.base import AntaresBaseCommand
+from madmex.model.unsupervised import slic
 from madmex.models import Segment
 from madmex.util import get_basename_of_file, get_basename
 import numpy as np
@@ -40,15 +41,17 @@ def slic_segmentation(image_path, avg_segment_size_ha=5, compactness=0.01):
                     dtype=src.meta['dtype'])
         for layer_id in range(src.count):
             img[:,:,layer_id] = src.read(layer_id + 1)
-            area_ha = (src.res[0] ** 2 * src.width * src.height) / 10000
-    n_segments = int(floor(area_ha / avg_segment_size_ha))
-    segments = segmentation.slic(img, 
-                                 compactness = compactness,
-                                 n_segments=n_segments, 
-                                 multichannel = True,
-                                 enforce_connectivity=True)
-    
+        area_ha = (src.res[0] ** 2 * src.width * src.height) / 10000
+
+    options = {'area_ha':area_ha,
+               'avg_segment_size_ha':avg_segment_size_ha,
+               'compactness':compactness}
+
+    segmentation = slic.Model(options)
+    segments = segmentation.predict(img)
     return segments, transform, meta
+
+
 
 def persist_database(shapes, meta):
     data = []

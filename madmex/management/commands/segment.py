@@ -58,13 +58,17 @@ def persist_database(shapes, meta):
     data = []
     query = "INSERT INTO madmex_segment (segment_id, mpoly) VALUES "
     insert_string = "('%d', ST_Transform(ST_GeomFromText ( '%s' , %d ), 4326))"
+    
+    print "len"
+    
     for item in shapes:
         s = json.dumps(item[0])
         g1 = geojson.loads(s)
         g2 = shape(g1)
-        myGeom = GEOSGeometry(g2.wkt)    
+        myGeom = GEOSGeometry(g2.wkt)   
+        print myGeom 
         data.append(insert_string % (int(item[1]), myGeom, int(meta['crs']['init'].split(':')[1])))
-    query = query + ",".join(data) +";"    
+    query = query + ','.join(data) +';'    
     return query
     
 def persist_file(shapes, output, meta):
@@ -99,23 +103,24 @@ class Command(AntaresBaseCommand):
         
         segmentation = bis.Model()
         
-        segmentation.predict(stack)
         
         
-        '''
-        segments, transform, meta = slic_segmentation(stack)
+        
+        shapes, transform, meta = segmentation.predict(stack)
             
         # Vectorize
-        shapes = features.shapes(segments.astype(np.uint16), transform=transform)
+        #shapes = features.shapes(segments.astype(np.uint16), transform=transform)
             
         
         start_time = time.time()
+        print 'about to start query' 
         query = persist_database(shapes, meta)
+        print 'done'
         print time.time() - start_time
         start_time = time.time()
         with connection.cursor() as cursor:
             cursor.execute(query)
         transaction.commit()  
         print time.time() - start_time
-        '''
+        
         #persist_file(shapes, output_vector_file, meta)

@@ -45,11 +45,9 @@ class Model(BaseModel):
         local = LocalProcessLauncher()
         image_name = get_basename_of_file(image_path)
         image_folder = get_parent(image_path)
-        
         license_file = create_filename(TEMP_FOLDER, 'license.txt')
         with open(license_file, 'w') as the_file:
             the_file.write(BIS_LICENSE)
-        
         shell_string_template = 'docker run -v %s:/data -v %s:/segmentation/license.txt madmex/segmentation python /segmentation/segment.py /data/%s -t %g -s %g -c %g --mp %s --xt %g --rows %g' 
         shell_string = shell_string_template % (image_folder, license_file, image_name, self.t, self.s, self.c, self.mp, self.xt, self.rows)
         print shell_string

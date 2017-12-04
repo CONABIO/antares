@@ -56,10 +56,8 @@ def slic_segmentation(image_path, avg_segment_size_ha=5, compactness=0.01):
 
 def persist_database(shapes, meta):
     data = []
-    query = "INSERT INTO madmex_segment (segment_id, mpoly) VALUES "
-    insert_string = "('%d', ST_Transform(ST_GeomFromText ( '%s' , %d ), 4326))"
-    
-    print "len"
+    query = 'INSERT INTO madmex_segment (segment_id, mpoly) VALUES '
+    insert_string = '(\'%d\', ST_Transform(ST_GeomFromText ( \'%s\' , %d ), 4326))'
     
     for item in shapes:
         s = json.dumps(item[0])
@@ -103,7 +101,7 @@ class Command(AntaresBaseCommand):
         
         segmentation = bis.Model()
         
-        
+        sgementation = slic.Model()
         
         
         shapes, transform, meta = segmentation.predict(stack)

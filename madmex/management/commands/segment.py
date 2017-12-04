@@ -19,8 +19,9 @@ import rasterio
 from shapely.geometry import shape
 from skimage import segmentation
 
+from madmex.configuration import SETTINGS
 from madmex.management.base import AntaresBaseCommand
-from madmex.model.unsupervised import slic
+from madmex.model.unsupervised import slic, bis
 from madmex.models import Segment
 from madmex.util import get_basename_of_file, get_basename
 import numpy as np
@@ -94,6 +95,14 @@ class Command(AntaresBaseCommand):
         '''
         stack = options['path'][0]
         output_vector_file = '/Users/agutierrez/%s.gpkg' % get_basename(stack)
+        
+        
+        segmentation = bis.Model()
+        
+        segmentation.predict(stack)
+        
+        
+        '''
         segments, transform, meta = slic_segmentation(stack)
             
         # Vectorize
@@ -108,5 +117,5 @@ class Command(AntaresBaseCommand):
             cursor.execute(query)
         transaction.commit()  
         print time.time() - start_time
-        
+        '''
         #persist_file(shapes, output_vector_file, meta)

@@ -150,6 +150,8 @@ USE_TZ = True
 USGS_USER = os.environ.get('USGS_USER')
 
 USGS_PASSWORD = os.environ.get('USGS_PASSWORD')
+BIS_LICENSE = os.environ.get('BIS_LICENSE')
+TEMP_FOLDER =  os.environ.get('TEMP_FOLDER')
 
 
 # Static files (CSS, JavaScript, Images)

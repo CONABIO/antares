@@ -101,8 +101,6 @@ class Command(AntaresBaseCommand):
         
         segmentation = bis.Model()
         
-        sgementation = slic.Model()
-        
         
         shapes, transform, meta = segmentation.predict(stack)
             

@@ -5,7 +5,15 @@ from django.contrib.gis.db import models
 
 class Segment(models.Model):
     segment_id = models.IntegerField('Region Code')
-    mpoly = models.PolygonField()
+    the_geom = models.PolygonField()
+    
+class Region(models.Model):
+    name = models.CharField(max_length=50)
+    the_geom = models.MultiPolygonField()
+    
+class Footprint(models.Model):
+    name = models.CharField(max_length=50)
+    the_geom = models.PolygonField()
 
 class WorldBorder(models.Model):
     # Regular Django fields corresponding to the attributes in the
